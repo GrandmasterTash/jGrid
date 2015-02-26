@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: JGrid
+Bundle-SymbolicName: com.notlob.jgrid
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com.notlob.jgrid.Activator
+Bundle-Vendor: Stefan Bolton
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Export-Package: com.notlob.jgrid,
+ com.notlob.jgrid.model,
+ com.notlob.jgrid.model.filtering,
+ com.notlob.jgrid.providers,
+ com.notlob.jgrid.renderer,
+ com.notlob.jgrid.styles,
+ com.notlob.jgrid.util
