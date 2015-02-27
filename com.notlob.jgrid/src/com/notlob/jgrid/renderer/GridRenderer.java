@@ -1,6 +1,5 @@
 package com.notlob.jgrid.renderer;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +22,6 @@ import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.SortDirection;
 import com.notlob.jgrid.model.Viewport;
-import com.notlob.jgrid.model.filtering.Filter;
 import com.notlob.jgrid.model.filtering.QuickFilter;
 import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.BorderStyle;
