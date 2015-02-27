@@ -1,5 +1,6 @@
 package com.notlob.jgrid.renderer;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +23,8 @@ import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.SortDirection;
 import com.notlob.jgrid.model.Viewport;
+import com.notlob.jgrid.model.filtering.Filter;
+import com.notlob.jgrid.model.filtering.QuickFilter;
 import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.BorderStyle;
 import com.notlob.jgrid.styles.CellStyle;
@@ -561,9 +564,10 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		if ((row != null) && (cellStyle.getContentStyle() == ContentStyle.IMAGE || cellStyle.getContentStyle() == ContentStyle.IMAGE_THEN_TEXT)) {
 			final Image image = getCellImage(column, row);
+			final AlignmentStyle imageAlignment = (cellStyle.getImageAlignment() == null) ? column.getImageAlignment() : cellStyle.getImageAlignment();
 
 			if (image != null) {
-				align(image.getBounds().width, image.getBounds().height, innerBounds, cellStyle.getImageAlignment(), cellStyle);
+				align(image.getBounds().width, image.getBounds().height, innerBounds, imageAlignment, cellStyle);
 				gc.drawImage(image, content.x, content.y);
 
 				if (!cellStyle.isAllowContentOverlap()) {
@@ -600,8 +604,9 @@ public class GridRenderer<T> implements PaintListener {
 			final Point point = extentCache.get(text);
 			final int width = Math.min(point.x, (innerBounds.width - widthCap));
 			final int height = Math.min(point.y, innerBounds.height);
-
-			align(width, height, innerBounds, cellStyle.getTextAlignment(), cellStyle);
+			final AlignmentStyle textAlignment = (cellStyle.getTextAlignment() == null) ? column.getTextAlignment() : cellStyle.getTextAlignment();
+			
+			align(width, height, innerBounds, textAlignment, cellStyle);
 			gc.drawText(text, content.x, content.y, SWT.DRAW_TRANSPARENT);
 			
 			if (widthCap > 0) {
@@ -620,9 +625,10 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		if ((row != null) && (cellStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE)) {
 			final Image image = getCellImage(column, row);
+			final AlignmentStyle imageAlignment = (cellStyle.getImageAlignment() == null) ? column.getImageAlignment() : cellStyle.getImageAlignment();
 
 			if (image != null) {
-				align(image.getBounds().width, image.getBounds().height, innerBounds, cellStyle.getImageAlignment(), cellStyle);
+				align(image.getBounds().width, image.getBounds().height, innerBounds, imageAlignment, cellStyle);
 				gc.drawImage(image, content.x, content.y);
 
 				if (!cellStyle.isAllowContentOverlap()) {
@@ -642,11 +648,20 @@ public class GridRenderer<T> implements PaintListener {
 		// TODO: Use a static harcoded column to detect this (like we do for the column header row).
 		// No row or column means we're painting the row number cell.
 		if (row == null || column == null) {
+			// TODO: Static column for row numbers.
 			return String.valueOf(rowIndex);
 			
 		} else if (row == Row.COLUMN_HEADER_ROW) {
 			return column.getCaption();
 			
+		} else if (row == Row.FILTER_HEADER_ROW) {
+			final QuickFilter<T> filter = getGridModel().getFilterModel().getQuickFilterForColumn(column);
+			if (filter == null) {
+				return "-";
+			} else {
+				return filter.toReadableString();
+			}
+						
 		} else {
 			return grid.getLabelProvider().getText(column, row.getElement());
 		}
@@ -666,6 +681,8 @@ public class GridRenderer<T> implements PaintListener {
 				return image;
 			}
 			
+			// TODO: Filter image if filtered?
+			
 			//
 			// Return a sorted image if sorted.
 			//
@@ -678,8 +695,13 @@ public class GridRenderer<T> implements PaintListener {
 					return ResourceManager.getInstance().getImage("sort_descending.png");
 				}
 			}
+						
+		} else if (row == Row.FILTER_HEADER_ROW) {
+			//
+			// No images in the filter row.
+			//
+			return null;
 			
-			// TODO: Filter image if filtered?
 		} else {		
 			//
 			// Get any image from the provider

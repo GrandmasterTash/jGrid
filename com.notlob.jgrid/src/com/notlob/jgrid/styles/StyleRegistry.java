@@ -69,8 +69,8 @@ public class StyleRegistry<T> {
 		defaultStyle.setForeground(new RGB(0, 0, 0));
 		defaultStyle.setForegroundOpacity(255);
 		defaultStyle.setBackgroundOpacity(255);
-		defaultStyle.setImageAlignment(AlignmentStyle.LEFT_CENTER);
-		defaultStyle.setTextAlignment(AlignmentStyle.LEFT_CENTER);
+//		defaultStyle.setImageAlignment(AlignmentStyle.LEFT_CENTER); // Null means column default used.
+//		defaultStyle.setTextAlignment(AlignmentStyle.LEFT_CENTER);
 		defaultStyle.setPaddingImageText(4);
 		defaultStyle.setPaddingInnerBorder(1);
 		defaultStyle.setPaddingTop(PADDING_TOP);
@@ -87,7 +87,7 @@ public class StyleRegistry<T> {
 
 		defaultHeaderStyle.setFontData(new FontData("Segoe UI", 9, SWT.NORMAL));
 		defaultHeaderStyle.setContentStyle(ContentStyle.TEXT_THEN_IMAGE);
-		defaultHeaderStyle.setTextAlignment(AlignmentStyle.LEFT_CENTER);
+//		defaultHeaderStyle.setTextAlignment(AlignmentStyle.LEFT_CENTER); // Null means column default used.
 		defaultHeaderStyle.setImageAlignment(AlignmentStyle.RIGHT_CENTER);
 		defaultHeaderStyle.setAllowContentOverlap(true);
 
@@ -160,6 +160,8 @@ public class StyleRegistry<T> {
 		// Filter row style.
 		//
 		filterRowStyle = defaultStyle.copy();
+		filterRowStyle.setForeground(new RGB(39, 65, 62));
+		filterRowStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
 
 		//
 		// Builds the corner cell style.

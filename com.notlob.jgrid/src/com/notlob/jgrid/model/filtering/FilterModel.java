@@ -3,11 +3,13 @@ package com.notlob.jgrid.model.filtering;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 
 public class FilterModel<T> {
 	
+	// TODO: Remove filters if columns are removed.
 	// TODO: Filter row toggle with drop-downs.
 	// TODO: Option to include entire group if any member matches.
 	// TODO: Search string parsed into filter-tree.
@@ -107,6 +109,18 @@ public class FilterModel<T> {
 		}
 			
 		gridModel.fireChangeEvent();
+	}
+
+	public QuickFilter<T> getQuickFilterForColumn(final Column column) {
+		for (Filter<T> filter : filters) {
+			if (filter instanceof QuickFilter) {
+				final QuickFilter<T> quickFilter = (QuickFilter<T>) filter;
+				if (quickFilter.getColumn() == column) {
+					return quickFilter;
+				}
+			}
+		}
+		return null;
 	}
 
 }

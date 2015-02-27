@@ -4,6 +4,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.notlob.jgrid.styles.AlignmentStyle;
+
 @SuppressWarnings("rawtypes")
 public class Column {
 
@@ -14,6 +16,9 @@ public class Column {
 	private SortDirection sortDirection;
 	private int sortSequence;
 	private boolean visible;
+	private AlignmentStyle textAlignment;
+	private AlignmentStyle imageAlignment;
+	
 	
 	// Arbitrary things can be tagged onto a column by key.
 	private Map<String, Object> dataByKey;
@@ -35,6 +40,7 @@ public class Column {
 		sb.append(String.format(" Width [%s]", width));
 		sb.append(String.format(" [%s]", visible ? "visible" : "hidden"));
 		sb.append(String.format(" Sort [%s, %s]", sortDirection, sortSequence));
+		sb.append(String.format(" Text-Align [%s] Image-Align [%s]", textAlignment, imageAlignment));
 
 		return sb.toString();
 	}
@@ -89,6 +95,22 @@ public class Column {
 
 	public void setVisible(final boolean visible) {
 		this.visible = visible;
+	}
+	
+	public AlignmentStyle getTextAlignment() {
+		return textAlignment;
+	}
+	
+	public void setTextAlignment(AlignmentStyle textAlignment) {
+		this.textAlignment = textAlignment;
+	}
+	
+	public AlignmentStyle getImageAlignment() {
+		return imageAlignment;
+	}
+	
+	public void setImageAlignment(AlignmentStyle imageAlignment) {
+		this.imageAlignment = imageAlignment;
 	}
 
 	public Object getData(final String key) {

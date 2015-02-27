@@ -28,6 +28,7 @@ import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.Viewport;
 import com.notlob.jgrid.model.filtering.Filter;
+import com.notlob.jgrid.model.filtering.QuickFilter;
 import com.notlob.jgrid.providers.IGridContentProvider;
 import com.notlob.jgrid.providers.IGridLabelProvider;
 import com.notlob.jgrid.renderer.GridRenderer;
@@ -292,6 +293,16 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 
 		return computedArea;
 	}
+	
+	protected void showQuickFilterPicker(final Column column) {
+		final QuickFilter<T> existingFilter = gridModel.getFilterModel().getQuickFilterForColumn(column);
+		
+		//
+		// TODO: Display a checked list with clear/all/blanks/none-blanks as options.
+		//
+		
+		System.out.println("TODO: Quick filter picker");
+	}
 
 	public String getEmptyMessage() {
 		return emptyMessage;
@@ -333,12 +344,13 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		}
 	}
 	
-	// TODO: Break-up into protected methods handleClick and handleDoubleClick?
+	// TODO: Move this class.
 	private class GridMouseListener extends MouseAdapter implements MouseMoveListener, MouseTrackListener {
 		private boolean mouseDown;
 		private Row<T> row = null;
 		private Column column = null;
 
+		@SuppressWarnings("unchecked")
 		private void trackCell(final int x, final int y) {
 			//
 			// Track the row and column.
@@ -346,10 +358,24 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 			final int rowIndex = viewport.getRowIndexByY(y, gc);
 			final int columnIndex = viewport.getColumnIndexByX(x, gc);
 			
-			if (rowIndex != -1) {
-				row = gridModel.getRows().get(rowIndex);				
+			if (rowIndex == -1) {
+				//
+				// See if it's the column header or filter row.
+				//
+				if (y >= 0 ) {
+					row = null;
+					final int headerHeight = gridModel.getRowHeight(gc, Row.COLUMN_HEADER_ROW);
+					
+					if (y < headerHeight) {
+						row = Row.COLUMN_HEADER_ROW;
+						
+					} else if (y < (headerHeight + gridModel.getRowHeight(gc, Row.FILTER_HEADER_ROW))) {
+						row = Row.FILTER_HEADER_ROW;
+					}
+				} 
+				
 			} else {
-				row = null;
+				row = gridModel.getRows().get(rowIndex);				
 			}
 			
 			if (columnIndex != -1) {
@@ -372,25 +398,25 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		@Override
 		public void mouseHover(final MouseEvent e) {
 			if ((column != null) && (row != null)) {
-				//
-				// For now, ignore tool-tips on group rows.
-				//
-				if (labelProvider != null && !gridModel.isParentRow(row)) {
+				final int x = e.x;
+				final int y = e.y + 16;
+				
+				if (row == Row.COLUMN_HEADER_ROW) {
+					// TODO: allow label provider to specify (example merged cols show source cols).
+					showToolTip(x, y, "", column.getCaption());
+					
+				} else  if (row == Row.FILTER_HEADER_ROW) {
+					// TODO: allow label provider to specify (example additional non-quick filters on column...).
+					final QuickFilter<T> quickFilter = gridModel.getFilterModel().getQuickFilterForColumn(column);
+					showToolTip(x, y, column.getCaption(), (quickFilter == null) ? "(not filtered)" : quickFilter.getToolTip());
+					
+				} else if (labelProvider != null && !gridModel.isParentRow(row)) {
+					//
+					// For now, ignore tool-tips on group rows.
+					//
 					final String toolTip = labelProvider.getToolTip(column, row.getElement());
 					if (toolTip != null && !toolTip.isEmpty()) {
-						//
-						// Build a slight delay otherwise the tool-tip would swallow clicks meant for the grid.
-						//
-						Grid.this.getDisplay().timerExec(4, new Runnable() {
-							@Override
-							public void run() {
-								final Point location = Grid.this.toDisplay(e.x, e.y + 16);
-								Grid.this.toolTip.setLocation(location);
-								Grid.this.toolTip.setText(column.getCaption());
-								Grid.this.toolTip.setMessage(toolTip);
-								Grid.this.toolTip.setVisible(true);								
-							}
-						});
+						showToolTip(x, y, column.getCaption(), toolTip);
 					}
 				}
 			}
@@ -424,19 +450,25 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 
 			if (e.button == 1) { // LEFT
 				if (e.count == 1) {
-					//
-					// Column sorting.
-					//
-					if ((row == null) && (e.y < viewport.getViewportArea(gc).y)) {
-						if (column != null) {
+					if ((column != null) && (e.y < viewport.getViewportArea(gc).y)) {						
+						if (row == Row.COLUMN_HEADER_ROW) {
+							//
+							// Column sorting.
+							//
 							gridModel.getSortModel().sort(column, true, ctrl);
+							
+						} else if (row == Row.FILTER_HEADER_ROW) {
+							//
+							// Quick filtering.
+							//
+							showQuickFilterPicker(column);
 						}
 					}
 
 					//
 					// Handle the selection.
 					//
-					if (row != null) {
+					if (row != null && (row != Row.COLUMN_HEADER_ROW) && (row != Row.FILTER_HEADER_ROW)) {
 						// If it's the row-number cell, pretend ctrl is used for sticky selectins.
 						if (e.x < viewport.getViewportArea(gc).x) {
 							ctrl = true;
@@ -529,6 +561,22 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 					}
 				}
 			}
+		}
+		
+		private void showToolTip(final int x, final int y, final String boldText, final String message) {
+			//
+			// Build a slight delay otherwise the tool-tip would swallow clicks meant for the grid.
+			//
+			Grid.this.getDisplay().timerExec(4, new Runnable() {
+				@Override
+				public void run() {
+					final Point location = Grid.this.toDisplay(x, y);
+					Grid.this.toolTip.setLocation(location);
+					Grid.this.toolTip.setText(boldText);
+					Grid.this.toolTip.setMessage(message);
+					Grid.this.toolTip.setVisible(true);								
+				}
+			});
 		}
 	}
 }
