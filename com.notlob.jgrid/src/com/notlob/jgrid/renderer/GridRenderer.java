@@ -670,8 +670,14 @@ public class GridRenderer<T> implements PaintListener {
 	/**
 	 * Return the image for the given cell.
 	 */
-	protected Image getCellImage(final Column column, final Row<T> row) {	
-		if ((row == Row.COLUMN_HEADER_ROW)) {
+	protected Image getCellImage(final Column column, final Row<T> row) {
+		if (row == Row.FILTER_HEADER_ROW) {
+			//
+			// No images in the filter row.
+			//
+			return null;
+			
+		} else if (row == Row.COLUMN_HEADER_ROW) {
 			//
 			// Get any image from the provider
 			//
@@ -680,9 +686,14 @@ public class GridRenderer<T> implements PaintListener {
 			if (image != null) {
 				return image;
 			}
-			
-			// TODO: Filter image if filtered?
-			
+
+			//
+			// Filter image if filtered.
+			//
+			if (getGridModel().getFilterModel().getQuickFilterForColumn(column) != null) {
+				return ResourceManager.getInstance().getImage("filter_small.gif");
+			}
+				
 			//
 			// Return a sorted image if sorted.
 			//
@@ -695,12 +706,6 @@ public class GridRenderer<T> implements PaintListener {
 					return ResourceManager.getInstance().getImage("sort_descending.png");
 				}
 			}
-						
-		} else if (row == Row.FILTER_HEADER_ROW) {
-			//
-			// No images in the filter row.
-			//
-			return null;
 			
 		} else {		
 			//
