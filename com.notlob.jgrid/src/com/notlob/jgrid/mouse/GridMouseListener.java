@@ -15,12 +15,11 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.ToolTip;
 
 import com.notlob.jgrid.Grid;
-import com.notlob.jgrid.IGridListener;
+import com.notlob.jgrid.listeners.IGridListener;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.Viewport;
-import com.notlob.jgrid.model.filtering.QuickFilter;
 
 // TODO: Expose more mouse events for cells.
 
@@ -68,8 +67,8 @@ public class GridMouseListener<T> extends MouseAdapter implements MouseMoveListe
 				if (y < headerHeight) {
 					row = Row.COLUMN_HEADER_ROW;
 					
-				} else if (y < (headerHeight + gridModel.getRowHeight(gc, Row.FILTER_HEADER_ROW))) {
-					row = Row.FILTER_HEADER_ROW;
+//				} else if (y < (headerHeight + gridModel.getRowHeight(gc, Row.FILTER_HEADER_ROW))) {
+//					row = Row.FILTER_HEADER_ROW;
 				}
 			} 
 			
@@ -104,10 +103,10 @@ public class GridMouseListener<T> extends MouseAdapter implements MouseMoveListe
 				// TODO: allow label provider to specify (example merged cols show source cols).
 				showToolTip(x, y, "", column.getCaption());
 				
-			} else  if (row == Row.FILTER_HEADER_ROW) {
-				// TODO: allow label provider to specify (example additional non-quick filters on column...).
-				final QuickFilter<T> quickFilter = gridModel.getFilterModel().getQuickFilterForColumn(column);
-				showToolTip(x, y, column.getCaption(), (quickFilter == null) ? "(not filtered)" : quickFilter.getToolTip());
+//			} else  if (row == Row.FILTER_HEADER_ROW) {
+//				// TODO: allow label provider to specify (example additional non-quick filters on column...).
+//				final QuickFilter<T> quickFilter = gridModel.getFilterModel().getQuickFilterForColumn(column);
+//				showToolTip(x, y, column.getCaption(), (quickFilter == null) ? "(not filtered)" : quickFilter.getToolTip());
 				
 			} else if (grid.getLabelProvider() != null && !gridModel.isParentRow(row)) {
 				//
@@ -156,18 +155,18 @@ public class GridMouseListener<T> extends MouseAdapter implements MouseMoveListe
 						//
 						gridModel.getSortModel().sort(column, true, ctrl);
 						
-					} else if (row == Row.FILTER_HEADER_ROW) {
-						//
-						// Quick filtering.
-						//
-						grid.showQuickFilterPicker(column);
+//					} else if (row == Row.FILTER_HEADER_ROW) {
+//						//
+//						// Quick filtering.
+//						//
+//						grid.showQuickFilterPicker(column, grid.toDisplay(e.x, e.y));
 					}
 				}
 
 				//
 				// Handle the selection.
 				//
-				if (row != null && (row != Row.COLUMN_HEADER_ROW) && (row != Row.FILTER_HEADER_ROW)) {
+				if (row != null && (row != Row.COLUMN_HEADER_ROW) /*&& (row != Row.FILTER_HEADER_ROW)*/) {
 					// If it's the row-number cell, pretend ctrl is used for sticky selectins.
 					if (e.x < viewport.getViewportArea(gc).x) {
 						ctrl = true;
@@ -250,14 +249,14 @@ public class GridMouseListener<T> extends MouseAdapter implements MouseMoveListe
 			for (final IGridListener<T> listener : listeners) {
 				if (e.button == 1) {
 					if (e.count == 1) {
-						listener.click(column, row.getElement(), e.stateMask);
+						listener.click(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
 						
 					} else if (e.count > 1) {
-						listener.doubleClick(column, row.getElement(), e.stateMask);
+						listener.doubleClick(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
 					}
 
 				} else if (e.button == 3) {
-					listener.rightClick(column, row.getElement(), e.stateMask);
+					listener.rightClick(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
 				}
 			}
 		}

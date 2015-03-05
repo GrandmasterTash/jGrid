@@ -20,15 +20,18 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class GridModel<T> {
 
-	boolean showRowNumbers = true;
+	boolean showRowNumbers = false;
 
 	// Visible columns and rows.
 	private final List<Row<T>> rows;
 	private final List<Column> columns;
 	
-	// All column definitions. TODO: Consider a linkedhashmap ordered by left-to-right and keyed off ID.
+	// All column definitions.
 	private final List<Column> allColumns;
 
+	// Rows which have been filtered out - not ordered.
+	private final List<Row<T>> hiddenRows;
+	
 	// All Rows (even hidden), keyed by domain element.
 	private final Map<T, Row<T>> rowsByElement;
 	
@@ -64,6 +67,7 @@ public class GridModel<T> {
 	public GridModel() {
 		rows = new ArrayList<>();
 		rowsByElement = new LinkedHashMap<>();
+		hiddenRows = new ArrayList<>();
 		columns = new ArrayList<>();
 		allColumns = new ArrayList<>();
 		columnHeaderRows = new ArrayList<>();
@@ -128,6 +132,11 @@ public class GridModel<T> {
 	public List<Row<T>> getRows() {
 		checkWidget();
 		return rows;
+	}
+	
+	public Collection<Row<T>> getHiddenRows() {
+		checkWidget();
+		return hiddenRows;
 	}
 	
 	public Collection<Row<T>> getAllRows() {
@@ -310,6 +319,7 @@ public class GridModel<T> {
 		for (final T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
 			rows.remove(row);
+			hiddenRows.remove(row);
 			rowsByElement.remove(element);
 			
 			if (row.isSelected()) {
@@ -327,7 +337,8 @@ public class GridModel<T> {
 	public void updateElements(final List<T> elements) {
 		checkWidget();
 
-// TODO: To Ensure the row maintains it's position,	we might need it to cache it's visible index - to be fast.	
+// TODO: To Ensure the row maintains it's position,	we might need it to cache it's visible index - to be fast.
+// TODO: Consider groups need to compare with other groups and children with children.		
 //		for (Object element : elements) {
 //			final Row row = rowsByElement.get(element);
 //			final int expectedIndex = sortModel.getSortedRowIndex(row);
@@ -367,6 +378,9 @@ public class GridModel<T> {
 			// Make the row visible.
 			//
 			showRow(row);
+			
+		} else {
+			hideRow(row);			
 		}
 		
 		//
@@ -383,6 +397,15 @@ public class GridModel<T> {
 		} else {
 			rows.add(row);
 		}
+		
+		row.setVisible(true);
+		hiddenRows.remove(row);
+	}
+	
+	public void hideRow(final Row<T> row) {
+		rows.remove(row);
+		hiddenRows.add(row);
+		row.setVisible(false);
 	}
 	
 	public void groupBy(final List<Column> columns) {
@@ -474,30 +497,30 @@ public class GridModel<T> {
 		}
 	}
 
-	public void setFilterRowVisible(final boolean visible) {
-		checkWidget();
-		
-		if (isFilterRowVisible() != visible) {
-			if (visible) {
-				columnHeaderRows.add(1, Row.FILTER_HEADER_ROW);
-			} else {
-				columnHeaderRows.remove(Row.FILTER_HEADER_ROW);
-			}
-			//styleRegistry.setCellStyle(Row.COLUMN_HEADER_ROW, styleRegistry.getDefaultHeaderStyle());
-		
-			fireChangeEvent();
-		}
-	}
-	
-	public boolean isFilterRowVisible() {
-		checkWidget();
-		for (Row<T> row : columnHeaderRows) {
-			if (row == Row.FILTER_HEADER_ROW) {
-				return true;
-			}
-		}
-		return false;
-	}
+//	public void setFilterRowVisible(final boolean visible) {
+//		checkWidget();
+//		
+//		if (isFilterRowVisible() != visible) {
+//			if (visible) {
+//				columnHeaderRows.add(1, Row.FILTER_HEADER_ROW);
+//			} else {
+//				columnHeaderRows.remove(Row.FILTER_HEADER_ROW);
+//			}
+//			//styleRegistry.setCellStyle(Row.COLUMN_HEADER_ROW, styleRegistry.getDefaultHeaderStyle());
+//		
+//			fireChangeEvent();
+//		}
+//	}
+//	
+//	public boolean isFilterRowVisible() {
+//		checkWidget();
+//		for (Row<T> row : columnHeaderRows) {
+//			if (row == Row.FILTER_HEADER_ROW) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 	
 	public boolean isShowRowNumbers() {
 		checkWidget();

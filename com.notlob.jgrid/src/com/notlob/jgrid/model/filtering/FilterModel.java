@@ -2,21 +2,18 @@ package com.notlob.jgrid.model.filtering;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
-import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 
 public class FilterModel<T> {
 	
 	// TODO: Remove filters if columns are removed.
-	// TODO: Filter row toggle with drop-downs.
+	// TODO: Include entire group if any row is filtered.
 	// TODO: Option to include entire group if any member matches.
 	// TODO: Search string parsed into filter-tree.
 	// TODO: Highlighting and search result navigation.
-	// TODO: Advanced filters with operations.
-	// TODO: Assignment filters.
-	// TODO: Rule filters.	
 	
 	private final GridModel<T> gridModel;
 	
@@ -38,6 +35,10 @@ public class FilterModel<T> {
 		applyFilters();
 	}
 	
+	public Collection<Filter<T>> getFilters() {
+		return Collections.unmodifiableCollection(filters);
+	}
+	
 	public void clear() {
 		filters.clear();
 		applyFilters();
@@ -54,27 +55,22 @@ public class FilterModel<T> {
 		row.setFilterMatch(null);
 		
 		//
-		// If there are no filters, we match.
-		//
-		if (filters.isEmpty()) {
-			return true;
-		}
-		
-		//
 		// Check each filter until we find one we match.
 		//
 		for (Filter<T> filter : filters) {
 			final FilterMatch<T> filterMatch = filter.matches(row.getElement());
 			if (filterMatch != null) {
-				row.setFilterMatch(filterMatch);
-				return true;
-			}				
+				// TODO: List NEED A LIST
+				row.setFilterMatch(filterMatch);				
+			} else {
+				return false;
+			}
 		}
 		
-		return false;
+		return true;
 	}
 	
-	private void applyFilters() {
+	public void applyFilters() {
 		//
 		// Build a list of rows to hide that are shown.
 		//
@@ -88,39 +84,25 @@ public class FilterModel<T> {
 		//
 		// Build a list of rows to show that are hidden.
 		//
-		// TODO: Some rows get tested twice - MAYBE have a hiddenRows list....
 		final Collection<Row<T>> rowsToShow = new ArrayList<>();
-		for (final Row<T> row : gridModel.getAllRows()) {
-			if ((row.getFilterMatch() != null) && match(row)) {
+		for (final Row<T> row : gridModel.getHiddenRows()) {
+			if (match(row)) {
 				rowsToShow.add(row);
 			}
 		}
-		
-		//
-		// Remove the rows to hide from the visible row list.
-		//
-		gridModel.getRows().removeAll(rowsToHide);
 			
 		//
-		// Insert each visible row into the visible list.
+		// Show/hide now (if we did it in the above loops we'd get concurrent modifications).
 		//
 		for (final Row<T> row : rowsToShow) {
 			gridModel.showRow(row);
 		}
+		
+		for (final Row<T> row : rowsToHide) {
+			gridModel.hideRow(row);
+		}
 			
 		gridModel.fireChangeEvent();
-	}
-
-	public QuickFilter<T> getQuickFilterForColumn(final Column column) {
-		for (Filter<T> filter : filters) {
-			if (filter instanceof QuickFilter) {
-				final QuickFilter<T> quickFilter = (QuickFilter<T>) filter;
-				if (quickFilter.getColumn() == column) {
-					return quickFilter;
-				}
-			}
-		}
-		return null;
 	}
 
 }

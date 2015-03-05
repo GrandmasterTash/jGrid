@@ -8,6 +8,7 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class Row<T> {
 
+	private boolean visible;
 	private boolean selected;
 	private boolean pinned;
 	private int height;
@@ -19,8 +20,8 @@ public class Row<T> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public final static Row COLUMN_HEADER_ROW = new Row(null);
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public final static Row FILTER_HEADER_ROW = new Row(null);
+//	@SuppressWarnings({ "rawtypes", "unchecked" })
+//	public final static Row FILTER_HEADER_ROW = new Row(null);
 
 	Row(final T element) {
 		this.element = element;
@@ -48,6 +49,14 @@ public class Row<T> {
 		return element;
 	}
 
+	public boolean isVisible() {
+		return visible;
+	}
+	
+	void setVisible(final boolean visible) {
+		this.visible = visible;
+	}
+	
 	public boolean isSelected() {
 		return selected;
 	}

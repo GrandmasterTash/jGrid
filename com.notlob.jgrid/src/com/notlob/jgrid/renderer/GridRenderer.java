@@ -22,7 +22,6 @@ import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.SortDirection;
 import com.notlob.jgrid.model.Viewport;
-import com.notlob.jgrid.model.filtering.QuickFilter;
 import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.BorderStyle;
 import com.notlob.jgrid.styles.CellStyle;
@@ -32,6 +31,8 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class GridRenderer<T> implements PaintListener {
 
+	// BUG: Filter icon in header doesn't clip text like the sort icon does.
+	
 	protected final Grid<T> grid;
 	protected final Viewport<T> viewport;
 
@@ -652,13 +653,13 @@ public class GridRenderer<T> implements PaintListener {
 		} else if (row == Row.COLUMN_HEADER_ROW) {
 			return column.getCaption();
 			
-		} else if (row == Row.FILTER_HEADER_ROW) {
-			final QuickFilter<T> filter = getGridModel().getFilterModel().getQuickFilterForColumn(column);
-			if (filter == null) {
-				return "-";
-			} else {
-				return filter.toReadableString();
-			}
+//		} else if (row == Row.FILTER_HEADER_ROW) {
+//			final QuickFilter<T> filter = getGridModel().getFilterModel().getQuickFilterForColumn(column);
+//			if (filter == null) {
+//				return "-";
+//			} else {
+//				return filter.toReadableString();
+//			}
 						
 		} else {
 			return grid.getLabelProvider().getText(column, row.getElement());
@@ -669,13 +670,13 @@ public class GridRenderer<T> implements PaintListener {
 	 * Return the image for the given cell.
 	 */
 	protected Image getCellImage(final Column column, final Row<T> row) {
-		if (row == Row.FILTER_HEADER_ROW) {
+//		if (row == Row.FILTER_HEADER_ROW) {
 			//
 			// No images in the filter row.
 			//
-			return null;
+			/*return null;
 			
-		} else if (row == Row.COLUMN_HEADER_ROW) {
+		} else*/ if (row == Row.COLUMN_HEADER_ROW) {
 			//
 			// Get any image from the provider
 			//
@@ -685,12 +686,12 @@ public class GridRenderer<T> implements PaintListener {
 				return image;
 			}
 
-			//
-			// Filter image if filtered.
-			//
-			if (getGridModel().getFilterModel().getQuickFilterForColumn(column) != null) {
-				return ResourceManager.getInstance().getImage("filter_small.gif");
-			}
+//			//
+//			// Filter image if filtered.
+//			//
+//			if (getGridModel().getFilterModel().getQuickFilterForColumn(column) != null) {
+//				return ResourceManager.getInstance().getImage("filter_small.gif");
+//			}
 				
 			//
 			// Return a sorted image if sorted.

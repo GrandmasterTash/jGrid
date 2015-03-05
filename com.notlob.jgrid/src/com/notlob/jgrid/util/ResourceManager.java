@@ -32,7 +32,7 @@ public class ResourceManager {
 		
 		return fonts.get(fontData);
 	}
-	static int index= 0;
+	
 	public Color getColour(final RGB rgb) {
 		if (!colours.containsKey(rgb.toString())) {
 			colours.put(rgb.toString(), new Color(display, rgb));

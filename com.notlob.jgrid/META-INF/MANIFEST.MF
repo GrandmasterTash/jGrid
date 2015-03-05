@@ -10,6 +10,7 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Export-Package: com.notlob.jgrid,
+ com.notlob.jgrid.listeners,
  com.notlob.jgrid.model,
  com.notlob.jgrid.model.filtering,
  com.notlob.jgrid.providers,

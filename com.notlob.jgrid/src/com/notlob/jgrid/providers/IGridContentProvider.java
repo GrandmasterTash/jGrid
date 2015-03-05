@@ -6,16 +6,16 @@ import com.notlob.jgrid.model.Column;
 
 public interface IGridContentProvider<T> {
 
-	public T getParent(final T element);
+	T getParent(final T element);
 
-	public T[] getChildren(final T element);
+	T[] getChildren(final T element);
 	
-	public boolean isCollapsed(final T element);
+	boolean isCollapsed(final T element);
 
-	public Object getValue(final Column column, final T element);
+	Object getValue(final Column column, final T element);
 
-	public String getElementId(final T element);
+	String getElementId(final T element);
 
-	public void groupBy(final List<Column> columns);
+	void groupBy(final List<Column> columns);
 
 }

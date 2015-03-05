@@ -27,7 +27,7 @@ public class StyleRegistry<T> {
 	protected final CellStyle groupValueStyle;
 	protected final CellStyle noDataStyle;
 	protected final CellStyle pinnedStyle;
-	protected final CellStyle filterRowStyle;
+//	protected final CellStyle filterRowStyle;
 
 	// Selection styles.
 	protected final CellStyle selectionStyle;
@@ -156,12 +156,12 @@ public class StyleRegistry<T> {
 		selectionRowNumberStyle.setPaddingTop(PADDING_TOP);
 		selectionRowNumberStyle.setPaddingBottom(PADDING_BOTTOM);
 		
-		//
-		// Filter row style.
-		//
-		filterRowStyle = defaultStyle.copy();
-		filterRowStyle.setForeground(new RGB(39, 65, 62));
-		filterRowStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
+//		//
+//		// Filter row style.
+//		//
+//		filterRowStyle = defaultStyle.copy();
+//		filterRowStyle.setForeground(new RGB(39, 65, 62));
+//		filterRowStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
 
 		//
 		// Builds the corner cell style.
@@ -269,9 +269,9 @@ public class StyleRegistry<T> {
 		return pinnedStyle;
 	}
 	
-	public CellStyle getFilterRowStyle() {
-		return filterRowStyle;
-	}
+//	public CellStyle getFilterRowStyle() {
+//		return filterRowStyle;
+//	}
 
 	public CellStyle getCellStyle(final Column column, final Row<T> row, final Grid<T> grid) {
 
@@ -279,12 +279,12 @@ public class StyleRegistry<T> {
 			return pinnedStyle;
 		}
 		
-		//
-		// Use the filter row style.
-		//
-		if (row == Row.FILTER_HEADER_ROW) {
-			return filterRowStyle;
-		}
+//		//
+//		// Use the filter row style.
+//		//
+//		if (row == Row.FILTER_HEADER_ROW) {
+//			return filterRowStyle;
+//		}
 
 		//
 		// See if there's a custom style first.
