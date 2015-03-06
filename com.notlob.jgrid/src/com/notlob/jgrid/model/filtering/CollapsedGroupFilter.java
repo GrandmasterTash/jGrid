@@ -17,7 +17,7 @@ public class CollapsedGroupFilter<T> extends Filter<T> {
 	public CollapsedGroupFilter(final IGridContentProvider<T> contentProvider) {
 		super(LogicalConnective.AND);
 		this.contentProvider = contentProvider;
-		this.filterMatch = new FilterMatch<T>(this);
+		this.filterMatch = new FilterMatch<T>(this, false);
 	}
 
 	/**

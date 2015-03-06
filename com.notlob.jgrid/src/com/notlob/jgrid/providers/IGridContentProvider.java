@@ -1,7 +1,5 @@
 package com.notlob.jgrid.providers;
 
-import java.util.List;
-
 import com.notlob.jgrid.model.Column;
 
 public interface IGridContentProvider<T> {
@@ -15,7 +13,5 @@ public interface IGridContentProvider<T> {
 	Object getValue(final Column column, final T element);
 
 	String getElementId(final T element);
-
-	void groupBy(final List<Column> columns);
 
 }

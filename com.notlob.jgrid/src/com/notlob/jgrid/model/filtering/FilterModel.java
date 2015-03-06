@@ -9,7 +9,6 @@ import com.notlob.jgrid.model.Row;
 
 public class FilterModel<T> {
 	
-	// TODO: Remove filters if columns are removed.
 	// TODO: Include entire group if any row is filtered.
 	// TODO: Option to include entire group if any member matches.
 	// TODO: Search string parsed into filter-tree.
@@ -52,24 +51,26 @@ public class FilterModel<T> {
 		//
 		// Clear any previous match.
 		//
-		row.setFilterMatch(null);
+		if (row.getFilterMatches() != null) {
+			row.getFilterMatches().clear();
+		}
 		
 		//
-		// Check each filter until we find one we match.
+		// Check each filter building up all the matches we can.
 		//
 		for (Filter<T> filter : filters) {
 			final FilterMatch<T> filterMatch = filter.matches(row.getElement());
 			if (filterMatch != null) {
-				// TODO: List NEED A LIST
-				row.setFilterMatch(filterMatch);				
-			} else {
-				return false;
+				row.addFilterMatch(filterMatch);				
 			}
 		}
 		
-		return true;
+		return filters.isEmpty() || row.hasFilterMatches();
 	}
 	
+	/**
+	 * Run all rows through the current set of filters and hide/show the rows as appropriate.
+	 */	
 	public void applyFilters() {
 		//
 		// Build a list of rows to hide that are shown.
@@ -104,5 +105,5 @@ public class FilterModel<T> {
 			
 		gridModel.fireChangeEvent();
 	}
-
+	
 }

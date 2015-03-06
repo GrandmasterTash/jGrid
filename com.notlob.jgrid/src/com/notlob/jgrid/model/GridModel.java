@@ -20,7 +20,8 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class GridModel<T> {
 
-	boolean showRowNumbers = false;
+	// Show/hide the row numbers.
+	private boolean showRowNumbers = false;
 
 	// Visible columns and rows.
 	private final List<Row<T>> rows;
@@ -56,9 +57,10 @@ public class GridModel<T> {
 	// These are notified whenever something changes.
 	private final List<IModelListener> listeners;
 
+	// Providers to get / format data, images, tool-tips, etc.
 	private IGridContentProvider<T> contentProvider;
 	private IGridLabelProvider<T> labelProvider;
-
+	
 	public interface IModelListener {
 		void modelChanged();
 		void selectionChanged();
@@ -128,6 +130,43 @@ public class GridModel<T> {
 		
 		return elements;
 	}
+	
+	public Collection<T> getSelection() {
+		checkWidget();
+		return selectionModel.getSelectedElements();
+	}
+	
+	/**
+	 * The number of VISIBLE rows.
+	 */
+	public int getRowCount(final boolean visible, final RowCountScope scope) {
+		final Collection<Row<T>> rowsToCount = visible ? rows : hiddenRows;
+		
+		switch (scope) {
+			case ALL:
+				return rowsToCount.size();
+				
+			case CHILDREN:
+				int childCount = 0;
+				for (Row<T> row : rowsToCount) {
+					if (!isParentRow(row)) {
+						childCount++;
+					}
+				}
+				return childCount;
+				
+			case PARENTS:
+				int parentCount = 0;
+				for (Row<T> row : rowsToCount) {
+					if (isParentRow(row) || !isGroupRow(row)) {
+						parentCount++;
+					}
+				}
+				return parentCount;
+		}
+		
+		return -1;
+	}
 
 	public List<Row<T>> getRows() {
 		checkWidget();
@@ -183,7 +222,7 @@ public class GridModel<T> {
 		allColumns.add(column);
 		
 		if (column.getSortDirection() != SortDirection.NONE) {
-			getSortModel().sort(column, false, true);
+			getSortModel().sort(column, false, true, false);
 		}
 	}
 
@@ -313,6 +352,27 @@ public class GridModel<T> {
 		fireChangeEvent();
 	}
 	
+	private void addRow(final Row<T> row) {
+		
+		//
+		// Check the filter model.
+		//
+		if (filterModel.match(row)) {
+			//
+			// Make the row visible.
+			//
+			showRow(row);
+			
+		} else {
+			hideRow(row);			
+		}
+		
+		//
+		// Cache the row by it's domain element.
+		//
+		rowsByElement.put(row.getElement(), row);
+	}
+	
 	public void removeElements(final List<T> elements) {
 		checkWidget();
 		
@@ -329,6 +389,13 @@ public class GridModel<T> {
 			if (row.isPinned()) {
 				columnHeaderRows.remove(row);
 			}
+			
+//			if (row.hasFilterMatches()) {
+//				//
+//				// If the row had filter matches, tell the filter model to decrement the match-count.
+//				//
+//				filterModel.removeRow(row);
+//			}
 		}
 
 		fireChangeEvent();
@@ -368,27 +435,6 @@ public class GridModel<T> {
 		fireChangeEvent();
 	}
 
-	private void addRow(final Row<T> row) {
-		
-		//
-		// Check the filter model.
-		//
-		if (filterModel.match(row)) {
-			//
-			// Make the row visible.
-			//
-			showRow(row);
-			
-		} else {
-			hideRow(row);			
-		}
-		
-		//
-		// Cache the row by it's domain element.
-		//
-		rowsByElement.put(row.getElement(), row);
-	}
-	
 	public void showRow(final Row<T> row) {
 		final int insertIndex = sortModel.getSortedRowIndex(row);
 
@@ -404,6 +450,7 @@ public class GridModel<T> {
 	
 	public void hideRow(final Row<T> row) {
 		rows.remove(row);
+		selectionModel.removeRow(row);
 		hiddenRows.add(row);
 		row.setVisible(false);
 	}
@@ -428,10 +475,7 @@ public class GridModel<T> {
 //		column.setSortDirection(SortDirection.ASC);
 //		sortModel.sort(column, false, true);
 
-		//
-		// Build item groups in the model.
-		//
-		contentProvider.groupBy(groupByColumns);
+		fireChangeEvent();
 	}
 
 	public void ungroupBy(final Column column) {
@@ -444,10 +488,7 @@ public class GridModel<T> {
 		column.setVisible(true);
 		rebuildVisibleColumns();
 
-		//
-		// Rebuild the model's group.s
-		//
-		contentProvider.groupBy(groupByColumns);
+		fireChangeEvent();
 	}
 
 	public void ungroupAll() {
@@ -465,7 +506,7 @@ public class GridModel<T> {
 		// Rebuild the model's groups
 		//
 		groupByColumns.clear();
-		contentProvider.groupBy(groupByColumns);
+		fireChangeEvent();
 	}
 
 	public void addListener(final IModelListener listener) {

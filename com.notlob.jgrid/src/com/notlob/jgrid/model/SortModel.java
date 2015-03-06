@@ -78,7 +78,7 @@ public class SortModel<T> {
 	/**
 	 * Toggle the column's sort and apply to the current sort model (or replace the current model).
 	 */
-	public void sort(final Column column, final boolean toggle, final boolean append) {
+	public void sort(final Column column, final boolean toggle, final boolean append, final boolean notify) {
 		gridModel.checkWidget();
 
 		//
@@ -104,7 +104,10 @@ public class SortModel<T> {
 		// Now sort the data.
 		//
 		Collections.sort(gridModel.getRows(), rowComparator);
-		gridModel.fireChangeEvent();
+		
+		if (notify) {
+			gridModel.fireChangeEvent();
+		}
 	}
 
 	void refresh() {

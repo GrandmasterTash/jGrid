@@ -153,7 +153,7 @@ public class GridMouseListener<T> extends MouseAdapter implements MouseMoveListe
 						//
 						// Column sorting.
 						//
-						gridModel.getSortModel().sort(column, true, ctrl);
+						gridModel.getSortModel().sort(column, true, ctrl, true);
 						
 //					} else if (row == Row.FILTER_HEADER_ROW) {
 //						//

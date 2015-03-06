@@ -13,6 +13,8 @@ public abstract class Filter<T> {
 	// Indicates if this filter unions it's results with other filters.
 	protected final LogicalConnective logicalConnective;
 	
+	protected final boolean includeWholeGroup;
+	
 	// Return a match if the filter matches the element otherwise null.
 	public abstract FilterMatch<T> matches(final T element);
 	
@@ -20,11 +22,20 @@ public abstract class Filter<T> {
 	public abstract String toReadableString();
 	
 	public Filter(final LogicalConnective logicalConnective) {
+		this(logicalConnective, true);
+	}
+	
+	public Filter(final LogicalConnective logicalConnective, final boolean includeWholeGroup) {
 		this.logicalConnective = logicalConnective;
+		this.includeWholeGroup = includeWholeGroup;
 	}
 		
 	public LogicalConnective getLogicalConnective() {
 		return logicalConnective;
+	}
+	
+	public boolean isIncludeWholeGroup() {
+		return includeWholeGroup;
 	}
 	
 }

@@ -1,5 +1,8 @@
 package com.notlob.jgrid.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.eclipse.swt.graphics.GC;
 
 import com.notlob.jgrid.model.filtering.FilterMatch;
@@ -14,15 +17,12 @@ public class Row<T> {
 	private int height;
 	private final T element;
 	
-	// If this row has hit a filter, store the match here.
-	private FilterMatch<T> filterMatch;
+	// If this row has matched a filter, store the match here.
+	private Collection<FilterMatch<T>> filterMatches;
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public final static Row COLUMN_HEADER_ROW = new Row(null);
 	
-//	@SuppressWarnings({ "rawtypes", "unchecked" })
-//	public final static Row FILTER_HEADER_ROW = new Row(null);
-
 	Row(final T element) {
 		this.element = element;
 		height = -1;
@@ -74,12 +74,20 @@ public class Row<T> {
 		this.pinned = pinned;
 	}
 		
-	public void setFilterMatch(final FilterMatch<T> filterMatch) {
-		this.filterMatch = filterMatch;
+	public void addFilterMatch(final FilterMatch<T> filterMatch) {
+		if (filterMatches == null) {
+			filterMatches = new ArrayList<>();
+		}
+		
+		filterMatches.add(filterMatch);
 	}
 	
-	public FilterMatch<T> getFilterMatch() {
-		return filterMatch;
+	public Collection<FilterMatch<T>> getFilterMatches() {
+		return filterMatches;
+	}
+	
+	public boolean hasFilterMatches() {
+		return (filterMatches != null) && (!filterMatches.isEmpty());
 	}
 
 	@Override
