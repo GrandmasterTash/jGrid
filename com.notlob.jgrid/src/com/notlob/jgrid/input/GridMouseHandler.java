@@ -48,11 +48,27 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		this.toolTip = toolTip;
 		this.gc = gc;
 	}
+	
+	public Column getColumn() {
+		return column;
+	}
+	
+	public Row<T> getRow() {
+		return row;
+	}
 
+	/**
+	 * Tracks the column and row under the mouse as it moves.
+	 * 
+	 * Returns true if the cell or row changes.
+	 */
 	@SuppressWarnings("unchecked")
-	private void trackCell(final int x, final int y) {
+	private boolean trackCell(final int x, final int y) {		
+		Row<T> newRow = null;
+		Column newColumn = null;
+		
 		//
-		// Track the row and column.
+		// Get the row and column indexes from the viewport.
 		//
 		final int rowIndex = viewport.getRowIndexByY(y, gc);
 		final int columnIndex = viewport.getColumnIndexByX(x, gc);
@@ -62,25 +78,31 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			// See if it's the column header or filter row.
 			//
 			if (y >= 0 ) {
-				row = null;
+				newRow = null;
 				final int headerHeight = gridModel.getRowHeight(gc, Row.COLUMN_HEADER_ROW);
 				
 				if (y < headerHeight) {
-					row = Row.COLUMN_HEADER_ROW;
+					newRow = Row.COLUMN_HEADER_ROW;
 				}
 			} 
 			
 		} else {
-			row = gridModel.getRows().get(rowIndex);				
+			newRow = gridModel.getRows().get(rowIndex);				
 		}
 		
 		if (columnIndex != -1) {
-			column = gridModel.getColumns().get(columnIndex);
+			newColumn = gridModel.getColumns().get(columnIndex);
 		} else {
-			column = null;
+			newColumn = null;
+		}		
+		
+		if (newRow != row || newColumn != column) {
+			row = newRow;
+			column = newColumn;
+			return true;
 		}
 		
-		//System.out.println(String.format("%s, %s", columnIndex, rowIndex));
+		return false;		
 	}
 	
 	@Override
@@ -116,7 +138,13 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	@Override
 	public void mouseMove(MouseEvent e) {
 		toolTip.setVisible(false);
-		trackCell(e.x, e.y);
+		
+		if (trackCell(e.x, e.y) && grid.isHighlightHoveredRow()) {
+			//
+			// Repaint the grid to show the hovered row.
+			//
+			grid.redraw();
+		}
 	}
 	
 	@Override

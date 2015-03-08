@@ -37,20 +37,10 @@ public class StyleRegistry<T> {
 	protected final CellStyle selectionGroupStyle;
 	protected final CellStyle selectionHeaderStyle;
 	protected final CellStyle selectionRowNumberStyle;
-	protected int selectionForegroundOpacity;
-	protected int selectionBackgroundOpacity;
-	protected final BorderStyle selectionBorder;
-	protected final RGB selectionBackground;
-	protected final RGB selectionBackgroundGradient1;
-	protected final RGB selectionBackgroundGradient2;	
+	protected RegionStyle selectionRegionStyle;	
 	
 	// Hover styles.
-	protected final BorderStyle hoverBorder;
-	protected final RGB hoverBackground;
-	protected final RGB hoverBackgroundGradient1;
-	protected final RGB hoverBackgroundGradient2;
-	protected int hoverForegroundOpacity;
-	protected int hoverBackgroundOpacity;
+	protected RegionStyle hoverRegionStyle;
 
 	protected final static int PADDING_TOP = 3;
 	protected final static int PADDING_BOTTOM = 3;
@@ -121,7 +111,7 @@ public class StyleRegistry<T> {
 		groupNameStyle.setFontData(new FontData("Segoe UI", 8, SWT.NORMAL));
 		
 		//
-		// Selection style
+		// Selection cell styles
 		//
 		selectionStyle = defaultStyle.copy();
 		selectionGroupStyle = groupValueStyle.copy();
@@ -134,22 +124,27 @@ public class StyleRegistry<T> {
 		selectionHeaderStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(242, 149, 54)));
 		selectionHeaderStyle.setBorderOuterLeft(new BorderStyle(1, LineStyle.SOLID, new RGB(242, 149, 54)));
 
-		selectionBorder = new BorderStyle(2, LineStyle.SOLID, new RGB(0, 0, 0));
-		selectionBackground = new RGB(100, 200, 250);
-		selectionBackgroundGradient1 = new RGB(255, 213, 141);
-		selectionBackgroundGradient2 = new RGB(255, 213, 141);
-		selectionForegroundOpacity = 200;
-		selectionBackgroundOpacity = 100;
+		//
+		// Selection region style.
+		//
+		selectionRegionStyle = new RegionStyle();
+		selectionRegionStyle.setBorder(new BorderStyle(2, LineStyle.SOLID, new RGB(0, 0, 0)));
+		selectionRegionStyle.setBackground(new RGB(100, 200, 250));
+		selectionRegionStyle.setBackgroundGradient1(new RGB(255, 213, 141));
+		selectionRegionStyle.setBackgroundGradient2(new RGB(255, 213, 141));
+		selectionRegionStyle.setForegroundOpacity(200);
+		selectionRegionStyle.setBackgroundOpacity(100);
 
 		//
-		// Mouse hover style.
+		// Mouse hover region style.
 		//
-		hoverBorder = new BorderStyle(2, LineStyle.SOLID, new RGB(0, 0, 0));
-		hoverBackground = new RGB(229, 243, 251);
-		hoverBackgroundGradient1 = new RGB(255, 255, 255);
-		hoverBackgroundGradient2 = new RGB(240, 248, 255);
-		hoverForegroundOpacity = 200;
-		hoverBackgroundOpacity = 100;
+		hoverRegionStyle = new RegionStyle();
+		hoverRegionStyle.setBorder(new BorderStyle(1, LineStyle.SOLID, new RGB(38, 160, 218)));
+		hoverRegionStyle.setBackground(new RGB(189, 223, 241));
+		hoverRegionStyle.setBackgroundGradient1(new RGB(189, 223, 241));
+		hoverRegionStyle.setBackgroundGradient2(new RGB(189, 223, 241));
+		hoverRegionStyle.setForegroundOpacity(200);
+		hoverRegionStyle.setBackgroundOpacity(100);
 		
 		//
 		// Builds the row number cell style.
@@ -234,28 +229,8 @@ public class StyleRegistry<T> {
 		return selectionStyle;
 	}
 
-	public BorderStyle getSelectionBorder() {
-		return selectionBorder;
-	}
-
-	public RGB getSelectionBackground() {
-		return selectionBackground;
-	}
-
-	public RGB getSelectionBackgroundGradient1() {
-		return selectionBackgroundGradient1;
-	}
-
-	public RGB getSelectionBackgroundGradient2() {
-		return selectionBackgroundGradient2;
-	}
-
-	public int getSelectionBackgroundOpacity() {
-		return selectionBackgroundOpacity;
-	}
-
-	public int getSelectionForegroundOpacity() {
-		return selectionForegroundOpacity;
+	public RegionStyle getSelectionRegionStyle() {
+		return selectionRegionStyle;
 	}
 
 	public CellStyle getSelectionHeaderStyle() {
@@ -266,30 +241,10 @@ public class StyleRegistry<T> {
 		return selectionRowNumberStyle;
 	}
 	
-	public RGB getHoverBackground() {
-		return hoverBackground;
+	public RegionStyle getHoverRegionStyle() {
+		return hoverRegionStyle;
 	}
 	
-	public RGB getHoverBackgroundGradient1() {
-		return hoverBackgroundGradient1;
-	}
-	
-	public RGB getHoverBackgroundGradient2() {
-		return hoverBackgroundGradient2;
-	}
-	
-	public int getHoverBackgroundOpacity() {
-		return hoverBackgroundOpacity;
-	}
-	
-	public int getHoverForegroundOpacity() {
-		return hoverForegroundOpacity;
-	}
-	
-	public BorderStyle getHoverBorder() {
-		return hoverBorder;
-	}
-
 	public CellStyle getNoDataStyle() {
 		return noDataStyle;
 	}

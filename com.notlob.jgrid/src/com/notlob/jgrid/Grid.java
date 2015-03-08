@@ -64,7 +64,9 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	private final ScrollListener scrollListener;
 	private final ResizeListener resizeListener;
 	private final DisposeListener disposeListener;
-	private final GridMouseHandler<T> mouseListener;
+	
+	// Keyboard and mouse input handling.
+	private final GridMouseHandler<T> mouseHandler;
 
 	// TODO: try..catch around all calls to listeners...
 	// Things that listen to us.
@@ -75,13 +77,13 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	private final Point computedArea;
 
 	private final ToolTip toolTip;
-	private String emptyMessage;
+	private String emptyMessage;	
+	private boolean highlightHoveredRow = true;
 
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
 		gc = new GC(this);
 		computedArea = new Point(-1, -1);
-
 		gridModel = new GridModel<T>();
 		gridModel.addListener(this);
 		viewport = new Viewport<T>(this);
@@ -89,17 +91,15 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		disposeListener = new GridDisposeListener();
 		resizeListener = new ResizeListener();
 		scrollListener = new ScrollListener();		
-		listeners = new ArrayList<>();		
-				
+		listeners = new ArrayList<>();						
 		toolTip = new ToolTip(parent.getShell(), SWT.NONE);
-		toolTip.setAutoHide(true);
-		
-		mouseListener = new GridMouseHandler<T>(this, gc, listeners, toolTip);
+		toolTip.setAutoHide(true);		
+		mouseHandler = new GridMouseHandler<T>(this, gc, listeners, toolTip);
 		
 		parent.addDisposeListener(disposeListener);
-		addMouseListener(mouseListener);
-		addMouseMoveListener(mouseListener);
-		addMouseTrackListener(mouseListener);
+		addMouseListener(mouseHandler);
+		addMouseMoveListener(mouseHandler);
+		addMouseTrackListener(mouseHandler);
 		addPaintListener(gridRenderer);
 		addListener(SWT.Resize, resizeListener);
 		getVerticalBar().addSelectionListener(scrollListener);
@@ -111,7 +111,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		toolTip.dispose();
 		
 		// Remove listeners.		
-		removeMouseListener(mouseListener);
+		removeMouseListener(mouseHandler);
 		removePaintListener(gridRenderer);
 		removeListener(SWT.Resize, resizeListener);
 		getVerticalBar().removeSelectionListener(scrollListener);
@@ -121,6 +121,14 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		// Dispose of UI handles.
 		gc.dispose();
 		super.dispose();
+	}
+	
+	public void setHighlightHoveredRow(boolean highlightHoveredRow) {
+		this.highlightHoveredRow = highlightHoveredRow;
+	}
+	
+	public boolean isHighlightHoveredRow() {
+		return highlightHoveredRow;
 	}
 	
 	public void checkWidget() {
@@ -230,6 +238,10 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		for (final IGridListener<T> listener : listeners) {
 			listener.selectionChanged(gridModel.getSelectionModel().getSelectedElements());
 		}
+	}
+	
+	public GridMouseHandler<T> getMouseHandler() {
+		return mouseHandler;
 	}
 	
 	public GridRenderer<T> getGridRenderer() {		

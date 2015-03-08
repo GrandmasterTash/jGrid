@@ -27,6 +27,7 @@ import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.BorderStyle;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.ContentStyle;
+import com.notlob.jgrid.styles.RegionStyle;
 import com.notlob.jgrid.styles.StyleRegistry;
 import com.notlob.jgrid.util.ResourceManager;
 
@@ -44,6 +45,7 @@ public class GridRenderer<T> implements PaintListener {
 	protected final Rectangle cellBounds;
 	protected final Rectangle innerBounds;
 	protected final Rectangle selectionRegion;
+	protected final Rectangle hoverRegion;
 	protected final Point topLeft;
 	protected final Point topRight;
 	protected final Point bottomLeft;
@@ -94,6 +96,7 @@ public class GridRenderer<T> implements PaintListener {
 		innerBounds = new Rectangle(0, 0, 0, 0);
 		extentCache = new HashMap<>();
 		selectionRegion = new Rectangle(0, 0, 0, 0);
+		hoverRegion = new Rectangle(0, 0, 0, 0);
 		groupBottomLeft = new Point(0, 0);
 		groupBottomRight = new Point(0, 0);
 		textLayout = new TextLayout(grid.getDisplay());
@@ -187,6 +190,7 @@ public class GridRenderer<T> implements PaintListener {
 	 */
 	protected void paintSelection(final GC gc) {
 		final GridModel<T> gridModel = getGridModel();
+		final StyleRegistry<T> styleRegistry = getStyleRegistry();
 		final Rectangle viewportArea = viewport.getViewportArea(gc);
 		final boolean paintLeftEdge = (viewport.getFirstColumnIndex() == 0);
 		final boolean paintRightEdge = viewport.getVisibleRowWidth(gc) < viewportArea.width;
@@ -228,11 +232,24 @@ public class GridRenderer<T> implements PaintListener {
 					//
 					paintTopEdge = !((rowIndex > 0) && gridModel.getRows().get(rowIndex - 1).isSelected());
 				}
+				
 			} else if (inSelection) {
 				//
 				// This is the next row after a selection region. We now need to paint the region.
 				//
-				paintSelectionRegion(gc, selectionRegion, paintTopEdge, paintRightEdge, true, paintLeftEdge);
+				paintSelectionRegion(gc, selectionRegion, paintTopEdge, paintRightEdge, true, paintLeftEdge, styleRegistry.getSelectionRegionStyle());
+				
+			}
+			
+			if (grid.isHighlightHoveredRow() && !row.isSelected() && row == grid.getMouseHandler().getRow()) {
+				//
+				// The row has the mouse hovering over it, so paint it with the hover style.
+				//
+				hoverRegion.x = rowLocation.x;
+				hoverRegion.y = rowLocation.y;
+				hoverRegion.height = gridModel.getRowHeight(gc, row);
+				hoverRegion.width = selectionRegion.width;
+				paintSelectionRegion(gc, hoverRegion, !inSelection, paintRightEdge, true, paintLeftEdge, getStyleRegistry().getHoverRegionStyle());				
 			}
 
 			inSelection = row.isSelected();
@@ -247,32 +264,32 @@ public class GridRenderer<T> implements PaintListener {
 			// If the next row beyond the viewport exists and is selected, don't draw the bottom
 			//
 			paintBottomEdge = !(((viewport.getLastRowIndex() + 1) < gridModel.getRows().size()) && (gridModel.getRows().get(viewport.getLastRowIndex() + 1).isSelected()));
-			paintSelectionRegion(gc, selectionRegion, paintTopEdge, paintRightEdge, paintBottomEdge, paintLeftEdge);
+			paintSelectionRegion(gc, selectionRegion, paintTopEdge, paintRightEdge, paintBottomEdge, paintLeftEdge, styleRegistry.getSelectionRegionStyle());
 		}
 	}
 
 	/**
 	 * Paint foreground or background details for the region of selected rows.
 	 */
-	protected void paintSelectionRegion(final GC gc, final Rectangle bounds, final boolean paintTop, final boolean paintRight, final boolean paintBottom, final boolean paintLeft) {
-		final StyleRegistry<T> styleRegistry = getStyleRegistry();
+	protected void paintSelectionRegion(final GC gc, final Rectangle bounds, final boolean paintTop, final boolean paintRight, final boolean paintBottom, final boolean paintLeft, final RegionStyle regionStyle) {
+//		final StyleRegistry<T> styleRegistry = getStyleRegistry();
 
 		if (renderPass == RenderPass.BACKGROUND) {
-			gc.setAlpha(styleRegistry.getSelectionBackgroundOpacity());
+			gc.setAlpha(regionStyle.getBackgroundOpacity());
 
-			if (styleRegistry.getSelectionBackgroundGradient1() == null || styleRegistry.getSelectionBackgroundGradient2() == null) {
+			if (regionStyle.getBackgroundGradient1() == null || regionStyle.getBackgroundGradient2() == null) {
 				//
 				// Fill with no Gradient
 				//
-				gc.setBackground(getColour(styleRegistry.getSelectionBackground()));
+				gc.setBackground(getColour(regionStyle.getBackground()));
 				gc.fillRectangle(bounds);
 
 			} else {
 				//
 				// Fill with Gradient (upper, lower).
 				//
-				gc.setForeground(getColour(styleRegistry.getSelectionBackgroundGradient1()));
-				gc.setBackground(getColour(styleRegistry.getSelectionBackgroundGradient2()));
+				gc.setForeground(getColour(regionStyle.getBackgroundGradient1()));
+				gc.setBackground(getColour(regionStyle.getBackgroundGradient2()));
 				gc.fillGradientRectangle(bounds.x, bounds.y, bounds.width, bounds.height, true);
 			}
 		}
@@ -281,9 +298,9 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			// Paint a region border.
 			//
-			gc.setAlpha(styleRegistry.getSelectionForegroundOpacity());
-			gc.setForeground(getColour(styleRegistry.getSelectionBorder().getColour()));
-			gc.setLineWidth(styleRegistry.getSelectionBorder().getWidth());
+			gc.setAlpha(regionStyle.getForegroundOpacity());
+			gc.setForeground(getColour(regionStyle.getBorder().getColour()));
+			gc.setLineWidth(regionStyle.getBorder().getWidth());
 
 			// Get the bounds corners, but correct for thicker line widths.
 			getTopLeft(bounds);
@@ -294,22 +311,21 @@ public class GridRenderer<T> implements PaintListener {
 			bottomLeft.x += (gc.getLineWidth() - 1);
 
 			if (paintTop) {
-				paintBorderLine(gc, styleRegistry.getSelectionBorder(), topLeft, topRight);
+				paintBorderLine(gc, regionStyle.getBorder(), topLeft, topRight);
 			}
 
 			if (paintRight) {
-				paintBorderLine(gc, styleRegistry.getSelectionBorder(), topRight, bottomRight);
+				paintBorderLine(gc, regionStyle.getBorder(), topRight, bottomRight);
 			}
 
 			if (paintBottom) {
-				paintBorderLine(gc, styleRegistry.getSelectionBorder(), bottomRight, bottomLeft);
+				paintBorderLine(gc, regionStyle.getBorder(), bottomRight, bottomLeft);
 			}
 
 			if (paintLeft) {
-				paintBorderLine(gc, styleRegistry.getSelectionBorder(), bottomLeft, topLeft);
+				paintBorderLine(gc, regionStyle.getBorder(), bottomLeft, topLeft);
 			}
 		}
-
 	}
 
 	/**
