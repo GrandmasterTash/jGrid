@@ -1,4 +1,4 @@
-package com.notlob.jgrid.mouse;
+package com.notlob.jgrid.input;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +12,7 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.ToolTip;
 
 import com.notlob.jgrid.Grid;
@@ -23,7 +24,7 @@ import com.notlob.jgrid.model.Viewport;
 
 // TODO: Expose more mouse events for cells.
 
-public class GridMouseListener<T> extends MouseAdapter implements MouseMoveListener, MouseTrackListener {
+public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListener, MouseTrackListener {
 	
 	private final Grid<T> grid;
 	private final GridModel<T> gridModel;
@@ -39,7 +40,7 @@ public class GridMouseListener<T> extends MouseAdapter implements MouseMoveListe
 	private Row<T> row = null;
 	private Column column = null;
 	
-	public GridMouseListener(final Grid<T> grid, final GC gc, final Collection<IGridListener<T>> listeners, final ToolTip toolTip) {
+	public GridMouseHandler(final Grid<T> grid, final GC gc, final Collection<IGridListener<T>> listeners, final ToolTip toolTip) {
 		this.grid = grid;
 		this.gridModel = grid.getGridModel();
 		this.viewport = grid.getViewport();
@@ -66,9 +67,6 @@ public class GridMouseListener<T> extends MouseAdapter implements MouseMoveListe
 				
 				if (y < headerHeight) {
 					row = Row.COLUMN_HEADER_ROW;
-					
-//				} else if (y < (headerHeight + gridModel.getRowHeight(gc, Row.FILTER_HEADER_ROW))) {
-//					row = Row.FILTER_HEADER_ROW;
 				}
 			} 
 			
@@ -102,11 +100,6 @@ public class GridMouseListener<T> extends MouseAdapter implements MouseMoveListe
 			if (row == Row.COLUMN_HEADER_ROW) {
 				// TODO: allow label provider to specify (example merged cols show source cols).
 				showToolTip(x, y, "", column.getCaption());
-				
-//			} else  if (row == Row.FILTER_HEADER_ROW) {
-//				// TODO: allow label provider to specify (example additional non-quick filters on column...).
-//				final QuickFilter<T> quickFilter = gridModel.getFilterModel().getQuickFilterForColumn(column);
-//				showToolTip(x, y, column.getCaption(), (quickFilter == null) ? "(not filtered)" : quickFilter.getToolTip());
 				
 			} else if (grid.getLabelProvider() != null && !gridModel.isParentRow(row)) {
 				//
@@ -154,15 +147,40 @@ public class GridMouseListener<T> extends MouseAdapter implements MouseMoveListe
 						// Column sorting.
 						//
 						gridModel.getSortModel().sort(column, true, ctrl, true);
-						
-//					} else if (row == Row.FILTER_HEADER_ROW) {
-//						//
-//						// Quick filtering.
-//						//
-//						grid.showQuickFilterPicker(column, grid.toDisplay(e.x, e.y));
 					}
 				}
 
+				if (column != null && row != null) {
+					//
+					// Check for group row hot-spots.
+					//
+					if (gridModel.isParentRow(row)) {
+						//
+						// Expand/collapse toggle.
+						//
+						final Rectangle bounds = grid.getGridRenderer().getExpandCollapseBounds(gc, row);
+						if (bounds.contains(e.x,  e.y)) {
+							for (final IGridListener<T> listener : listeners) {
+								if (grid.getContentProvider().isCollapsed(row.getElement())) {
+									listener.groupExpanded(row.getElement());
+								} else {
+									listener.groupCollapsed(row.getElement());	
+								}								
+							}
+							
+							// Refresh filters.
+							gridModel.getFilterModel().applyFilters();
+							
+							return; // Don't go on to select?
+						}
+						
+						//
+						// Group field name or sort image.
+						//
+						// TODO: Group sorting....
+					}
+				}
+				
 				//
 				// Handle the selection.
 				//

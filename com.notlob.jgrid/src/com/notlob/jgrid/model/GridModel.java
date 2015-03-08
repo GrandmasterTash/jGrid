@@ -2,6 +2,7 @@ package com.notlob.jgrid.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,8 @@ import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Display;
 
+import com.notlob.jgrid.model.filtering.CollapsedGroupFilter;
+import com.notlob.jgrid.model.filtering.Filter;
 import com.notlob.jgrid.model.filtering.FilterModel;
 import com.notlob.jgrid.providers.IGridContentProvider;
 import com.notlob.jgrid.providers.IGridLabelProvider;
@@ -20,9 +23,6 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class GridModel<T> {
 
-	// Show/hide the row numbers.
-	private boolean showRowNumbers = false;
-
 	// Visible columns and rows.
 	private final List<Row<T>> rows;
 	private final List<Column> columns;
@@ -30,13 +30,13 @@ public class GridModel<T> {
 	// All column definitions.
 	private final List<Column> allColumns;
 
-	// Rows which have been filtered out - not ordered.
+	// Rows which have been filtered out - they are not ordered.
 	private final List<Row<T>> hiddenRows;
 	
-	// All Rows (even hidden), keyed by domain element.
+	// All Rows (including hidden), keyed by domain element.
 	private final Map<T, Row<T>> rowsByElement;
 	
-	// Visible column headers, filter input rows, pinned rows, etc.
+	// Visible column headers, pinned rows, etc.
 	private final List<Row<T>> columnHeaderRows;
 
 	// If we're grouping data by particular column(s).
@@ -53,6 +53,9 @@ public class GridModel<T> {
 	
 	// Visible styling model.
 	private final StyleRegistry<T> styleRegistry;
+	
+	// Show/hide the row numbers.
+	private boolean showRowNumbers = false;
 
 	// These are notified whenever something changes.
 	private final List<IModelListener> listeners;
@@ -203,6 +206,11 @@ public class GridModel<T> {
 	
 	public void setContentProvider(final IGridContentProvider<T> contentProvider) {
 		this.contentProvider = contentProvider;
+		
+		//
+		// Add a collapsed group filter to the model.
+		//
+		this.filterModel.addFilters(Collections.singletonList((Filter<T>) new CollapsedGroupFilter<T>(contentProvider)));
 	}	
 
 	public IGridContentProvider<T> getContentProvider() {
@@ -292,7 +300,6 @@ public class GridModel<T> {
 		}
 
 		rebuildVisibleColumns();
-
 		fireChangeEvent();
 	}
 
@@ -389,13 +396,6 @@ public class GridModel<T> {
 			if (row.isPinned()) {
 				columnHeaderRows.remove(row);
 			}
-			
-//			if (row.hasFilterMatches()) {
-//				//
-//				// If the row had filter matches, tell the filter model to decrement the match-count.
-//				//
-//				filterModel.removeRow(row);
-//			}
 		}
 
 		fireChangeEvent();
@@ -487,7 +487,6 @@ public class GridModel<T> {
 		groupByColumns.remove(column);
 		column.setVisible(true);
 		rebuildVisibleColumns();
-
 		fireChangeEvent();
 	}
 
@@ -537,31 +536,6 @@ public class GridModel<T> {
 			throw new SWTException(SWT.ERROR_THREAD_INVALID_ACCESS);
 		}
 	}
-
-//	public void setFilterRowVisible(final boolean visible) {
-//		checkWidget();
-//		
-//		if (isFilterRowVisible() != visible) {
-//			if (visible) {
-//				columnHeaderRows.add(1, Row.FILTER_HEADER_ROW);
-//			} else {
-//				columnHeaderRows.remove(Row.FILTER_HEADER_ROW);
-//			}
-//			//styleRegistry.setCellStyle(Row.COLUMN_HEADER_ROW, styleRegistry.getDefaultHeaderStyle());
-//		
-//			fireChangeEvent();
-//		}
-//	}
-//	
-//	public boolean isFilterRowVisible() {
-//		checkWidget();
-//		for (Row<T> row : columnHeaderRows) {
-//			if (row == Row.FILTER_HEADER_ROW) {
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
 	
 	public boolean isShowRowNumbers() {
 		checkWidget();
@@ -641,11 +615,9 @@ public class GridModel<T> {
 	}
 
 	/**
-	 * If the row is in a group return the entire row. Only the immediate group or below is returned.
+	 * If the row is in a group return the entire group. Only the immediate group or below is returned.
 	 *
 	 * Parent groups are not included.
-	 *
-	 * Parent groups and child grou
 	 */
 	public List<Row<T>> getWholeGroup(final Row<T> row) {
 		final List<Row<T>> group = new ArrayList<>();

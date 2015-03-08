@@ -5,11 +5,10 @@ import java.util.Collection;
 import org.eclipse.swt.graphics.Point;
 
 import com.notlob.jgrid.model.Column;
-import com.notlob.jgrid.model.GridModel;
 
 public interface IGridListener<T> {
 
-	void modelChanged(final GridModel<T> model);
+	void gridChanged();
 	
 	void selectionChanged(final Collection<T> selectedElements);
 
@@ -18,5 +17,9 @@ public interface IGridListener<T> {
 	void doubleClick(final Column column, final T element, final Point location, final int modifier);
 
 	void rightClick(final Column column, final T element, final Point location, final int modifier);
+	
+	void groupExpanded(final T element);
+	
+	void groupCollapsed(final T element);
 
 }

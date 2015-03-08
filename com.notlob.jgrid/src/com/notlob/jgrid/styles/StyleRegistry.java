@@ -15,7 +15,6 @@ import com.notlob.jgrid.model.Row;
 public class StyleRegistry<T> {
 
 	protected RGB backgroundColour;
-
 	protected int cellSpacingVertical;
 	protected int cellSpacingHorizontal;
 
@@ -27,7 +26,11 @@ public class StyleRegistry<T> {
 	protected final CellStyle groupValueStyle;
 	protected final CellStyle noDataStyle;
 	protected final CellStyle pinnedStyle;
-//	protected final CellStyle filterRowStyle;
+	protected final BorderStyle groupFooterBorder;
+	
+	// Filter matches are highlight in these colours.
+	protected RGB filterMatchForeground;
+	protected RGB filterMatchBackground;
 
 	// Selection styles.
 	protected final CellStyle selectionStyle;
@@ -39,8 +42,15 @@ public class StyleRegistry<T> {
 	protected final BorderStyle selectionBorder;
 	protected final RGB selectionBackground;
 	protected final RGB selectionBackgroundGradient1;
-	protected final RGB selectionBackgroundGradient2;
-	protected final BorderStyle groupFooterBorder;
+	protected final RGB selectionBackgroundGradient2;	
+	
+	// Hover styles.
+	protected final BorderStyle hoverBorder;
+	protected final RGB hoverBackground;
+	protected final RGB hoverBackgroundGradient1;
+	protected final RGB hoverBackgroundGradient2;
+	protected int hoverForegroundOpacity;
+	protected int hoverBackgroundOpacity;
 
 	protected final static int PADDING_TOP = 3;
 	protected final static int PADDING_BOTTOM = 3;
@@ -69,28 +79,21 @@ public class StyleRegistry<T> {
 		defaultStyle.setForeground(new RGB(0, 0, 0));
 		defaultStyle.setForegroundOpacity(255);
 		defaultStyle.setBackgroundOpacity(255);
-//		defaultStyle.setImageAlignment(AlignmentStyle.LEFT_CENTER); // Null means column default used.
-//		defaultStyle.setTextAlignment(AlignmentStyle.LEFT_CENTER);
 		defaultStyle.setPaddingImageText(4);
 		defaultStyle.setPaddingInnerBorder(1);
 		defaultStyle.setPaddingTop(PADDING_TOP);
 		defaultStyle.setPaddingRight(3);
 		defaultStyle.setPaddingBottom(PADDING_BOTTOM);
 		defaultStyle.setPaddingLeft(3);
-//		defaultStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(208, 215, 229)));
-//		defaultStyle.setBorderOuterRight(new BorderStyle(1, LineStyle.SOLID, new RGB(208, 215, 229)));
 
 		//
 		// Build a default header cell style.
 		//
 		defaultHeaderStyle = defaultStyle.copy();
-
 		defaultHeaderStyle.setFontData(new FontData("Segoe UI", 9, SWT.NORMAL));
 		defaultHeaderStyle.setContentStyle(ContentStyle.TEXT_THEN_IMAGE);
-//		defaultHeaderStyle.setTextAlignment(AlignmentStyle.LEFT_CENTER); // Null means column default used.
 		defaultHeaderStyle.setImageAlignment(AlignmentStyle.RIGHT_CENTER);
 		defaultHeaderStyle.setAllowContentOverlap(true);
-
 		defaultHeaderStyle.setForeground(new RGB(39, 65, 62));
 		defaultHeaderStyle.setBackgroundGradient1(new RGB(249, 252, 253));
 		defaultHeaderStyle.setBackground(new RGB(230, 235, 243));
@@ -110,20 +113,18 @@ public class StyleRegistry<T> {
 		groupValueStyle = defaultHeaderStyle.copy();
 		groupValueStyle.setBackgroundAlternate(defaultStyle.getBackgroundAlternate());
 		groupValueStyle.setBackground(defaultStyle.getBackground());
-		groupValueStyle.setForeground(new RGB(35, 35, 155));
+		groupValueStyle.setForeground(new RGB(0, 0, 0));
 		groupValueStyle.setFontData(new FontData("Segoe UI", 8, SWT.BOLD));
 
 		groupNameStyle = groupValueStyle.copy();
-		groupValueStyle.setForeground(new RGB(0, 0, 0));
+		groupNameStyle.setForeground(new RGB(39, 65, 62));
 		groupNameStyle.setFontData(new FontData("Segoe UI", 8, SWT.NORMAL));
 		
 		//
 		// Selection style
 		//
 		selectionStyle = defaultStyle.copy();
-
 		selectionGroupStyle = groupValueStyle.copy();
-
 		selectionHeaderStyle = defaultHeaderStyle.copy();
 		selectionHeaderStyle.setBackground(new RGB(255, 213, 141));
 		selectionHeaderStyle.setBackgroundGradient1(null);
@@ -135,11 +136,21 @@ public class StyleRegistry<T> {
 
 		selectionBorder = new BorderStyle(2, LineStyle.SOLID, new RGB(0, 0, 0));
 		selectionBackground = new RGB(100, 200, 250);
-		selectionBackgroundGradient1 = new RGB(255, 255, 255);
-		selectionBackgroundGradient2 = new RGB(240, 248, 255);
+		selectionBackgroundGradient1 = new RGB(255, 213, 141);
+		selectionBackgroundGradient2 = new RGB(255, 213, 141);
 		selectionForegroundOpacity = 200;
 		selectionBackgroundOpacity = 100;
 
+		//
+		// Mouse hover style.
+		//
+		hoverBorder = new BorderStyle(2, LineStyle.SOLID, new RGB(0, 0, 0));
+		hoverBackground = new RGB(229, 243, 251);
+		hoverBackgroundGradient1 = new RGB(255, 255, 255);
+		hoverBackgroundGradient2 = new RGB(240, 248, 255);
+		hoverForegroundOpacity = 200;
+		hoverBackgroundOpacity = 100;
+		
 		//
 		// Builds the row number cell style.
 		//
@@ -156,13 +167,6 @@ public class StyleRegistry<T> {
 		selectionRowNumberStyle.setPaddingTop(PADDING_TOP);
 		selectionRowNumberStyle.setPaddingBottom(PADDING_BOTTOM);
 		
-//		//
-//		// Filter row style.
-//		//
-//		filterRowStyle = defaultStyle.copy();
-//		filterRowStyle.setForeground(new RGB(39, 65, 62));
-//		filterRowStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
-
 		//
 		// Builds the corner cell style.
 		//
@@ -183,18 +187,11 @@ public class StyleRegistry<T> {
 		noDataStyle.setTextAlignment(AlignmentStyle.CENTER);
 
 		pinnedStyle = defaultStyle.copy();
-//		pinnedStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(0, 0, 0)));
-//		pinnedStyle.setFontData(new FontData("Segoe UI", 9, SWT.BOLD));
-//		defaultHeaderStyle.setFontData(new FontData("Segoe UI", 9, SWT.NORMAL));
-//		defaultHeaderStyle.setContentStyle(ContentStyle.TEXT_THEN_IMAGE);
-//		defaultHeaderStyle.setTextAlignment(AlignmentStyle.LEFT_CENTER);
-//		defaultHeaderStyle.setImageAlignment(AlignmentStyle.RIGHT_CENTER);
-//		defaultHeaderStyle.setAllowContentOverlap(true);
-
 		pinnedStyle.setForeground(new RGB(39, 65, 62));
-//		defaultHeaderStyle.setBackgroundGradient1(new RGB(249, 252, 253));
 		pinnedStyle.setBackground(new RGB(230, 235, 243));
-//		defaultHeaderStyle.setBackgroundGradient2(new RGB(211, 219, 233));
+		
+		filterMatchForeground = new RGB(0, 97, 83);
+		filterMatchBackground = new RGB(198, 239, 206);
 	}
 
 	public Map<String, CellStyle> getCustomStyles() {
@@ -215,6 +212,22 @@ public class StyleRegistry<T> {
 
 	public CellStyle getCornerStyle() {
 		return cornerStyle;
+	}
+	
+	public void setFilterMatchBackground(RGB filterMatchBackground) {
+		this.filterMatchBackground = filterMatchBackground;
+	}
+	
+	public void setFilterMatchForeground(RGB filterMatchForeground) {
+		this.filterMatchForeground = filterMatchForeground;
+	}
+	
+	public RGB getFilterMatchBackground() {
+		return filterMatchBackground;
+	}
+	
+	public RGB getFilterMatchForeground() {
+		return filterMatchForeground;
 	}
 
 	public CellStyle getSelectionStyle() {
@@ -252,6 +265,30 @@ public class StyleRegistry<T> {
 	public CellStyle getSelectionRowNumberStyle() {
 		return selectionRowNumberStyle;
 	}
+	
+	public RGB getHoverBackground() {
+		return hoverBackground;
+	}
+	
+	public RGB getHoverBackgroundGradient1() {
+		return hoverBackgroundGradient1;
+	}
+	
+	public RGB getHoverBackgroundGradient2() {
+		return hoverBackgroundGradient2;
+	}
+	
+	public int getHoverBackgroundOpacity() {
+		return hoverBackgroundOpacity;
+	}
+	
+	public int getHoverForegroundOpacity() {
+		return hoverForegroundOpacity;
+	}
+	
+	public BorderStyle getHoverBorder() {
+		return hoverBorder;
+	}
 
 	public CellStyle getNoDataStyle() {
 		return noDataStyle;
@@ -269,23 +306,12 @@ public class StyleRegistry<T> {
 		return pinnedStyle;
 	}
 	
-//	public CellStyle getFilterRowStyle() {
-//		return filterRowStyle;
-//	}
-
 	public CellStyle getCellStyle(final Column column, final Row<T> row, final Grid<T> grid) {
 
 		if (row.isPinned()) {
 			return pinnedStyle;
 		}
 		
-//		//
-//		// Use the filter row style.
-//		//
-//		if (row == Row.FILTER_HEADER_ROW) {
-//			return filterRowStyle;
-//		}
-
 		//
 		// See if there's a custom style first.
 		//
@@ -330,9 +356,6 @@ public class StyleRegistry<T> {
 
 		return defaultStyle;
 	}
-
-//	public void setCellStyle(final Column column, final Row row, final CellStyle cellStyle) {
-//	}
 
 	public void setCellStyle(final Column column, final CellStyle cellStyle) {
 		columnStyles.put(column, cellStyle);

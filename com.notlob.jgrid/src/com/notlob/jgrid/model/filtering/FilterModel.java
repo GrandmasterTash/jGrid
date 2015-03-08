@@ -2,17 +2,11 @@ package com.notlob.jgrid.model.filtering;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 
 public class FilterModel<T> {
-	
-	// TODO: Include entire group if any row is filtered.
-	// TODO: Option to include entire group if any member matches.
-	// TODO: Search string parsed into filter-tree.
-	// TODO: Highlighting and search result navigation.
 	
 	private final GridModel<T> gridModel;
 	
@@ -35,7 +29,7 @@ public class FilterModel<T> {
 	}
 	
 	public Collection<Filter<T>> getFilters() {
-		return Collections.unmodifiableCollection(filters);
+		return filters;
 	}
 	
 	public void clear() {
@@ -58,14 +52,25 @@ public class FilterModel<T> {
 		//
 		// Check each filter building up all the matches we can.
 		//
+		boolean allFiltersMatch = true;
 		for (Filter<T> filter : filters) {
-			final FilterMatch<T> filterMatch = filter.matches(row.getElement());
-			if (filterMatch != null) {
-				row.addFilterMatch(filterMatch);				
+			final FilterResult<T> filterResult = filter.matches(row.getElement());			
+			
+			if (filterResult == null) {
+				allFiltersMatch = false;
+				
+			} else {
+				if (filterResult.getFilterMatches() != null) {
+					row.addFilterMatches(filterResult.getFilterMatches());
+				}
+				
+				if (!filterResult.isMatch()) {
+					allFiltersMatch = false;
+				}
 			}
 		}
 		
-		return filters.isEmpty() || row.hasFilterMatches();
+		return allFiltersMatch;
 	}
 	
 	/**

@@ -5,12 +5,11 @@ import java.util.Collection;
 import org.eclipse.swt.graphics.Point;
 
 import com.notlob.jgrid.model.Column;
-import com.notlob.jgrid.model.GridModel;
 
 public class GridAdapter<T> implements IGridListener<T> {
 
 	@Override
-	public void modelChanged(final GridModel<T> model) {
+	public void gridChanged() {
 	}
 	
 	@Override
@@ -27,6 +26,14 @@ public class GridAdapter<T> implements IGridListener<T> {
 
 	@Override
 	public void rightClick(final Column column, final T element, final Point location, final int modifier) {
+	}
+	
+	@Override
+	public void groupExpanded(T element) {
+	}
+	
+	@Override
+	public void groupCollapsed(T element) {
 	}
 
 }

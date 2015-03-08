@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.ToolTip;
 
+import com.notlob.jgrid.input.GridMouseHandler;
 import com.notlob.jgrid.listeners.IGridListener;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.GridModel;
@@ -25,7 +26,6 @@ import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.RowCountScope;
 import com.notlob.jgrid.model.Viewport;
 import com.notlob.jgrid.model.filtering.Filter;
-import com.notlob.jgrid.mouse.GridMouseListener;
 import com.notlob.jgrid.providers.IGridContentProvider;
 import com.notlob.jgrid.providers.IGridLabelProvider;
 import com.notlob.jgrid.renderer.GridRenderer;
@@ -33,20 +33,23 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite implements GridModel.IModelListener {
 
-	// TODO: Filtering / Searching / Highlighting.
-	// TODO: Row updates to repaint.
+	// TODO: GridRenderer should pad and align group values by the defined column width.
+	// TODO: Group sorting & cell tool-tips (include # children in group tool-tip).
+	// Bug: filtering-out row should de-select it.
 	// TODO: Reposition/resize columns via DnD.
-	// TODO: Focus/Keyboard navigation.
-	// TODO: Row-group expand/collapse.
+	// TODO: Focus/Keyboard navigation.	
 	// TODO: In-line editing.
 	// TODO: Empty data message.
 	// TODO: BUG: Empty grid's need to do what modelChanged does (i.e. calc viewport and scrollbars).
-	// TODO: Column selection mode.
-	// TODO: Group sorting cell tool-tips.	
+	// TODO: Column selection mode.	
 	// TODO: Suppress model change events....
 	// TODO: Select next row/group if current is removed.
 	// TODO: Right-click to select before raising event.
 	// TODO: Column pinning.
+	// BUG: Filter icon doesn't clip text in header.
+	// BUG: Couple of SelectionModel bugs
+	// TODO Ensure searches expand collapsed groups if children meet criteria.
+	// TODO: Group feature and background clipping on the right edge.
 	
 	// Models.
 	private final GridModel<T> gridModel;
@@ -61,7 +64,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	private final ScrollListener scrollListener;
 	private final ResizeListener resizeListener;
 	private final DisposeListener disposeListener;
-	private final GridMouseListener<T> mouseListener;
+	private final GridMouseHandler<T> mouseListener;
 
 	// TODO: try..catch around all calls to listeners...
 	// Things that listen to us.
@@ -91,7 +94,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		toolTip = new ToolTip(parent.getShell(), SWT.NONE);
 		toolTip.setAutoHide(true);
 		
-		mouseListener = new GridMouseListener<T>(this, gc, listeners, toolTip);
+		mouseListener = new GridMouseHandler<T>(this, gc, listeners, toolTip);
 		
 		parent.addDisposeListener(disposeListener);
 		addMouseListener(mouseListener);
@@ -119,6 +122,10 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		gc.dispose();
 		super.dispose();
 	}
+	
+	public void checkWidget() {
+		super.checkWidget();
+	}
 
 	public GridModel<T> getGridModel() {
 		checkWidget();
@@ -133,6 +140,11 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	public void addColumns(final List<Column> columns) {
 		checkWidget();
 		gridModel.addColumns(columns);
+	}
+	
+	public Collection<Column> getColumns() {
+		checkWidget();
+		return gridModel.getColumns();
 	}
 	
 	public Column getColumn(final int columnIndex) {
@@ -180,9 +192,24 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		return gridModel.getRowCount(visible, scope);
 	}
 	
+	public void applyFilters() {
+		checkWidget();
+		gridModel.getFilterModel().applyFilters();
+	}
+	
+	public Collection<Filter<T>> getFilters() {
+		checkWidget();
+		return gridModel.getFilterModel().getFilters();
+	}
+	
 	public void addFilters(final Collection<Filter<T>> filters) {
 		checkWidget();
 		gridModel.getFilterModel().addFilters(filters);
+	}
+	
+	public void removeFilters(final Collection<Filter<T>> filters) {
+		checkWidget();
+		gridModel.getFilterModel().removeFilters(filters);
 	}
 
 	@Override
@@ -192,7 +219,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		redraw();
 
 		for (final IGridListener<T> listener : listeners) {
-			listener.modelChanged(gridModel);
+			listener.gridChanged();
 		}
 	}
 	
@@ -203,6 +230,10 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		for (final IGridListener<T> listener : listeners) {
 			listener.selectionChanged(gridModel.getSelectionModel().getSelectedElements());
 		}
+	}
+	
+	public GridRenderer<T> getGridRenderer() {		
+		return gridRenderer;
 	}
 
 	public void setGridRenderer(final GridRenderer<T> gridRenderer) {
@@ -294,6 +325,11 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 
 	public void setEmptyMessage(final String emptyMessage) {
 		this.emptyMessage = emptyMessage;
+	}
+	
+	public boolean isShowRowNumbers() {
+		checkWidget();
+		return gridModel.isShowRowNumbers();
 	}
 	
 	public void setShowRowNumbers(boolean show) {

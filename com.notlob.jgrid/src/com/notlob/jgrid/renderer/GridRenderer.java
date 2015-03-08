@@ -22,6 +22,7 @@ import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.SortDirection;
 import com.notlob.jgrid.model.Viewport;
+import com.notlob.jgrid.model.filtering.FilterMatch;
 import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.BorderStyle;
 import com.notlob.jgrid.styles.CellStyle;
@@ -390,7 +391,7 @@ public class GridRenderer<T> implements PaintListener {
 	protected void paintGroupRow(final GC gc, final Point point, final Row<T> row) {
 		final CellStyle groupValueStyle = grid.getStyleRegistry().getGroupValueStyle();
 
-		rowBounds.x = point.x + 1; // Shift 1 to avoid blatting the row number border line.
+		rowBounds.x = point.x;
 		rowBounds.y = point.y;
 		rowBounds.width = (viewport.getViewportArea(gc).width);
 		rowBounds.height = getGridModel().getRowHeight(gc, row);
@@ -413,14 +414,21 @@ public class GridRenderer<T> implements PaintListener {
 			groupBottomRight.y = groupBottomLeft.y; 			
 			paintBorderLine(gc, getStyleRegistry().getGroupFooterBorder(), groupBottomLeft, groupBottomRight);
 		}
+		
+		//
+		// Paint the expand/collapse icon.
+		//
+		final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? ResourceManager.getInstance().getImage("plus.png") : ResourceManager.getInstance().getImage("minus.png");
+		gc.drawImage(expandImage, rowBounds.x + groupValueStyle.getPaddingLeft(), rowBounds.y + groupValueStyle.getPaddingTop() + 2);
+		// TODO: Drop the +2 above and align the image vertically
 
 		//
 		// Paint the grouped values.
 		//
 		if ((row.getElement() != null) && (renderPass == RenderPass.FOREGROUND)) {
 			final CellStyle groupNameStyle = grid.getStyleRegistry().getGroupNameStyle();
-			fieldLocation.x = point.x + groupValueStyle.getPaddingLeft();
-			fieldLocation.y = point.y + groupValueStyle.getPaddingTop();
+			fieldLocation.x = 2 + groupValueStyle.getPaddingLeft() + expandImage.getBounds().width + rowBounds.x + groupValueStyle.getPaddingLeft();
+			fieldLocation.y = rowBounds.y + groupValueStyle.getPaddingTop();
 
 			for (final Column column : getGridModel().getGroupByColumns()) {
 				final String name = column.getCaption();
@@ -444,6 +452,17 @@ public class GridRenderer<T> implements PaintListener {
 				fieldLocation.x += (gc.textExtent(formattedValue).x + 16);
 			}
 		}
+	}
+	
+	public Rectangle getExpandCollapseBounds(final GC gc, final Row<T> row) {
+		//
+		// Get the y for the row from the viewport.
+		//
+		final int rowY = viewport.getRowY(gc, row);
+		final Image image = grid.getContentProvider().isCollapsed(row.getElement()) ? ResourceManager.getInstance().getImage("plus.png") : ResourceManager.getInstance().getImage("minus.png");
+		final CellStyle groupValueStyle = grid.getStyleRegistry().getGroupValueStyle();
+		final Rectangle bounds = new Rectangle(viewport.getViewportArea(gc).x + groupValueStyle.getPaddingLeft() - 2, rowY + groupValueStyle.getPaddingTop(), image.getBounds().width + 4, image.getBounds().height + 4);		
+		return bounds;		
 	}
 
 	protected void paintRow(final GC gc, final Point point, final Row<T> row) {
@@ -541,7 +560,23 @@ public class GridRenderer<T> implements PaintListener {
 	protected void paintCellContent(final GC gc, final Rectangle bounds, final Column column, final Row<T> row, final CellStyle cellStyle) {
 		gc.setAlpha(cellStyle.getForegroundOpacity());
 		gc.setFont(getFont(cellStyle.getFontData()));
-		gc.setForeground(getColour(cellStyle.getForeground()));
+						
+		final boolean filterMatch = hasStyleableFilterMatch(row, column);
+		if (filterMatch) {
+			//
+			// Use text highlighting if there's a FilterMatchRange in this column (and it's trackable).
+			//
+			gc.setBackground(getColour(getStyleRegistry().getFilterMatchBackground()));
+			gc.setForeground(getColour(getStyleRegistry().getFilterMatchForeground()));			
+			
+		} else {
+			//
+			// Use normal colours if we're not highlighting a filter result.
+			//
+//			final CellStyle rowStyle = grid.getStyleRegistry().getCellStyle(null, row, grid);
+//			gc.setBackground(getColour(alternate ? rowStyle.getBackgroundAlternate() : rowStyle.getBackground()));
+			gc.setForeground(getColour(cellStyle.getForeground()));				
+		}
 
 		//
 		// We'll use inner bounds to indicate where the next piece of content will be allowed. Initially, it's the full
@@ -606,7 +641,12 @@ public class GridRenderer<T> implements PaintListener {
 			final AlignmentStyle textAlignment = (cellStyle.getTextAlignment() == null) ? column.getTextAlignment() : cellStyle.getTextAlignment();
 			
 			align(width, height, innerBounds, textAlignment, cellStyle);
-			gc.drawText(text, content.x, content.y, SWT.DRAW_TRANSPARENT);
+			
+			if (filterMatch) {
+				gc.drawText(text, content.x, content.y);
+			} else {
+				gc.drawText(text, content.x, content.y, SWT.DRAW_TRANSPARENT);
+			}
 			
 			if (widthCap > 0) {
 				innerBounds.width += widthCap;
@@ -641,6 +681,20 @@ public class GridRenderer<T> implements PaintListener {
 	}
 	
 	/**
+	 * Does this cell have a filter match we need to highlight?
+	 */
+	protected boolean hasStyleableFilterMatch(final Row<T> row, final Column column) {
+		if (row != null && row.hasFilterMatches()) {
+			for (FilterMatch<T> filterMatch : row.getFilterMatches()) {
+				if (filterMatch.isStyleable() && filterMatch.getColumn() == column) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Gets the text for the cell from the label provider if required.
 	 */
 	protected String getCellText(final Column column, final Row<T> row) {
@@ -653,14 +707,6 @@ public class GridRenderer<T> implements PaintListener {
 		} else if (row == Row.COLUMN_HEADER_ROW) {
 			return column.getCaption();
 			
-//		} else if (row == Row.FILTER_HEADER_ROW) {
-//			final QuickFilter<T> filter = getGridModel().getFilterModel().getQuickFilterForColumn(column);
-//			if (filter == null) {
-//				return "-";
-//			} else {
-//				return filter.toReadableString();
-//			}
-						
 		} else {
 			return grid.getLabelProvider().getText(column, row.getElement());
 		}
@@ -670,13 +716,7 @@ public class GridRenderer<T> implements PaintListener {
 	 * Return the image for the given cell.
 	 */
 	protected Image getCellImage(final Column column, final Row<T> row) {
-//		if (row == Row.FILTER_HEADER_ROW) {
-			//
-			// No images in the filter row.
-			//
-			/*return null;
-			
-		} else*/ if (row == Row.COLUMN_HEADER_ROW) {
+		 if (row == Row.COLUMN_HEADER_ROW) {
 			//
 			// Get any image from the provider
 			//
@@ -833,10 +873,6 @@ public class GridRenderer<T> implements PaintListener {
 	protected StyleRegistry<T> getStyleRegistry() {
 		return getGridModel().getStyleRegistry();
 	}
-
-//	protected Viewport getViewport() {
-//		return grid.getViewport();
-//	}
 
 	protected Font getFont(final FontData fontData) {
 		return ResourceManager.getInstance().getFont(fontData);

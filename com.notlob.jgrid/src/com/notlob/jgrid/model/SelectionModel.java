@@ -37,7 +37,7 @@ public class SelectionModel<T> {
 	}
 
 	public void selectAll() {
-		gridModel.checkWidget();
+		gridModel.checkWidget(); // TODO: Remove all of these - nothing should be accessing this other than through the grid
 		setSelectedRows(gridModel.getRows());
 	}
 
@@ -45,11 +45,13 @@ public class SelectionModel<T> {
 		gridModel.checkWidget();
 		selectedElements.clear();
 		selectionAnchorElement = null;
+		// BUG: Clear selected property on the rows!!!!
+		// TODO: Also, fuse this with the noNotify method and use a param
 		gridModel.fireSelectionChangedEvent();
 	}
 
 	/**
-	 * Replace the entire select with the new one.
+	 * Replace the entire selection with the new one.
 	 */
 	public void setSelectedRows(final List<Row<T>> rowsToSelect) {
 		gridModel.checkWidget();
@@ -123,6 +125,8 @@ public class SelectionModel<T> {
 
 	void removeRow(final Row<T> row) {
 		selectedElements.remove(row.getElement());
+		
+		// Bug: Update the selected property on the row. 
 		
 		if (selectionAnchorElement == row.getElement()) {
 			selectionAnchorElement = null;

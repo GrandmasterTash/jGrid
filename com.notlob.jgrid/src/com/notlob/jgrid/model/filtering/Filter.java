@@ -1,5 +1,6 @@
 package com.notlob.jgrid.model.filtering;
 
+
 /**
  * Filters are added to the filter model and each row in the grid is evaluated against them all.
  * 
@@ -10,30 +11,28 @@ package com.notlob.jgrid.model.filtering;
  */
 public abstract class Filter<T> {
 	
-	// Indicates if this filter unions it's results with other filters.
-	protected final LogicalConnective logicalConnective;
-	
+	// TODO: Consider ditching this and moving into an abstract specialisation.
 	protected final boolean includeWholeGroup;
 	
-	// Return a match if the filter matches the element otherwise null.
-	public abstract FilterMatch<T> matches(final T element);
+	//
+	// Return a result with match = true if the filter matches the element otherwise null or match = false.
+	//
+	public abstract FilterResult<T> matches(final T element);
+
+	//
+	// What to show the user in the UI when this filter is being applied. The parameter allows widget formatting tokens
+	// to be included in the output.
+	//
+	public abstract String toReadableString(final boolean includeStyleTokens);
 	
-	// What to show the user in the UI when this filter is being applied.
-	public abstract String toReadableString();
-	
-	public Filter(final LogicalConnective logicalConnective) {
-		this(logicalConnective, true);
+	public Filter() {
+		this(true);
 	}
 	
-	public Filter(final LogicalConnective logicalConnective, final boolean includeWholeGroup) {
-		this.logicalConnective = logicalConnective;
+	public Filter(final boolean includeWholeGroup) {
 		this.includeWholeGroup = includeWholeGroup;
 	}
-		
-	public LogicalConnective getLogicalConnective() {
-		return logicalConnective;
-	}
-	
+			
 	public boolean isIncludeWholeGroup() {
 		return includeWholeGroup;
 	}

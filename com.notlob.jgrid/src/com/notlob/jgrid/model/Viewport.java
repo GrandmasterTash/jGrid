@@ -21,10 +21,7 @@ public class Viewport<T> {
 	private int firstColumnIndex;
 	private int lastColumnIndex;
 	private final Rectangle viewportArea;
-
 	private final Grid<T> grid;
-
-//	private final Point rowNumberExtent;
 
 	public Viewport(final Grid<T> grid) {
 		this.grid = grid;
@@ -255,6 +252,27 @@ public class Viewport<T> {
 			}
 		}
 
+		return -1;
+	}
+	
+	/**
+	 * Locate the y pixel co-ordinate of the row.
+	 */
+	public int getRowY(final GC gc, final Row<T> row) {
+		final GridModel<T> gridModel = grid.getGridModel();
+		final Rectangle viewportArea = getViewportArea(gc);
+		int currentY = viewportArea.y;
+
+		for (int rowIndex=getFirstRowIndex(); rowIndex<getLastRowIndex(); rowIndex++) {
+			final Row<T> currentRow = gridModel.getRows().get(rowIndex);
+			
+			if (currentRow == row) {
+				return currentY;
+			}
+			
+			currentY += gridModel.getRowHeight(gc, currentRow);
+		}
+			
 		return -1;
 	}
 

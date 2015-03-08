@@ -74,12 +74,12 @@ public class Row<T> {
 		this.pinned = pinned;
 	}
 		
-	public void addFilterMatch(final FilterMatch<T> filterMatch) {
+	public void addFilterMatches(final Collection<FilterMatch<T>> filterMatched) {
 		if (filterMatches == null) {
 			filterMatches = new ArrayList<>();
 		}
 		
-		filterMatches.add(filterMatch);
+		filterMatches.addAll(filterMatches);
 	}
 	
 	public Collection<FilterMatch<T>> getFilterMatches() {

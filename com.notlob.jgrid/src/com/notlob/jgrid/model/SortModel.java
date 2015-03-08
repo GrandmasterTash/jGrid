@@ -17,9 +17,7 @@ public class SortModel<T> {
 
 	private boolean parentRowsAboveChildren;
 	private GroupMixType groupMixType;
-
 	private Comparator<Row<T>> rowComparator;
-
 	private final GridModel<T> gridModel;
 	private final List<Column> sortedColumns;
 
@@ -61,19 +59,10 @@ public class SortModel<T> {
 		gridModel.fireChangeEvent();
 	}
 
-//	public Comparator<Row> getRowComparator() {
-//		gridModel.checkWidget();
-//		return rowComparator;
-//	}
-
 	public void setRowComparator(final Comparator<Row<T>> rowComparator) {
 		gridModel.checkWidget();
 		this.rowComparator = rowComparator;
 	}
-	
-//	public Comparator<Row<T>> getRowComparator() {
-//		return rowComparator;
-//	}
 
 	/**
 	 * Toggle the column's sort and apply to the current sort model (or replace the current model).
@@ -238,14 +227,6 @@ public class SortModel<T> {
 		private boolean isParentOf(final Row<T> row1, final Row<T> row2) {
 			return (row1.getElement() == gridModel.getContentProvider().getParent(row2.getElement()));
 		}
-
-//		/**
-//		 * Return the row's parent, or the row itself if it has none.
-//		 */
-//		private Row getParent(final Row row) {
-//			final Object parent = gridModel.getContentProvider().getParent(row.getElement());
-//			return parent == null ? row : gridModel.getRow(parent);
-//		}
 
 		/**
 		 * Protect against comparissons between parent rows (that don't have a field for the sorted column)
