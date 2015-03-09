@@ -33,10 +33,16 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite implements GridModel.IModelListener {
 
-	// TODO: GridRenderer should pad and align group values by the defined column width.
-	// TODO: Group sorting & cell tool-tips (include # children in group tool-tip).
+	// TODO: Tool-tips (include # children in group tool-tip, current sort and filters, etc.).
+	// TODO: Group feature image support.
 	// Bug: filtering-out row should de-select it.
+	// BUG: Filter icon doesn't clip text in header.
+	// BUG: Couple of SelectionModel bugs
+	// BUG: Group footer and alternate background shouldn't go beyond last column.
+	// BUG: Group fields should click at right edge.
+	// TODO: Scroll group row horizontally if not fit.
 	// TODO: Reposition/resize columns via DnD.
+	// TODO: Middle-mouse scrolling.
 	// TODO: Focus/Keyboard navigation.	
 	// TODO: In-line editing.
 	// TODO: Empty data message.
@@ -45,9 +51,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	// TODO: Suppress model change events....
 	// TODO: Select next row/group if current is removed.
 	// TODO: Right-click to select before raising event.
-	// TODO: Column pinning.
-	// BUG: Filter icon doesn't clip text in header.
-	// BUG: Couple of SelectionModel bugs
+	// TODO: Column pinning.	
 	// TODO Ensure searches expand collapsed groups if children meet criteria.
 	// TODO: Group feature and background clipping on the right edge.
 	
@@ -78,7 +82,10 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 
 	private final ToolTip toolTip;
 	private String emptyMessage;	
+	
+	// Some grid behavioural flags.
 	private boolean highlightHoveredRow = true;
+	private boolean clickGroupFieldNameToSort = true;
 
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
@@ -129,6 +136,14 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	
 	public boolean isHighlightHoveredRow() {
 		return highlightHoveredRow;
+	}
+	
+	public void setClickGroupFieldNameToSort(boolean clickGroupFieldNameToSort) {
+		this.clickGroupFieldNameToSort = clickGroupFieldNameToSort;
+	}
+	
+	public boolean isClickGroupFieldNameToSort() {
+		return clickGroupFieldNameToSort;				
 	}
 	
 	public void checkWidget() {

@@ -15,6 +15,8 @@ import com.notlob.jgrid.util.ResourceManager;
  *
  */
 public class Viewport<T> {
+	
+	// BUG: Gridlines/spacing may cause the rowY logic to become inaccurate.
 
 	private int firstRowIndex;
 	private int lastRowIndex;

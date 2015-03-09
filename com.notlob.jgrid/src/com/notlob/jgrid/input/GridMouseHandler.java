@@ -39,6 +39,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	// Track if the mouse is over a row/column.
 	private Row<T> row = null;
 	private Column column = null;
+	private Column groupColumn = null;
 	
 	public GridMouseHandler(final Grid<T> grid, final GC gc, final Collection<IGridListener<T>> listeners, final ToolTip toolTip) {
 		this.grid = grid;
@@ -56,6 +57,10 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	public Row<T> getRow() {
 		return row;
 	}
+	
+	public Column getGroupColumn() {
+		return groupColumn;
+	}
 
 	/**
 	 * Tracks the column and row under the mouse as it moves.
@@ -66,6 +71,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	private boolean trackCell(final int x, final int y) {		
 		Row<T> newRow = null;
 		Column newColumn = null;
+		Column newGroupColumn = null;
 		
 		//
 		// Get the row and column indexes from the viewport.
@@ -87,18 +93,27 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			} 
 			
 		} else {
-			newRow = gridModel.getRows().get(rowIndex);				
+			newRow = gridModel.getRows().get(rowIndex);
+			
+			//
+			// If this is a group row - if the mouse is over a group field header - track it. 
+			//
+			if (gridModel.isParentElement(newRow.getElement())) {
+				newGroupColumn = grid.getGridRenderer().getGroupColumnForX(gc, newRow, x);
+			}			
 		}
 		
 		if (columnIndex != -1) {
 			newColumn = gridModel.getColumns().get(columnIndex);
+			
 		} else {
 			newColumn = null;
 		}		
 		
-		if (newRow != row || newColumn != column) {
+		if (newRow != row || newColumn != column || newGroupColumn != groupColumn) {
 			row = newRow;
 			column = newColumn;
+			groupColumn = newGroupColumn;
 			return true;
 		}
 		
@@ -139,7 +154,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	public void mouseMove(MouseEvent e) {
 		toolTip.setVisible(false);
 		
-		if (trackCell(e.x, e.y) && grid.isHighlightHoveredRow()) {
+		if (trackCell(e.x, e.y) /*&& grid.isHighlightHoveredRow()*/) {
 			//
 			// Repaint the grid to show the hovered row.
 			//
@@ -175,6 +190,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						// Column sorting.
 						//
 						gridModel.getSortModel().sort(column, true, ctrl, true);
+						return;
 					}
 				}
 
@@ -186,7 +202,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						//
 						// Expand/collapse toggle.
 						//
-						final Rectangle bounds = grid.getGridRenderer().getExpandCollapseBounds(gc, row);
+						final Rectangle bounds = grid.getGridRenderer().getExpandImageBounds(gc, row);
 						if (bounds.contains(e.x,  e.y)) {
 							for (final IGridListener<T> listener : listeners) {
 								if (grid.getContentProvider().isCollapsed(row.getElement())) {
@@ -197,15 +213,17 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 							}
 							
 							// Refresh filters.
-							gridModel.getFilterModel().applyFilters();
-							
-							return; // Don't go on to select?
+							gridModel.getFilterModel().applyFilters();							
+							return;
 						}
 						
-						//
-						// Group field name or sort image.
-						//
-						// TODO: Group sorting....
+						if (groupColumn != null && grid.isClickGroupFieldNameToSort()) {
+							//
+							// Toggle the sort on the group column.
+							//
+							grid.getGridModel().getSortModel().sort(groupColumn, true, ctrl, true);
+							return;
+						}
 					}
 				}
 				
@@ -244,7 +262,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						//
 						// Range addition.
 						//
-						gridModel.getSelectionModel().selectRange(row, true);
+						gridModel.getSelectionModel().selectRange(row, true);						
 					}
 				}
 

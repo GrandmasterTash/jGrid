@@ -81,6 +81,9 @@ public class GridRenderer<T> implements PaintListener {
 	// Double-buffering image. Used as a key for the setData method.
 	private final static String DATA__DOUBLE_BUFFER_IMAGE = "double-buffer-image"; //$NON-NLS-1$
 	
+	private final static int PADDING__EXPAND_COLLAPSE_IMAGE = 2;
+	private final static int SPACING__GROUP_FIELD = 8;	
+	
 	public GridRenderer(final Grid<T> grid) {
 		this.grid = grid;
 		viewport = grid.getViewport();
@@ -241,15 +244,15 @@ public class GridRenderer<T> implements PaintListener {
 				
 			}
 			
-			if (grid.isHighlightHoveredRow() && !row.isSelected() && row == grid.getMouseHandler().getRow()) {
+			if (grid.isHighlightHoveredRow() && !row.isSelected() && (row == grid.getMouseHandler().getRow())) {
 				//
-				// The row has the mouse hovering over it, so paint it with the hover style.
+				// The row has the mouse hovering over it, so paint it with the hover style. If the mouse is over a group field name though, don't highlight.
 				//
 				hoverRegion.x = rowLocation.x;
 				hoverRegion.y = rowLocation.y;
 				hoverRegion.height = gridModel.getRowHeight(gc, row);
 				hoverRegion.width = selectionRegion.width;
-				paintSelectionRegion(gc, hoverRegion, !inSelection, paintRightEdge, true, paintLeftEdge, getStyleRegistry().getHoverRegionStyle());				
+				paintSelectionRegion(gc, hoverRegion, !inSelection, paintRightEdge, true, paintLeftEdge, getStyleRegistry().getHoverRegionStyle());
 			}
 
 			inSelection = row.isSelected();
@@ -404,7 +407,7 @@ public class GridRenderer<T> implements PaintListener {
 		paintCell(gc, cellBounds, null, null, row.isSelected() ? getStyleRegistry().getSelectionRowNumberStyle() :  getStyleRegistry().getRowNumberStyle());
 	}
 
-	protected void paintGroupRow(final GC gc, final Point point, final Row<T> row) {
+	protected void paintGroupRow(final GC gc, final Point point, final Row<T> row) {	
 		final CellStyle groupValueStyle = grid.getStyleRegistry().getGroupValueStyle();
 
 		rowBounds.x = point.x;
@@ -430,54 +433,126 @@ public class GridRenderer<T> implements PaintListener {
 			groupBottomRight.y = groupBottomLeft.y; 			
 			paintBorderLine(gc, getStyleRegistry().getGroupFooterBorder(), groupBottomLeft, groupBottomRight);
 		}
-		
+			
 		//
 		// Paint the expand/collapse icon.
 		//
 		final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? ResourceManager.getInstance().getImage("plus.png") : ResourceManager.getInstance().getImage("minus.png");
-		gc.drawImage(expandImage, rowBounds.x + groupValueStyle.getPaddingLeft(), rowBounds.y + groupValueStyle.getPaddingTop() + 2);
-		// TODO: Drop the +2 above and align the image vertically
+		gc.drawImage(expandImage, rowBounds.x + groupValueStyle.getPaddingLeft(), rowBounds.y + groupValueStyle.getPaddingTop() + PADDING__EXPAND_COLLAPSE_IMAGE);
 
 		//
 		// Paint the grouped values.
 		//
 		if ((row.getElement() != null) && (renderPass == RenderPass.FOREGROUND)) {
 			final CellStyle groupNameStyle = grid.getStyleRegistry().getGroupNameStyle();
-			fieldLocation.x = 2 + groupValueStyle.getPaddingLeft() + expandImage.getBounds().width + rowBounds.x + groupValueStyle.getPaddingLeft();
+			fieldLocation.x = PADDING__EXPAND_COLLAPSE_IMAGE + groupValueStyle.getPaddingLeft() + expandImage.getBounds().width + rowBounds.x + groupValueStyle.getPaddingLeft();
 			fieldLocation.y = rowBounds.y + groupValueStyle.getPaddingTop();
 
 			for (final Column column : getGridModel().getGroupByColumns()) {
 				final String name = column.getCaption();
 				final String value = grid.getLabelProvider().getText(column, row.getElement());
 				final String formattedValue = value == null || value.isEmpty() ? "(blank)" : value;
-
+				
+				//
+				// Cache the caption and the value extents.
+				//
+				if (!extentCache.containsKey(formattedValue)) {
+					extentCache.put(formattedValue, gc.textExtent(formattedValue));
+				}
+				
+				if (!extentCache.containsKey(name)) {
+					extentCache.put(name, gc.textExtent(name));
+				}
+				
+				//
+				// Highlight the field name if the mouse is over it.
+				//
+				final boolean groupNameHovered = column == grid.getMouseHandler().getGroupColumn() && row == grid.getMouseHandler().getRow();
+				if (groupNameHovered) {
+					gc.setForeground(getColour(getStyleRegistry().getHoverGroupNameForeground()));
+					gc.setBackground(getColour(getStyleRegistry().getHoverGroupNameBackground()));
+				} else {
+					gc.setForeground(getColour(groupNameStyle.getForeground()));
+				}
+				
+				//
+				// Sort icon.
+				//
+				final Image sortImage = ResourceManager.getInstance().getImage((column.getSortDirection() == SortDirection.ASC ? "group_sort_ascending.png" : "group_sort_descending.png"));				
+				if (column.getSortDirection() != SortDirection.NONE) {				
+					gc.drawImage(sortImage, fieldLocation.x, fieldLocation.y);					
+				}
+				fieldLocation.x += sortImage.getBounds().width + (SPACING__GROUP_FIELD / 2);
+				
 				//
 				// Field Name.
-				//
-				gc.setForeground(getColour(groupNameStyle.getForeground()));
+				//				
 				gc.setFont(getFont(groupNameStyle.getFontData()));
-				gc.drawText(name, fieldLocation.x, fieldLocation.y, true);
-				fieldLocation.x += (gc.textExtent(name).x + 8);
-
+				gc.drawText(name, fieldLocation.x, fieldLocation.y, !groupNameHovered);
+				fieldLocation.x += extentCache.get(name).x + (SPACING__GROUP_FIELD / 2);
+				
 				//
 				// Field Value.
 				//
 				gc.setForeground(getColour(groupValueStyle.getForeground()));
 				gc.setFont(getFont(groupValueStyle.getFontData()));
 				gc.drawText(formattedValue, fieldLocation.x, fieldLocation.y, true);
-				fieldLocation.x += (gc.textExtent(formattedValue).x + 16);
+				fieldLocation.x += (extentCache.get(formattedValue).x + (SPACING__GROUP_FIELD * 2));
 			}
 		}
 	}
 	
-	public Rectangle getExpandCollapseBounds(final GC gc, final Row<T> row) {
+	public Column getGroupColumnForX(final GC gc, final Row<T> row, final int x) {
+		final CellStyle groupNameStyle = grid.getStyleRegistry().getGroupNameStyle();
+		final CellStyle groupValueStyle = grid.getStyleRegistry().getGroupValueStyle();
+		
+		final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? ResourceManager.getInstance().getImage("plus.png") : ResourceManager.getInstance().getImage("minus.png");
+		int fieldLocationX = PADDING__EXPAND_COLLAPSE_IMAGE + groupValueStyle.getPaddingLeft() + expandImage.getBounds().width + viewport.getViewportArea(gc).x + groupValueStyle.getPaddingLeft();
+		
+		for (final Column column : getGridModel().getGroupByColumns()) {
+			final String name = column.getCaption();
+			final String value = grid.getLabelProvider().getText(column, row.getElement());
+			final String formattedValue = value == null || value.isEmpty() ? "(blank)" : value;
+			
+			//
+			// Sort icon.
+			//
+//			if (column.getSortDirection() != SortDirection.NONE) {
+				final Image sortImage = ResourceManager.getInstance().getImage("group_sort_ascending.png");
+				fieldLocationX += sortImage.getBounds().width + (SPACING__GROUP_FIELD / 2);		
+//			}
+			
+			//
+			// Field Name.
+			//
+			gc.setFont(getFont(groupNameStyle.getFontData()));
+			final Point nameExtent = extentCache.get(name);
+			
+			if ((x >= fieldLocationX) && (x < (fieldLocationX + nameExtent.x))) {
+				return column;
+			}
+			
+			fieldLocationX += nameExtent.x + (SPACING__GROUP_FIELD / 2);
+						
+			//
+			// Field Value.
+			//
+			gc.setFont(getFont(groupValueStyle.getFontData()));
+			final Point valueExtent = extentCache.get(formattedValue);
+			fieldLocationX += (valueExtent.x + (SPACING__GROUP_FIELD * 2));
+		}
+		
+		return null;
+	}
+	
+	public Rectangle getExpandImageBounds(final GC gc, final Row<T> row) {
 		//
 		// Get the y for the row from the viewport.
 		//
 		final int rowY = viewport.getRowY(gc, row);
 		final Image image = grid.getContentProvider().isCollapsed(row.getElement()) ? ResourceManager.getInstance().getImage("plus.png") : ResourceManager.getInstance().getImage("minus.png");
 		final CellStyle groupValueStyle = grid.getStyleRegistry().getGroupValueStyle();
-		final Rectangle bounds = new Rectangle(viewport.getViewportArea(gc).x + groupValueStyle.getPaddingLeft() - 2, rowY + groupValueStyle.getPaddingTop(), image.getBounds().width + 4, image.getBounds().height + 4);		
+		final Rectangle bounds = new Rectangle(viewport.getViewportArea(gc).x + groupValueStyle.getPaddingLeft() - PADDING__EXPAND_COLLAPSE_IMAGE, rowY + groupValueStyle.getPaddingTop(), image.getBounds().width + (PADDING__EXPAND_COLLAPSE_IMAGE * 2), image.getBounds().height + (PADDING__EXPAND_COLLAPSE_IMAGE * 2));		
 		return bounds;		
 	}
 
@@ -589,8 +664,6 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			// Use normal colours if we're not highlighting a filter result.
 			//
-//			final CellStyle rowStyle = grid.getStyleRegistry().getCellStyle(null, row, grid);
-//			gc.setBackground(getColour(alternate ? rowStyle.getBackgroundAlternate() : rowStyle.getBackground()));
 			gc.setForeground(getColour(cellStyle.getForeground()));				
 		}
 
@@ -742,19 +815,11 @@ public class GridRenderer<T> implements PaintListener {
 				return image;
 			}
 
-//			//
-//			// Filter image if filtered.
-//			//
-//			if (getGridModel().getFilterModel().getQuickFilterForColumn(column) != null) {
-//				return ResourceManager.getInstance().getImage("filter_small.gif");
-//			}
-				
 			//
 			// Return a sorted image if sorted.
 			//
 			if (column.getSortDirection() != SortDirection.NONE) {
 				if (column.getSortDirection() == SortDirection.ASC){
-					// TODO: Edit the lines on the sort image and to be fewer as sort order increases.
 					return ResourceManager.getInstance().getImage("sort_ascending.png");
 					
 				} else if (column.getSortDirection() == SortDirection.DESC){

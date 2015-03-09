@@ -41,6 +41,8 @@ public class StyleRegistry<T> {
 	
 	// Hover styles.
 	protected RegionStyle hoverRegionStyle;
+	protected RGB hoverGroupNameForeground;
+	protected RGB hoverGroupNameBackground;
 
 	protected final static int PADDING_TOP = 3;
 	protected final static int PADDING_BOTTOM = 3;
@@ -145,6 +147,8 @@ public class StyleRegistry<T> {
 		hoverRegionStyle.setBackgroundGradient2(new RGB(189, 223, 241));
 		hoverRegionStyle.setForegroundOpacity(200);
 		hoverRegionStyle.setBackgroundOpacity(100);
+		hoverGroupNameForeground = new RGB(0, 0, 0);
+		hoverGroupNameBackground = new RGB(255, 213, 141);		
 		
 		//
 		// Builds the row number cell style.
@@ -243,6 +247,14 @@ public class StyleRegistry<T> {
 	
 	public RegionStyle getHoverRegionStyle() {
 		return hoverRegionStyle;
+	}
+	
+	public RGB getHoverGroupNameBackground() {
+		return hoverGroupNameBackground;
+	}
+	
+	public RGB getHoverGroupNameForeground() {
+		return hoverGroupNameForeground;
 	}
 	
 	public CellStyle getNoDataStyle() {
