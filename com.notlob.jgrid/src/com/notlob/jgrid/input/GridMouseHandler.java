@@ -346,14 +346,26 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			for (final IGridListener<T> listener : listeners) {
 				if (e.button == 1) {
 					if (e.count == 1) {
-						listener.click(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
+						if (row == Row.COLUMN_HEADER_ROW) {
+							listener.headerClick(column, new Point(e.x, e.y), e.stateMask);
+						} else {
+							listener.click(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
+						}
 						
 					} else if (e.count > 1) {
-						listener.doubleClick(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
+						if (row == Row.COLUMN_HEADER_ROW) {
+							listener.headerDoubleClick(column, new Point(e.x, e.y), e.stateMask);
+						} else {
+							listener.doubleClick(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
+						}
 					}
 
 				} else if (e.button == 3) {
-					listener.rightClick(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
+					if (row == Row.COLUMN_HEADER_ROW) {
+						listener.headerRightClick(column, new Point(e.x, e.y), e.stateMask);
+					} else {
+						listener.rightClick(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
+					}
 				}
 			}
 		}

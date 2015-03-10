@@ -29,6 +29,18 @@ public class GridAdapter<T> implements IGridListener<T> {
 	}
 	
 	@Override
+	public void headerClick(Column column, Point location, int modifier) {
+	}
+
+	@Override
+	public void headerDoubleClick(Column column, Point location, int modifier) {
+	}
+	
+	@Override
+	public void headerRightClick(Column column, Point location, int modifier) {
+	}
+	
+	@Override
 	public void groupExpanded(T element) {
 	}
 	

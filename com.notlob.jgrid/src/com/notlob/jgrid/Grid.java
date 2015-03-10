@@ -39,7 +39,6 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	// TODO: Focus/Keyboard navigation / anchor.
 	// TODO: In-line editing.
 	// TODO: Empty data message.
-	// TODO: BUG: Empty grid's need to do what modelChanged does (i.e. calc viewport and scrollbars).
 	// TODO: Column selection mode.	
 	// TODO: Suppress model change events....
 	// TODO: Select next row/group if current is removed.

@@ -492,7 +492,7 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		// Sort icon.
 		//
-		final Image sortImage = ResourceManager.getInstance().getImage((column.getSortDirection() == SortDirection.ASC ? "group_sort_ascending.png" : "group_sort_descending.png"));				
+		final Image sortImage = ResourceManager.getInstance().getImage((column.getSortDirection() == SortDirection.ASC ? "sort_ascending.png" : "sort_descending.png"));				
 		if (column.getSortDirection() != SortDirection.NONE) {				
 			gc.drawImage(sortImage, fieldLocation.x, fieldLocation.y);					
 		}
@@ -573,7 +573,7 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			// Sort icon.
 			//
-			final Image sortImage = ResourceManager.getInstance().getImage("group_sort_ascending.png");
+			final Image sortImage = ResourceManager.getInstance().getImage("sort_ascending.png");
 			fieldLocationX += sortImage.getBounds().width + SPACING__GROUP_FIELD;		
 					
 			//
