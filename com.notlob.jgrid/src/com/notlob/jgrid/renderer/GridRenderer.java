@@ -22,7 +22,7 @@ import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.SortDirection;
 import com.notlob.jgrid.model.Viewport;
-import com.notlob.jgrid.model.filtering.FilterMatch;
+import com.notlob.jgrid.model.filtering.IHighlightingFilter;
 import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.BorderStyle;
 import com.notlob.jgrid.styles.CellStyle;
@@ -774,8 +774,8 @@ public class GridRenderer<T> implements PaintListener {
 	 */
 	protected boolean hasStyleableFilterMatch(final Row<T> row, final Column column) {
 		if (row != null && row.hasFilterMatches()) {
-			for (FilterMatch<T> filterMatch : row.getFilterMatches()) {
-				if (filterMatch.isStyleable() && filterMatch.getColumn() == column) {
+			for (IHighlightingFilter filterMatch : row.getFilterMatches()) {
+				if (filterMatch.getColumn() == column) {
 					return true;
 				}
 			}

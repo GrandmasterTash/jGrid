@@ -1,5 +1,6 @@
 package com.notlob.jgrid.model.filtering;
 
+import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.providers.IGridContentProvider;
 
 /**
@@ -19,10 +20,9 @@ public class CollapsedGroupFilter<T> extends Filter<T> {
 	 * If this element is a child in a collapsed group, it matches the filter.
 	 */
 	@Override
-	public FilterResult<T> matches(T element) {
-		final T parent = contentProvider.getParent(element);				
-		final boolean match = (parent == null) || (!contentProvider.isCollapsed(parent));
-		return match ? new FilterResult<T>(true, null) : null;
+	public boolean matches(final Row<T> row) {
+		final T parent = contentProvider.getParent(row.getElement());				
+		return (parent == null) || (!contentProvider.isCollapsed(parent));
 	}
 
 	@Override

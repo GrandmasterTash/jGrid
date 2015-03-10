@@ -21,6 +21,7 @@ public class SelectionModel<T> {
 		return selectionAnchorElement;
 	}
 
+	// TODO: Make this un-modifiable to ensure the .selected flag is ref integ.
 	public Set<T> getSelectedElements() {
 		gridModel.checkWidget();
 		return selectedElements;

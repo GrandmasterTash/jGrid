@@ -413,7 +413,7 @@ public class GridModel<T> {
 //			
 //		}
 		
-		// TODO: Check the filter model....
+		// TODO: Re-apply it's filters (will have to clear existing matches first).
 		
 		fireChangeEvent();
 	}

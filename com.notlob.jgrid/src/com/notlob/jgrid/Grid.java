@@ -38,10 +38,9 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	// Bug: filtering-out row should de-select it.
 	// BUG: Filter icon doesn't clip text in header.
 	// BUG: Couple of SelectionModel bugs
-	// BUG: Group footer and alternate background shouldn't go beyond last column.
-	// BUG: Group fields should click at right edge.
-	// TODO: Scroll group row horizontally if not fit.
+	// TODO: Consider ditching FilterMatch and just use Filter ref?	
 	// TODO: Reposition/resize columns via DnD.
+	// TODO: Scroll group row horizontally if not fit.
 	// TODO: Middle-mouse scrolling.
 	// TODO: Focus/Keyboard navigation.	
 	// TODO: In-line editing.
@@ -52,7 +51,8 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	// TODO: Select next row/group if current is removed.
 	// TODO: Right-click to select before raising event.
 	// TODO: Column pinning.	
-	// TODO Ensure searches expand collapsed groups if children meet criteria.
+	// TODO: Mouse cursor in CellStyle.
+	// TODO: Ensure searches expand collapsed groups if children meet criteria.
 	// TODO: Group feature and background clipping on the right edge.
 	
 	// Models.

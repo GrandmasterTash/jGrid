@@ -54,19 +54,8 @@ public class FilterModel<T> {
 		//
 		boolean allFiltersMatch = true;
 		for (Filter<T> filter : filters) {
-			final FilterResult<T> filterResult = filter.matches(row.getElement());			
-			
-			if (filterResult == null) {
+			if (!filter.matches(row)) {
 				allFiltersMatch = false;
-				
-			} else {
-				if (filterResult.getFilterMatches() != null) {
-					row.addFilterMatches(filterResult.getFilterMatches());
-				}
-				
-				if (!filterResult.isMatch()) {
-					allFiltersMatch = false;
-				}
 			}
 		}
 		
