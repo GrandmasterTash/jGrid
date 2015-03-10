@@ -10,6 +10,8 @@ public interface IGridLabelProvider<T> {
 	String getText(final Column column, final T element);
 	
 	String getToolTip(final Column column, final T element);
+	
+	String getHeaderToolTip(final Column column);
 
 	Image getImage(final Column column, final T element);
 	

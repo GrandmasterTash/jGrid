@@ -552,7 +552,7 @@ public class GridRenderer<T> implements PaintListener {
 		}
 	}
 	
-	public Column getGroupColumnForX(final GC gc, final Row<T> row, final int x) {
+	public Column getGroupColumnForX(final GC gc, final Row<T> row, final int x, final boolean header) {
 		final CellStyle groupNameStyle = grid.getStyleRegistry().getGroupNameStyle();
 		final CellStyle groupValueStyle = grid.getStyleRegistry().getGroupValueStyle();
 		
@@ -577,7 +577,7 @@ public class GridRenderer<T> implements PaintListener {
 			gc.setFont(getFont(groupNameStyle.getFontData()));
 			final Point nameExtent = extentCache.get(name);
 			
-			if ((x >= fieldLocationX) && (x < (fieldLocationX + nameExtent.x))) {
+			if (header && (x >= fieldLocationX) && (x < (fieldLocationX + nameExtent.x))) {
 				return column;
 			}
 			
@@ -589,6 +589,10 @@ public class GridRenderer<T> implements PaintListener {
 			if ((valueStyle.getContentStyle() == ContentStyle.IMAGE_THEN_TEXT) || (valueStyle.getContentStyle() == ContentStyle.IMAGE)) {
 				final Image image = grid.getLabelProvider().getImage(column, row.getElement());
 				if (image != null) {
+					if (!header && (x >= fieldLocationX) && (x < (fieldLocationX + image.getBounds().width))) {
+						return column;
+					}
+					
 					fieldLocationX += image.getBounds().width + SPACING__GROUP_FIELD;
 				}
 			}
@@ -602,6 +606,11 @@ public class GridRenderer<T> implements PaintListener {
 				case TEXT_THEN_IMAGE:
 					gc.setFont(getFont(valueStyle.getFontData()));
 					final Point valueExtent = extentCache.get(value);
+					
+					if (!header && (x >= fieldLocationX) && (x < (fieldLocationX + valueExtent.x))) {
+						return column;
+					}
+					
 					fieldLocationX += (valueExtent.x + PADDING__GROUP_FIELD);
 				default:
 					// No-op

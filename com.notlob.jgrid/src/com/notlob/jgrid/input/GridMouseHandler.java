@@ -39,7 +39,8 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	// Track if the mouse is over a row/column.
 	private Row<T> row = null;
 	private Column column = null;
-	private Column groupColumn = null;
+	private Column groupColumn = null;  // << Mouse is over a group field header.
+	private Column groupValue = null;	// << Mouse is over a group field value not the header;
 	
 	public GridMouseHandler(final Grid<T> grid, final GC gc, final Collection<IGridListener<T>> listeners, final ToolTip toolTip) {
 		this.grid = grid;
@@ -72,6 +73,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		Row<T> newRow = null;
 		Column newColumn = null;
 		Column newGroupColumn = null;
+		Column newGroupValue = null;
 		
 		//
 		// Get the row and column indexes from the viewport.
@@ -96,10 +98,20 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			newRow = gridModel.getRows().get(rowIndex);
 			
 			//
-			// If this is a group row - if the mouse is over a group field header - track it. 
+			// If this is a group row. 
 			//
 			if (gridModel.isParentElement(newRow.getElement())) {
-				newGroupColumn = grid.getGridRenderer().getGroupColumnForX(gc, newRow, x);
+				//
+				// If the mouse is over a group field header - track it.
+				//
+				newGroupColumn = grid.getGridRenderer().getGroupColumnForX(gc, newRow, x, true);
+				
+				//
+				// If the mouse is over a group field value - track it.
+				//
+				if (newGroupColumn == null) {
+					newGroupValue = grid.getGridRenderer().getGroupColumnForX(gc, newRow, x, false);
+				}				
 			}			
 		}
 		
@@ -110,10 +122,11 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			newColumn = null;
 		}		
 		
-		if (newRow != row || newColumn != column || newGroupColumn != groupColumn) {
+		if (newRow != row || newColumn != column || newGroupColumn != groupColumn || newGroupValue != groupValue) {
 			row = newRow;
 			column = newColumn;
 			groupColumn = newGroupColumn;
+			groupValue = newGroupValue;
 			return true;
 		}
 		
@@ -130,17 +143,37 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	
 	@Override
 	public void mouseHover(final MouseEvent e) {
-		if ((column != null) && (row != null)) {
+		if ((column != null) && (row != null) && (grid.getLabelProvider() != null)) {
 			final int x = e.x;
 			final int y = e.y + 16;
 			
 			if (row == Row.COLUMN_HEADER_ROW) {
-				// TODO: allow label provider to specify (example merged cols show source cols).
-				showToolTip(x, y, "", column.getCaption());
+				final String toolTip = grid.getLabelProvider().getHeaderToolTip(column);
+				showToolTip(x, y, column.getCaption(), (toolTip != null && !toolTip.isEmpty()) ? toolTip : "");
 				
-			} else if (grid.getLabelProvider() != null && !gridModel.isParentRow(row)) {
+			} else if (gridModel.isParentRow(row)) {
+				if (groupColumn != null) {
+					//
+					// A group row's header tool-tip.
+					//
+					final String toolTip = grid.getLabelProvider().getHeaderToolTip(groupColumn);
+					if (toolTip != null && !toolTip.isEmpty()) {
+						showToolTip(x, y, groupColumn.getCaption(), toolTip);
+					}
+					
+				} else if (groupValue != null) {
+					//
+					// A group row's value tool-tip.
+					//
+					final String toolTip = grid.getLabelProvider().getToolTip(groupValue, row.getElement());
+					if (toolTip != null && !toolTip.isEmpty()) {
+						showToolTip(x, y, groupValue.getCaption(), toolTip);
+					}					
+				}
+				
+			} else {
 				//
-				// For now, ignore tool-tips on group rows.
+				// Normal row's tool-tip.
 				//
 				final String toolTip = grid.getLabelProvider().getToolTip(column, row.getElement());
 				if (toolTip != null && !toolTip.isEmpty()) {

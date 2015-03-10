@@ -245,11 +245,13 @@ public class Viewport<T> {
 			// A data row (or row number) has been clicked.
 			//
 			for (int rowIndex=getFirstRowIndex(); rowIndex<getLastRowIndex(); rowIndex++) {
-				final Row<T> row = gridModel.getRows().get(rowIndex);
-				currentY += gridModel.getRowHeight(gc, row);
-
-				if (y <= currentY) {
-					return rowIndex;
+				if (rowIndex < gridModel.getRows().size()) {
+					final Row<T> row = gridModel.getRows().get(rowIndex);
+					currentY += gridModel.getRowHeight(gc, row);
+	
+					if (y <= currentY) {
+						return rowIndex;
+					}
 				}
 			}
 		}
