@@ -34,15 +34,13 @@ import com.notlob.jgrid.styles.StyleRegistry;
 public class Grid<T> extends Composite implements GridModel.IModelListener {
 
 	// TODO: Tool-tips (include # children in group tool-tip, current sort and filters, etc.).
-	// TODO: Group feature image support.
 	// Bug: filtering-out row should de-select it.
-	// BUG: Filter icon doesn't clip text in header.
 	// BUG: Couple of SelectionModel bugs
-	// TODO: Consider ditching FilterMatch and just use Filter ref?	
+	// TODO: Move collapse flag onto Row not on element.
 	// TODO: Reposition/resize columns via DnD.
 	// TODO: Scroll group row horizontally if not fit.
 	// TODO: Middle-mouse scrolling.
-	// TODO: Focus/Keyboard navigation.	
+	// TODO: Focus/Keyboard navigation / anchor.
 	// TODO: In-line editing.
 	// TODO: Empty data message.
 	// TODO: BUG: Empty grid's need to do what modelChanged does (i.e. calc viewport and scrollbars).
@@ -183,6 +181,11 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	public void groupBy(final List<Column> columns) {
 		checkWidget();
 		gridModel.groupBy(columns);
+	}
+	
+	public Column getGroupColumn(final int columnIndex) {
+		checkWidget();
+		return gridModel.getGroupByColumns().get(columnIndex);
 	}
 	
 	public void addElements(final List<T> elements) {
