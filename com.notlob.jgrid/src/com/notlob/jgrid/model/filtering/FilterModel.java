@@ -13,6 +13,11 @@ public class FilterModel<T> {
 	// These are the filters presently in place.
 	private final Collection<Filter<T>> filters;
 	
+	// Toggles whether rows that do not pass a highlighting filter should be filtered out of view or not. Other filters still have the normal effect though.
+	// For example, if true, rows that match a any filter are shown and those that match none are not. If false, a row is shown regardless of whether it matches
+	// a highlighting filter or not, although, if a filter exists which isn't a highlighting filter and the row doesn't match it, it will be hidden.
+	private boolean hideNoneHighlightedRows = false;
+	
 	public FilterModel(final GridModel<T> gridModel) {
 		this.gridModel = gridModel;
 		this.filters = new ArrayList<>();
@@ -37,6 +42,22 @@ public class FilterModel<T> {
 		applyFilters();
 	}
 	
+	public boolean isHideNoneHighlightedRows() {
+		return hideNoneHighlightedRows;
+	}
+	
+	public void setHideNoneHighlightedRows(final boolean hideNoneHighlightedRows) {
+		this.hideNoneHighlightedRows = hideNoneHighlightedRows;
+	}
+	
+	private boolean doesFilterHide(final Filter<T> filter) {
+		if (!(filter instanceof IHighlightingFilter)) {
+			return true;
+		}
+		
+		return hideNoneHighlightedRows;
+	}
+	
 	/**
 	 * Return true if one or more filters matches the row and it should be shown. If the row matches a filter, a FilterMatch is added 
 	 * to the row.
@@ -54,7 +75,9 @@ public class FilterModel<T> {
 		//
 		boolean allFiltersMatch = true;
 		for (Filter<T> filter : filters) {
-			if (!filter.matches(row)) {
+			final boolean matches = filter.matches(row);
+			
+			if (!matches && doesFilterHide(filter)) {
 				allFiltersMatch = false;
 			}
 		}

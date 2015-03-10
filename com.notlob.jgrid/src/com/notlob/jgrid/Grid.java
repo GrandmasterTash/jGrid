@@ -363,6 +363,16 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		checkWidget();
 		gridModel.setShowRowNumbers(show);		
 	}
+	
+	public boolean isHideNoneHighlightedRows() {		
+		checkWidget();
+		return gridModel.getFilterModel().isHideNoneHighlightedRows();
+	}
+	
+	public void setHideNoneHighlightedRows(final boolean hideNoneHighlightedRows) {
+		checkWidget();
+		gridModel.getFilterModel().setHideNoneHighlightedRows(hideNoneHighlightedRows);
+	}
 
 	public void addListener(final IGridListener<T> listener) {
 		this.listeners.add(listener);
