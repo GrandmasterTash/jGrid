@@ -33,7 +33,7 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class GridRenderer<T> implements PaintListener {
 
-	// BUG: Filter icon in header doesn't clip text like the sort icon does.
+	// TODO: Try..Finally for setClipping.
 	
 	protected final Grid<T> grid;
 	protected final Viewport<T> viewport;
@@ -413,8 +413,11 @@ public class GridRenderer<T> implements PaintListener {
 
 		rowBounds.x = point.x;
 		rowBounds.y = point.y;
-		rowBounds.width = (viewport.getViewportArea(gc).width);
+		rowBounds.width = viewport.getVisibleRowWidth(gc); //(viewport.getViewportArea(gc).width);
 		rowBounds.height = getGridModel().getRowHeight(gc, row);
+		
+		final Rectangle oldClipping = gc.getClipping();
+		gc.setClipping(rowBounds);
 
 		//
 		// Paint the row background.
@@ -454,6 +457,8 @@ public class GridRenderer<T> implements PaintListener {
 				paintGroupCellContent(gc, column, row, groupNameStyle, valueStyle);
 			}
 		}
+		
+		gc.setClipping(oldClipping);
 	}
 	
 	protected void paintGroupCellContent(final GC gc, final Column column, final Row<T> row, final CellStyle groupNameStyle, final CellStyle groupValueStyle) {
@@ -636,7 +641,7 @@ public class GridRenderer<T> implements PaintListener {
 
 		rowBounds.x = point.x + 1; // Shift 1 to avoid blatting the row number border line.
 		rowBounds.y = point.y + 1;
-		rowBounds.width = (viewport.getViewportArea(gc).width);
+		rowBounds.width = viewport.getVisibleRowWidth(gc);// (viewport.getViewportArea(gc).width);
 		rowBounds.height = getGridModel().getRowHeight(gc, row);
 
 		cellBounds.x = point.x;
