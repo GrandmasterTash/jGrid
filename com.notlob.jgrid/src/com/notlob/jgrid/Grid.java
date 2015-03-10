@@ -33,12 +33,8 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite implements GridModel.IModelListener {
 
-	// Bug: filtering-out row should de-select it.
-	// BUG: Couple of SelectionModel bugs
-	// TODO: Add bold title to QuickFilter picker.
-	// TODO: Move collapse flag onto Row not on element.
 	// TODO: Reposition/resize columns via DnD.
-	// TODO: Scroll group row horizontally if not fit.
+	// TODO: Group row tool-tip show all group name/values even hidden ones (so if don't fit still show).
 	// TODO: Middle-mouse scrolling.
 	// TODO: Focus/Keyboard navigation / anchor.
 	// TODO: In-line editing.
