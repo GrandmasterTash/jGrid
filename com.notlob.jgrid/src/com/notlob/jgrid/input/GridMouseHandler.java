@@ -24,7 +24,7 @@ import com.notlob.jgrid.model.Viewport;
 
 // TODO: Expose more mouse events for cells.
 
-public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListener, MouseTrackListener {
+public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListener, MouseTrackListener/*, MouseWheelListener*/ {
 	
 	private final Grid<T> grid;
 	private final GridModel<T> gridModel;
@@ -35,6 +35,8 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	
 	// Track if any mouse button is in the down position.
 	private boolean mouseDown;
+	private int button; // Tracked in mouse down.
+	private Point downLocation = null;
 	
 	// Track if the mouse is over a row/column.
 	private Row<T> row = null;
@@ -186,6 +188,14 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	@Override
 	public void mouseMove(MouseEvent e) {
 		toolTip.setVisible(false);
+//		System.out.println("TODO: break when mousewheel causes repaint - copy whatever is causing it to the this stuff.");
+//		if (mouseDown && button == 2) {
+//			// TODO: Scroll the viewport.
+//			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEALL));
+//			grid.getVerticalBar().setSelection(grid.getVerticalBar().getSelection() + (e.x - downLocation.x));
+//			System.out.println("Scroll " + (e.x - downLocation.x) + "," + (e.y - downLocation.y));
+//			grid.redraw();
+//		}
 		
 		if (trackCell(e.x, e.y) /*&& grid.isHighlightHoveredRow()*/) {
 			//
@@ -195,9 +205,17 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		}
 	}
 	
+//	@Override
+//	public void mouseScrolled(MouseEvent e) {
+//		// TODO: Might not need this...
+//		System.out.println("Mouse Wheel");		
+//	}
+	
 	@Override
 	public void mouseDown(final MouseEvent e) {
 		mouseDown = true;
+		button = e.button;
+		downLocation = new Point(e.x, e.y);
 	}
 
 	@Override
@@ -207,6 +225,12 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		}
 
 		mouseDown = false;
+		button = -1;
+		downLocation = null;
+		
+		if (grid.getCursor() == grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEALL)) {
+			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+		}
 
 		//
 		// Get the event details.
@@ -264,10 +288,17 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				// Handle the selection.
 				//
 				if (row != null && (row != Row.COLUMN_HEADER_ROW) /*&& (row != Row.FILTER_HEADER_ROW)*/) {
-					// If it's the row-number cell, pretend ctrl is used for sticky selectins.
+					//
+					// If it's the row-number cell, pretend ctrl is used for sticky selections.
+					//
 					if (e.x < viewport.getViewportArea(gc).x) {
 						ctrl = true;
 					}
+					
+					//
+					// Update the anchor column.
+					//
+					gridModel.getSelectionModel().setAnchorColumn(column);
 
 					if (!(shift || ctrl)) {
 						//
@@ -275,7 +306,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						//
 						final List<Row<T>> rows = new ArrayList<>();
 						rows.addAll(gridModel.isParentRow(row) ? gridModel.getWholeGroup(row) : Collections.singletonList(row));
-						gridModel.getSelectionModel().setSelectedRows(rows);
+						gridModel.getSelectionModel().setSelectedRows(rows);						
 
 					} else if (ctrl && !shift) {
 						//

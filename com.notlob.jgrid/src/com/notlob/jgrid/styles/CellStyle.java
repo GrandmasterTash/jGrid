@@ -44,6 +44,11 @@ public class CellStyle {
 	private BorderStyle borderOuterRight;
 	private BorderStyle borderOuterBottom;	
 	private BorderStyle borderOuterLeft;
+	
+	public CellStyle() {
+		foregroundOpacity = 255;
+		backgroundOpacity = 255;
+	}
 
 	// TODO: Consider Base64Encoder copying....
 	public CellStyle copy() {

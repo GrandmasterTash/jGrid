@@ -9,21 +9,37 @@ public class SelectionModel<T> {
 
 	private final GridModel<T> gridModel;
 	private final Set<T> selectedElements;
-	private T selectionAnchorElement;	// Used for SHIFT selects.
+	private T anchorElement;		// Used for SHIFT selects and keyboard navigation.
+	private Column anchorColumn;	// 
 
 	public SelectionModel(final GridModel<T> gridModel) {
 		this.gridModel = gridModel;
 		selectedElements = new HashSet<>();
 	}
 
-	public T getSelectionAnchorElement() {
-		gridModel.checkWidget();
-		return selectionAnchorElement;
+	public T getAnchorElement() {
+		return anchorElement;
 	}
+	
+	public void setAnchorElement(final T anchorElement) {
+		this.anchorElement = anchorElement;
+	}
+	
+	public Column getAnchorColumn() {
+		return anchorColumn;
+	}
+	
+	public void setAnchorColumn(final Column anchorColumn) {
+		if (this.anchorColumn != null) {
+			this.anchorColumn.setAnchor(false);
+		}
+		
+		this.anchorColumn = anchorColumn;
+		anchorColumn.setAnchor(true);
+	}	
 
-	// TODO: Make this un-modifiable to ensure the .selected flag is ref integ.
+	// TODO: Make this un-modifiable to ensure the .selected flag is ref integ?
 	public Set<T> getSelectedElements() {
-		gridModel.checkWidget();
 		return selectedElements;
 	}
 
@@ -38,29 +54,29 @@ public class SelectionModel<T> {
 	}
 
 	public void selectAll() {
-		gridModel.checkWidget(); // TODO: Remove all of these - nothing should be accessing this other than through the grid
 		setSelectedRows(gridModel.getRows());
 	}
 
-	public void clear() {
-		gridModel.checkWidget();
+	public void clear(final boolean notify) {
+		for (final Object element : selectedElements) {
+			gridModel.getRowsByElement().get(element).setSelected(false);
+		}
+		
 		selectedElements.clear();
-		selectionAnchorElement = null;
-		// BUG: Clear selected property on the rows!!!!
-		// TODO: Also, fuse this with the noNotify method and use a param
-		gridModel.fireSelectionChangedEvent();
+		
+		if (notify) {
+			gridModel.fireSelectionChangedEvent();
+		}
 	}
 
 	/**
 	 * Replace the entire selection with the new one.
 	 */
 	public void setSelectedRows(final List<Row<T>> rowsToSelect) {
-		gridModel.checkWidget();
-
 		//
 		// Clear any existing selection.
 		//
-		clearSelectionNoNotifty();
+		clear(false);
 
 		//
 		// Select the new rows.
@@ -78,9 +94,20 @@ public class SelectionModel<T> {
 		// Update the selection anchor.
 		//
 		if (rowsToSelect.isEmpty()) {
-			selectionAnchorElement = null;
+			if (anchorColumn != null) {
+				anchorColumn.setAnchor(false);
+			}
+			
+			anchorElement = null;
+			anchorColumn = null;
+			
 		} else {
-			selectionAnchorElement = rowsToSelect.get(0).getElement();
+			anchorElement = rowsToSelect.get(0).getElement();
+			
+			if (anchorColumn  == null && !gridModel.getColumns().isEmpty()) {
+				anchorColumn = gridModel.getColumns().get(0);
+				anchorColumn.setAnchor(true);
+			}
 		}
 
 		gridModel.fireSelectionChangedEvent();
@@ -90,7 +117,6 @@ public class SelectionModel<T> {
 	 * Flips the selected state of the rows specified.
 	 */
 	public void toggleRowSelections(final List<Row<T>> rowsToToggle) {
-		gridModel.checkWidget();
 		boolean firstSelection = true;
 
 		//
@@ -104,7 +130,7 @@ public class SelectionModel<T> {
 
 				if (firstSelection) {
 					firstSelection = false;
-					selectionAnchorElement = row.getElement();
+					anchorElement = row.getElement();
 				}
 			}
 		}
@@ -117,27 +143,17 @@ public class SelectionModel<T> {
 		gridModel.fireSelectionChangedEvent();
 	}
 
-	private void clearSelectionNoNotifty() {
-		for (final Object element : selectedElements) {
-			gridModel.getRowsByElement().get(element).setSelected(false);
-		}
-		selectedElements.clear();
-	}
-
 	void removeRow(final Row<T> row) {
 		selectedElements.remove(row.getElement());
+		row.setSelected(false);
 		
-		// Bug: Update the selected property on the row. 
-		
-		if (selectionAnchorElement == row.getElement()) {
-			selectionAnchorElement = null;
+		if (anchorElement == row.getElement()) {
+			anchorElement = null;
 		}
 	}
 
 	public void selectRange(final Row<T> row, final boolean keepExisting) {
-		gridModel.checkWidget();
-
-		final int anchorRowIndex = selectionAnchorElement == null ? 0 : gridModel.getRows().indexOf(gridModel.getRow(selectionAnchorElement));
+		final int anchorRowIndex = anchorElement == null ? 0 : gridModel.getRows().indexOf(gridModel.getRow(anchorElement));
 		final int selectionRowIndex = gridModel.getRows().indexOf(row);
 		final int lowerIndex = anchorRowIndex <= selectionRowIndex ? anchorRowIndex : selectionRowIndex;
 		final int upperIndex = anchorRowIndex > selectionRowIndex ? anchorRowIndex : selectionRowIndex;
@@ -148,7 +164,7 @@ public class SelectionModel<T> {
 		}
 
 		if (!keepExisting) {
-			clearSelectionNoNotifty();
+			clear(false);
 		}
 
 		for (final Row<T> toSelect : rowsToSelect) {
@@ -159,6 +175,11 @@ public class SelectionModel<T> {
 		// If all child rows of a group are selected, select the group.
 		//
 		checkGroupSelection(rowsToSelect);
+		
+		//
+		// Update the anchor the the row.
+		//
+		anchorElement = row.getElement();
 
 		gridModel.fireSelectionChangedEvent();
 	}
@@ -171,9 +192,9 @@ public class SelectionModel<T> {
 	 * We only need to check the first and last rows in the list (we're assuming they are in screen order).
 	 */
 	private void checkGroupSelection(final List<Row<T>> rowsToSelect) {
-
 		if (!rowsToSelect.isEmpty()) {
 			final Row<T> firstRow = rowsToSelect.get(0);
+			// BUG: Think this logic is floored and all rows probably need checking.
 			if (gridModel.isGroupRow(firstRow)) {
 				checkGroup(gridModel.getWholeGroup(firstRow));
 			}
@@ -209,5 +230,4 @@ public class SelectionModel<T> {
 			unselectRow(parentRow);
 		}
 	}
-
 }

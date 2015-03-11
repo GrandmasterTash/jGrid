@@ -37,6 +37,7 @@ public class StyleRegistry<T> {
 	protected final CellStyle selectionGroupStyle;
 	protected final CellStyle selectionHeaderStyle;
 	protected final CellStyle selectionRowNumberStyle;
+	protected final CellStyle anchorStyle;
 	protected RegionStyle selectionRegionStyle;	
 	
 	// Hover styles.
@@ -119,18 +120,28 @@ public class StyleRegistry<T> {
 		selectionGroupStyle = groupValueStyle.copy();
 		selectionHeaderStyle = defaultHeaderStyle.copy();
 		selectionHeaderStyle.setBackground(new RGB(255, 213, 141));
-		selectionHeaderStyle.setBackgroundGradient1(null);
-		selectionHeaderStyle.setBackgroundGradient2(null);
+		selectionHeaderStyle.setBackgroundGradient1(new RGB(248, 215, 155));
+		selectionHeaderStyle.setBackgroundGradient2(new RGB(241, 193, 95));
 		selectionHeaderStyle.setBorderOuterTop(new BorderStyle(1, LineStyle.SOLID, new RGB(242, 149, 54)));
 		selectionHeaderStyle.setBorderOuterRight(new BorderStyle(1, LineStyle.SOLID, new RGB(242, 149, 54)));
 		selectionHeaderStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(242, 149, 54)));
 		selectionHeaderStyle.setBorderOuterLeft(new BorderStyle(1, LineStyle.SOLID, new RGB(242, 149, 54)));
-
+		
+		//
+		// Anchor style.
+		//
+		anchorStyle = new CellStyle();
+		anchorStyle.setPaddingInnerBorder(2);
+		anchorStyle.setBorderInnerTop(new BorderStyle(1, LineStyle.DASHED, new RGB(180, 180, 180)));
+		anchorStyle.setBorderInnerRight(new BorderStyle(1, LineStyle.DASHED, new RGB(180, 180, 180)));
+		anchorStyle.setBorderInnerBottom(new BorderStyle(1, LineStyle.DASHED, new RGB(180, 180, 180)));
+		anchorStyle.setBorderInnerLeft(new BorderStyle(1, LineStyle.DASHED, new RGB(180, 180, 180)));
+		
 		//
 		// Selection region style.
 		//
 		selectionRegionStyle = new RegionStyle();
-		selectionRegionStyle.setBorder(new BorderStyle(2, LineStyle.SOLID, new RGB(0, 0, 0)));
+		selectionRegionStyle.setBorder(new BorderStyle(1, LineStyle.SOLID, new RGB(0, 0, 0)));
 		selectionRegionStyle.setBackground(new RGB(100, 200, 250));
 		selectionRegionStyle.setBackgroundGradient1(new RGB(255, 213, 141));
 		selectionRegionStyle.setBackgroundGradient2(new RGB(255, 213, 141));
@@ -273,30 +284,44 @@ public class StyleRegistry<T> {
 		return pinnedStyle;
 	}
 	
+	public CellStyle getAnchorStyle() {
+		return anchorStyle;
+	}
+
 	public CellStyle getCellStyle(final Column column, final Row<T> row, final Grid<T> grid) {
 
 		if (row.isPinned()) {
 			return pinnedStyle;
 		}
 		
-		//
-		// See if there's a custom style first.
-		//
+
 		if (column != null) {
+			//
+			// See if there's a custom style first.
+			//
 			final CellStyle customStyle = (row == Row.COLUMN_HEADER_ROW) ? grid.getLabelProvider().getHeaderStyle(column) : grid.getLabelProvider().getCellStyle(column, row.getElement());
 			if (customStyle != null) {
 				return customStyle;
 			}
-		}
+			
+			//
+			// Check for a selected column header
+			//
+			if (row == Row.COLUMN_HEADER_ROW  && column.hasAnchor()) {
+				return selectionHeaderStyle;
+			}
+		}		
 
-		// TODO: Move content provider into model and have model available from stylereg.
-		// Then just call isParent.
-		final boolean parentRow = ((row.getElement() != null && grid.getContentProvider().getChildren(row.getElement()) != null));
+		final boolean parentRow = grid.getGridModel().isParentElement(row.getElement());
+//		final boolean parentRow = ((row.getElement() != null && grid.getContentProvider().getChildren(row.getElement()) != null));
 
+		//
+		// Check for a selected row.
+		//
 		if (row.isSelected()) {
 			if (parentRow) {
 				return selectionGroupStyle;
-			}
+			}						
 
 			return selectionStyle;
 		}

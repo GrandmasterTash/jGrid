@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
@@ -430,7 +429,7 @@ public class GridModel<T> {
 		//
 		// Clear all selections.
 		//
-		selectionModel.clear();	
+		selectionModel.clear(false);	
 		
 		fireChangeEvent();
 	}
@@ -700,15 +699,19 @@ public class GridModel<T> {
 		return sb.toString();
 	}
 
-	public List<Row<T>> getRowsForElements(final Set<T> elements) {
-		checkWidget();
-
-		final List<Row<T>> rows = new ArrayList<>();
-		for (final Object element : elements) {
-			rows.add(rowsByElement.get(element));
-		}
-		return rows;
-	}
+//	public List<Row<T>> getRowsForElements(final Set<T> elements) {
+//		checkWidget();
+//
+//		final List<Row<T>> rows = new ArrayList<>();
+//		for (final Object element : elements) {
+//			rows.add(rowsByElement.get(element));
+//		}
+//		return rows;
+//	}
+//	
+//	public Row<T> getRowForElement(final T element) {
+//		return rowsByElement.get(element);
+//	}
 
 	public void pinRows(final List<Row<T>> rows) {
 		checkWidget();

@@ -651,7 +651,7 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		// Fill the row background (not the header row though).
 		//
-		if ((row.getElement() != null) && (renderPass == RenderPass.BACKGROUND)) {
+		if ((row.getElement() != Row.COLUMN_HEADER_ROW) && (renderPass == RenderPass.BACKGROUND)) {
 			final CellStyle rowStyle = grid.getStyleRegistry().getCellStyle(null, row, grid);
 			gc.setBackground(getColour(alternate ? rowStyle.getBackgroundAlternate() : rowStyle.getBackground()));
 			gc.fillRectangle(rowBounds);
@@ -684,7 +684,7 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			if (renderPass == RenderPass.FOREGROUND) {
 				paintCellContent(gc, bounds, column, row, cellStyle);
-				paintCellBorders(gc, bounds, cellStyle);
+				paintCellBorders(gc, bounds, (column.hasAnchor() && row.getElement() == getGridModel().getSelectionModel().getAnchorElement()) ? getStyleRegistry().getAnchorStyle() : cellStyle);
 			}
 			
 		} catch (Throwable t) {		

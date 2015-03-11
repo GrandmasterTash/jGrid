@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.ToolTip;
 
+import com.notlob.jgrid.input.GridKeyboardHandler;
 import com.notlob.jgrid.input.GridMouseHandler;
 import com.notlob.jgrid.listeners.IGridListener;
 import com.notlob.jgrid.model.Column;
@@ -33,20 +34,20 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite implements GridModel.IModelListener {
 
+	// TODO: Focus/Keyboard navigation / anchor.
+	// Bug: anchorElement is used for range selection but might need a new construct now it's changed purpose.
+	// TODO: Middle-mouse scrolling.
 	// TODO: Reposition/resize columns via DnD.
 	// TODO: Group row tool-tip show all group name/values even hidden ones (so if don't fit still show).
-	// TODO: Middle-mouse scrolling.
-	// TODO: Focus/Keyboard navigation / anchor.
-	// TODO: In-line editing.
+	// TODO: Column selection mode.
 	// TODO: Empty data message.
-	// TODO: Column selection mode.	
-	// TODO: Suppress model change events....
 	// TODO: Select next row/group if current is removed.
 	// TODO: Right-click to select before raising event.
-	// TODO: Column pinning.	
+	// TODO: Column pinning.
+	// TODO: In-line editing.		
+	// TODO: Suppress model change events optimisation?				
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
-	// TODO: Group feature and background clipping on the right edge.
 	
 	// Models.
 	private final GridModel<T> gridModel;
@@ -64,6 +65,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	
 	// Keyboard and mouse input handling.
 	private final GridMouseHandler<T> mouseHandler;
+	private final GridKeyboardHandler keyboardHandler;
 
 	// TODO: try..catch around all calls to listeners...
 	// Things that listen to us.
@@ -95,8 +97,10 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		toolTip = new ToolTip(parent.getShell(), SWT.NONE);
 		toolTip.setAutoHide(true);		
 		mouseHandler = new GridMouseHandler<T>(this, gc, listeners, toolTip);
+		keyboardHandler = new GridKeyboardHandler(this);
 		
 		parent.addDisposeListener(disposeListener);
+		addKeyListener(keyboardHandler);
 		addMouseListener(mouseHandler);
 		addMouseMoveListener(mouseHandler);
 		addMouseTrackListener(mouseHandler);
@@ -110,8 +114,11 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	public void dispose() {
 		toolTip.dispose();
 		
-		// Remove listeners.		
+		// Remove listeners.
+		removeKeyListener(keyboardHandler);
 		removeMouseListener(mouseHandler);
+		removeMouseTrackListener(mouseHandler);
+		removeMouseMoveListener(mouseHandler);
 		removePaintListener(gridRenderer);
 		removeListener(SWT.Resize, resizeListener);
 		getVerticalBar().removeSelectionListener(scrollListener);
