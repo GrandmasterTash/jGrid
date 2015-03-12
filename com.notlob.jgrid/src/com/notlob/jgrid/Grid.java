@@ -34,8 +34,10 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite implements GridModel.IModelListener {
 
+	// TODO: Hide anchor / header style on lost focus (and the hover style with mouse exit as well).
 	// TODO: Focus/Keyboard navigation / anchor.
 	// Bug: anchorElement is used for range selection but might need a new construct now it's changed purpose.
+	// Bug: CollapseFilter should opt-out of clearing selection.
 	// TODO: Middle-mouse scrolling.
 	// TODO: Reposition/resize columns via DnD.
 	// TODO: Group row tool-tip show all group name/values even hidden ones (so if don't fit still show).
@@ -48,6 +50,10 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	// TODO: Suppress model change events optimisation?				
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
+	// TODO: Evaluate performance gain vs memory overhead of the extent cache in the renderer.
+	// TODO: Make setting to toggle group name click behaviour - click vs alt + click.
+	// TODO: Make setting to toggle anchor header highlight.
+	// TODO: Make setting to pad group values by their column width.
 	
 	// Models.
 	private final GridModel<T> gridModel;
@@ -65,7 +71,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	
 	// Keyboard and mouse input handling.
 	private final GridMouseHandler<T> mouseHandler;
-	private final GridKeyboardHandler keyboardHandler;
+	private final GridKeyboardHandler<T> keyboardHandler;
 
 	// TODO: try..catch around all calls to listeners...
 	// Things that listen to us.
@@ -97,7 +103,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		toolTip = new ToolTip(parent.getShell(), SWT.NONE);
 		toolTip.setAutoHide(true);		
 		mouseHandler = new GridMouseHandler<T>(this, gc, listeners, toolTip);
-		keyboardHandler = new GridKeyboardHandler(this);
+		keyboardHandler = new GridKeyboardHandler<T>(this, gc);
 		
 		parent.addDisposeListener(disposeListener);
 		addKeyListener(keyboardHandler);

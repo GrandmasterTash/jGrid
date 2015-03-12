@@ -16,6 +16,7 @@ import com.notlob.jgrid.util.ResourceManager;
  */
 public class Viewport<T> {
 	
+	// BUG: Pretty certain there's inconsistent use of cell padding / spacing (or lack of) throughout the methods in here....
 	// BUG: Gridlines/spacing may cause the rowY logic to become inaccurate.
 
 	private int firstRowIndex;
@@ -92,13 +93,18 @@ public class Viewport<T> {
 			if (x >= originX && getFirstColumnIndex() == -1) {
 				setFirstColumnIndex(columnIndex);
 			}
+			
+//			if (((x - column.getWidth()) > (originX + viewportArea.width)) && ((getLastColumnIndex() == -1))) {
+//				setLastColumnIndex(columnIndex);
+//				break;
+//			}
 
-			if (((x - column.getWidth()) > (originX + viewportArea.width)) && ((getLastColumnIndex() == -1))) {
+			x += column.getWidth();
+			
+			if ((x > (originX + viewportArea.width)) && ((getLastColumnIndex() == -1))) {
 				setLastColumnIndex(columnIndex);
 				break;
 			}
-
-			x += column.getWidth();
 		}
 
 		//
@@ -107,7 +113,6 @@ public class Viewport<T> {
 		if (getLastColumnIndex() == -1 && !gridModel.getColumns().isEmpty()) {
 			setLastColumnIndex(gridModel.getColumns().size());
 		}
-
 	}
 
 	/**
@@ -120,7 +125,6 @@ public class Viewport<T> {
 		}
 
 		final GridModel<T> gridModel = grid.getGridModel();
-
 		viewportArea.x = grid.getClientArea().x;
 		viewportArea.y = grid.getClientArea().y;
 		viewportArea.width = grid.getClientArea().width;
@@ -160,12 +164,20 @@ public class Viewport<T> {
 		final Rectangle viewportArea = getViewportArea(gc);
 		int x = viewportArea.x;
 
-		for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastColumnIndex(); columnIndex++) {
+		for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
 			final Column column = grid.getColumn(columnIndex);
 			x += column.getWidth();
 		}
 
 		return Math.min(viewportArea.width, x - viewportArea.x); // Can't currently explain this substract. It's TOO early in the morning!!!
+	}
+	
+	/**
+	 * Visual trick - we actually paint the visible columns and then the next TWO columns (although they are clipped).
+	 * This stops flickering on the right-most column when horizontally scrolling.
+	 */
+	public int getLastVisibleColumnIndex() {
+		return Math.min(getLastColumnIndex() + 2, grid.getColumns().size());
 	}
 
 	public int getFirstRowIndex() {
@@ -184,19 +196,19 @@ public class Viewport<T> {
 		return lastColumnIndex;
 	}
 
-	public void setFirstRowIndex(final int firstRowIndex) {
+	private void setFirstRowIndex(final int firstRowIndex) {
 		this.firstRowIndex = firstRowIndex;
 	}
 
-	public void setLastRowIndex(final int lastRowIndex) {
+	private void setLastRowIndex(final int lastRowIndex) {
 		this.lastRowIndex = lastRowIndex;
 	}
 
-	public void setFirstColumnIndex(final int firstColumnIndex) {
+	private void setFirstColumnIndex(final int firstColumnIndex) {
 		this.firstColumnIndex = firstColumnIndex;
 	}
 
-	public void setLastColumnIndex(final int lastColumnIndex) {
+	private void setLastColumnIndex(final int lastColumnIndex) {
 		this.lastColumnIndex = lastColumnIndex;
 	}
 
@@ -217,6 +229,20 @@ public class Viewport<T> {
 			}
 		}
 
+		return -1;
+	}
+	
+	public int getColumnX(final Column column) {
+		int x = 0;
+		
+		for (Column current : grid.getColumns()) {
+			if (current == column) {
+				return x;
+			}
+			
+			x += current.getWidth();
+		}
+		
 		return -1;
 	}
 

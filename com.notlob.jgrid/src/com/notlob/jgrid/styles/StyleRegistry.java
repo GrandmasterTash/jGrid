@@ -57,7 +57,7 @@ public class StyleRegistry<T> {
 		columnStyles = new HashMap<>();
 		customStyles = new HashMap<>();
 		backgroundColour = new RGB(255, 255, 255);
-		groupFooterBorder = new BorderStyle(1, LineStyle.SOLID, new RGB(100, 100, 100));
+		groupFooterBorder = new BorderStyle(2, LineStyle.SOLID, new RGB(100, 100, 100));
 
 		//
 		// Build a default cell style.
@@ -141,7 +141,7 @@ public class StyleRegistry<T> {
 		// Selection region style.
 		//
 		selectionRegionStyle = new RegionStyle();
-		selectionRegionStyle.setBorder(new BorderStyle(1, LineStyle.SOLID, new RGB(0, 0, 0)));
+		selectionRegionStyle.setBorder(new BorderStyle(2, LineStyle.SOLID, new RGB(0, 0, 0)));
 		selectionRegionStyle.setBackground(new RGB(100, 200, 250));
 		selectionRegionStyle.setBackgroundGradient1(new RGB(255, 213, 141));
 		selectionRegionStyle.setBackgroundGradient2(new RGB(255, 213, 141));

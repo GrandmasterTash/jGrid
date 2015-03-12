@@ -35,7 +35,10 @@ public class SelectionModel<T> {
 		}
 		
 		this.anchorColumn = anchorColumn;
-		anchorColumn.setAnchor(true);
+		
+		if (anchorColumn != null) {
+			anchorColumn.setAnchor(true);
+		}
 	}	
 
 	// TODO: Make this un-modifiable to ensure the .selected flag is ref integ?

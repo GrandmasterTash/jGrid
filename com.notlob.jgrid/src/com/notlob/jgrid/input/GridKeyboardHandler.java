@@ -3,6 +3,8 @@ package com.notlob.jgrid.input;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Rectangle;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
@@ -13,11 +15,13 @@ import com.notlob.jgrid.model.SelectionModel;
 // TODO: Both this and mouse need try...catches...
 public class GridKeyboardHandler<T> extends KeyAdapter {
 
+	private final GC gc;
 	private final Grid<T> grid;
 	private final GridModel<T> gridModel;
 	private final SelectionModel<T> selectionModel;
 	
-	public GridKeyboardHandler(final Grid<T> grid) {
+	public GridKeyboardHandler(final Grid<T> grid, final GC gc) {
+		this.gc = gc;
 		this.grid = grid;
 		this.gridModel = grid.getGridModel();
 		this.selectionModel = grid.getGridModel().getSelectionModel();
@@ -112,8 +116,16 @@ public class GridKeyboardHandler<T> extends KeyAdapter {
 				return;
 			}
 			
-			final Row<T> newRow = gridModel.getRows().get(rowIndex + (direction == SWT.ARROW_UP ? -1 : 1));
+			//
+			// Update the anchor element.
+			//
+			final int newRowIndex = rowIndex + (direction == SWT.ARROW_UP ? -1 : 1);
+			final Row<T> newRow = gridModel.getRows().get(newRowIndex);
 			selectionModel.setAnchorElement(newRow.getElement());
+			
+			//
+			// Check to see if the viewport needs to scroll.
+			//
 			
 		} else if ((direction == SWT.ARROW_LEFT) || (direction == SWT.ARROW_RIGHT)) {
 			//
@@ -127,9 +139,28 @@ public class GridKeyboardHandler<T> extends KeyAdapter {
 				//
 				return;
 			}
+
+			//
+			// Update the anchor column.
+			//
+			final int nextColumnIndex = columnIndex + (direction == SWT.ARROW_LEFT ? -1 : 1);
+			final Column nextColumn = gridModel.getColumns().get(nextColumnIndex);
+			selectionModel.setAnchorColumn(nextColumn);
 			
-			final Column nextColumn = gridModel.getColumns().get(columnIndex + (direction == SWT.ARROW_LEFT ? -1 : 1));
-			selectionModel.setAnchorColumn(nextColumn);			
+			//
+			// Check to see if the viewport needs to scroll.
+			//
+// TODO: Move into viewport.			
+			final int columnX = grid.getViewport().getColumnX(nextColumn);
+			final int originX = grid.getHorizontalBar().getSelection();
+			final Rectangle viewportArea = grid.getViewport().getViewportArea(gc);
+
+			if ((columnX < ((viewportArea.x + originX))) || ((columnX + nextColumn.getWidth()) > ((viewportArea.x + originX) + viewportArea.width))) {								
+				//
+				// If the column is off the left or right of the viewport, scroll it one column in the appropriate direction to reveal the column.
+				//
+				grid.getHorizontalBar().setSelection(grid.getHorizontalBar().getSelection() + (grid.getHorizontalBar().getIncrement() * ((direction == SWT.ARROW_LEFT) ? -1 : 1)));
+			}
 			
 		} else {
 			throw new IllegalArgumentException(String.format("Unknown direction %s", direction));

@@ -656,11 +656,11 @@ public class GridRenderer<T> implements PaintListener {
 			gc.setBackground(getColour(alternate ? rowStyle.getBackgroundAlternate() : rowStyle.getBackground()));
 			gc.fillRectangle(rowBounds);
 		}
-
+		
 		//
 		// Now paint every cell in the row.
-		//
-		for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastColumnIndex(); columnIndex++) {
+		//		
+		for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
 			final Column column = gridModel.getColumns().get(columnIndex);
 			final CellStyle cellStyle = gridModel.getStyleRegistry().getCellStyle(column, row, grid);
 
