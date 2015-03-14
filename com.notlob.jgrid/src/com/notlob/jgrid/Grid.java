@@ -392,6 +392,11 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	public void removeListener(final IGridListener<T> listener) {
 		this.listeners.remove(listener);
 	}
+	
+	public void reveal(final Column column, final T element) {
+		checkWidget();
+		viewport.reveal(gc, column, gridModel.getRow(element));
+	}
 
 	private class ScrollListener extends SelectionAdapter {
 		@Override

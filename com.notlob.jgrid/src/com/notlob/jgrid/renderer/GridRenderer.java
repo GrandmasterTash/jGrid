@@ -212,7 +212,7 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		// Paint selected row regions - a region is a contiguous block of selected rows.
 		//
-		for (int rowIndex=viewport.getFirstRowIndex(); rowIndex<viewport.getLastRowIndex(); rowIndex++) {
+		for (int rowIndex=viewport.getFirstRowIndex(); rowIndex<viewport.getLastVisibleRowIndex(); rowIndex++) {
 			final Row<T> row = gridModel.getRows().get(rowIndex);
 
 			if (row.isSelected()) {
@@ -374,7 +374,7 @@ public class GridRenderer<T> implements PaintListener {
 		rowLocation.x = viewportArea.x;
 		rowLocation.y = viewportArea.y;
 
-		for (int rowIndex=viewport.getFirstRowIndex(); rowIndex<viewport.getLastRowIndex(); rowIndex++) {
+		for (int rowIndex=viewport.getFirstRowIndex(); rowIndex<viewport.getLastVisibleRowIndex(); rowIndex++) {
 			final Row<T> row = gridModel.getRows().get(rowIndex);
 
 			if (gridModel.isShowRowNumbers()) {
@@ -629,7 +629,7 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		// Get the y for the row from the viewport.
 		//
-		final int rowY = viewport.getRowY(gc, row);
+		final int rowY = viewport.getRowViewportY(gc, row);
 		final Image image = grid.getContentProvider().isCollapsed(row.getElement()) ? ResourceManager.getInstance().getImage("plus.png") : ResourceManager.getInstance().getImage("minus.png");
 		final CellStyle groupValueStyle = grid.getStyleRegistry().getGroupValueStyle();
 		final Rectangle bounds = new Rectangle(viewport.getViewportArea(gc).x + groupValueStyle.getPaddingLeft() - PADDING__EXPAND_COLLAPSE_IMAGE, rowY + groupValueStyle.getPaddingTop(), image.getBounds().width + (PADDING__EXPAND_COLLAPSE_IMAGE * 2), image.getBounds().height + (PADDING__EXPAND_COLLAPSE_IMAGE * 2));		
@@ -684,7 +684,9 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			if (renderPass == RenderPass.FOREGROUND) {
 				paintCellContent(gc, bounds, column, row, cellStyle);
-				paintCellBorders(gc, bounds, (column.hasAnchor() && row.getElement() == getGridModel().getSelectionModel().getAnchorElement()) ? getStyleRegistry().getAnchorStyle() : cellStyle);
+				
+				final CellStyle borderCellStyle = (column != null && row != null && column.hasAnchor() && row.getElement() == getGridModel().getSelectionModel().getAnchorElement()) ? getStyleRegistry().getAnchorStyle() : cellStyle;
+				paintCellBorders(gc, bounds, borderCellStyle);
 			}
 			
 		} catch (Throwable t) {		
