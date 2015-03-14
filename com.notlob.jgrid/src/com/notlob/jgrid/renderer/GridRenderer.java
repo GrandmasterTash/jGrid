@@ -245,7 +245,7 @@ public class GridRenderer<T> implements PaintListener {
 				
 			}
 			
-			if (grid.isHighlightHoveredRow() && !row.isSelected() && (row == grid.getMouseHandler().getRow())) {
+			if (grid.isFocusControl() && grid.isHighlightHoveredRow() && !row.isSelected() && (row == grid.getMouseHandler().getRow())) {
 				//
 				// The row has the mouse hovering over it, so paint it with the hover style. If the mouse is over a group field name though, don't highlight.
 				//
@@ -405,7 +405,7 @@ public class GridRenderer<T> implements PaintListener {
 		cellBounds.y = point.y;
 		cellBounds.height = getGridModel().getRowHeight(gc, row);
 		cellBounds.width = point.x;
-		paintCell(gc, cellBounds, null, null, row.isSelected() ? getStyleRegistry().getSelectionRowNumberStyle() :  getStyleRegistry().getRowNumberStyle());
+		paintCell(gc, cellBounds, null, null, (grid.isFocusControl() && grid.isHighlightAnchorInHeaders() && doesRowHaveAnchor(row)) ? getStyleRegistry().getSelectionRowNumberStyle() : getStyleRegistry().getRowNumberStyle());
 	}
 
 	protected void paintGroupRow(final GC gc, final Point point, final Row<T> row) {	
@@ -582,6 +582,14 @@ public class GridRenderer<T> implements PaintListener {
 			gc.setFont(getFont(groupNameStyle.getFontData()));
 			final Point nameExtent = extentCache.get(name);
 			
+			if (nameExtent == null) {
+				//
+				// Edge case - mouse is tracking a cell before the cell has been rendered. Seen when grid is loading with a
+				// mouse already in place.
+				//
+				return null;
+			}
+			
 			if (header && (x >= fieldLocationX) && (x < (fieldLocationX + nameExtent.x))) {
 				return column;
 			}
@@ -685,7 +693,7 @@ public class GridRenderer<T> implements PaintListener {
 			if (renderPass == RenderPass.FOREGROUND) {
 				paintCellContent(gc, bounds, column, row, cellStyle);
 				
-				final CellStyle borderCellStyle = (column != null && row != null && column.hasAnchor() && row.getElement() == getGridModel().getSelectionModel().getAnchorElement()) ? getStyleRegistry().getAnchorStyle() : cellStyle;
+				final CellStyle borderCellStyle = (grid.isFocusControl() && grid.isHighlightAnchorCellBorder() && (column != null) && column.hasAnchor() && doesRowHaveAnchor(row)) ? getStyleRegistry().getAnchorStyle() : cellStyle;
 				paintCellBorders(gc, bounds, borderCellStyle);
 			}
 			
@@ -951,10 +959,10 @@ public class GridRenderer<T> implements PaintListener {
 
 			gc.setForeground(getColour(background));
 			gc.setBackground(getColour(backgroundGradient2));
-			gc.fillGradientRectangle(bounds.x, halfHeight, bounds.width + getStyleRegistry().getCellSpacingHorizontal(), 1 + halfHeight + getStyleRegistry().getCellSpacingVertical(), true);
+			gc.fillGradientRectangle(bounds.x, bounds.y + halfHeight, bounds.width + getStyleRegistry().getCellSpacingHorizontal(), 1 + halfHeight + getStyleRegistry().getCellSpacingVertical(), true);
 		}
 	}
-
+	
 	/**
 	 * Render a line in the specified border style.
 	 */
@@ -1076,6 +1084,10 @@ public class GridRenderer<T> implements PaintListener {
 		innerBounds.y = original.y + delta;
 		innerBounds.width = original.width - (delta * 2);
 		innerBounds.height = original.height - (delta * 2);
+	}
+	
+	protected boolean doesRowHaveAnchor(final Row<T> row) {
+		return ((row != null) && (row.getElement() == getGridModel().getSelectionModel().getAnchorElement()));
 	}
 
 	/**

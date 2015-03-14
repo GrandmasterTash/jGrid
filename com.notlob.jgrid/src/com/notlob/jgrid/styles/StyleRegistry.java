@@ -307,7 +307,7 @@ public class StyleRegistry<T> {
 			//
 			// Check for a selected column header
 			//
-			if (row == Row.COLUMN_HEADER_ROW  && column.hasAnchor()) {
+			if (grid.isFocusControl() && grid.isHighlightAnchorInHeaders() && row == Row.COLUMN_HEADER_ROW  && column.hasAnchor()) {
 				return selectionHeaderStyle;
 			}
 		}		

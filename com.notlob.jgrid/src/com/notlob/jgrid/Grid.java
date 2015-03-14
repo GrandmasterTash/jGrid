@@ -7,6 +7,9 @@ import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.GC;
@@ -34,26 +37,23 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite implements GridModel.IModelListener {
 
-	// TODO: Hide anchor / header style on lost focus (and the hover style with mouse exit as well).
 	// TODO: Focus/Keyboard navigation / anchor.
+	// TODO: Make setting to toggle group name click behaviour - click vs alt + click.
 	// Bug: anchorElement is used for range selection but might need a new construct now it's changed purpose.
 	// Bug: CollapseFilter should opt-out of clearing selection.
 	// TODO: Middle-mouse scrolling.
 	// TODO: Reposition/resize columns via DnD.
-	// TODO: Group row tool-tip show all group name/values even hidden ones (so if don't fit still show).
 	// TODO: Column selection mode.
 	// TODO: Empty data message.
 	// TODO: Select next row/group if current is removed.
 	// TODO: Right-click to select before raising event.
 	// TODO: Column pinning.
 	// TODO: In-line editing.		
-	// TODO: Suppress model change events optimisation?				
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
-	// TODO: Evaluate performance gain vs memory overhead of the extent cache in the renderer.
-	// TODO: Make setting to toggle group name click behaviour - click vs alt + click.
-	// TODO: Make setting to toggle anchor header highlight.
+	// TODO: Evaluate performance gain vs memory overhead of the extent cache in the renderer.	
 	// TODO: Make setting to pad group values by their column width.
+	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
 	
 	// Models.
 	private final GridModel<T> gridModel;
@@ -68,6 +68,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	private final ScrollListener scrollListener;
 	private final ResizeListener resizeListener;
 	private final DisposeListener disposeListener;
+	private final FocusListener focusListener;
 	
 	// Keyboard and mouse input handling.
 	private final GridMouseHandler<T> mouseHandler;
@@ -84,9 +85,11 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	private final ToolTip toolTip;
 	private String emptyMessage;	
 	
-	// Some grid behavioural flags.
+	// Some grid behavioural flags.	
 	private boolean highlightHoveredRow = true;
-	private boolean clickGroupFieldNameToSort = true;
+	private boolean highlightAnchorInHeaders = true;
+	private boolean highlightAnchorCellBorder = true;
+	private boolean clickGroupFieldNameToSort = true; // TODO: Expand to enum, NO, YES, YES_WITH_ALT
 
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
@@ -98,7 +101,8 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		gridRenderer = new GridRenderer<T>(this);
 		disposeListener = new GridDisposeListener();
 		resizeListener = new ResizeListener();
-		scrollListener = new ScrollListener();		
+		scrollListener = new ScrollListener();
+		focusListener = new GridFocusListener();
 		listeners = new ArrayList<>();						
 		toolTip = new ToolTip(parent.getShell(), SWT.NONE);
 		toolTip.setAutoHide(true);		
@@ -112,6 +116,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		addMouseTrackListener(mouseHandler);
 		addPaintListener(gridRenderer);
 		addListener(SWT.Resize, resizeListener);
+		addFocusListener(focusListener);
 		getVerticalBar().addSelectionListener(scrollListener);
 		getHorizontalBar().addSelectionListener(scrollListener);
 	}
@@ -120,11 +125,12 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	public void dispose() {
 		toolTip.dispose();
 		
-		// Remove listeners.
+		// Remove listeners.		
 		removeKeyListener(keyboardHandler);
 		removeMouseListener(mouseHandler);
 		removeMouseTrackListener(mouseHandler);
 		removeMouseMoveListener(mouseHandler);
+		removeFocusListener(focusListener);
 		removePaintListener(gridRenderer);
 		removeListener(SWT.Resize, resizeListener);
 		getVerticalBar().removeSelectionListener(scrollListener);
@@ -142,6 +148,22 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	
 	public boolean isHighlightHoveredRow() {
 		return highlightHoveredRow;
+	}
+	
+	public void setHighlightAnchorInHeaders(boolean highlightAnchorInHeaders) {
+		this.highlightAnchorInHeaders = highlightAnchorInHeaders;
+	}
+	
+	public boolean isHighlightAnchorInHeaders() {
+		return highlightAnchorInHeaders;
+	}
+	
+	public boolean isHighlightAnchorCellBorder() {
+		return highlightAnchorCellBorder;
+	}
+	
+	public void setHighlightAnchorCellBorder(boolean highlightAnchorCellBorder) {
+		this.highlightAnchorCellBorder = highlightAnchorCellBorder;
 	}
 	
 	public void setClickGroupFieldNameToSort(boolean clickGroupFieldNameToSort) {
@@ -221,6 +243,10 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		return gridModel.getSelectionModel().getSelectedElements();
 	}
 	
+	public Column getAnchorColumn() {
+		return gridModel.getSelectionModel().getAnchorColumn();
+	}
+	
 	public int getRowCount(final boolean visible, final RowCountScope scope) {
 		checkWidget();
 		return gridModel.getRowCount(visible, scope);
@@ -245,7 +271,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		checkWidget();
 		gridModel.getFilterModel().removeFilters(filters);
 	}
-
+	
 	@Override
 	public void modelChanged() {
 		invalidateComputedArea();
@@ -419,6 +445,16 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		@Override
 		public void widgetDisposed(final DisposeEvent e) {
 			dispose();
+		}
+	}
+	
+	private class GridFocusListener extends FocusAdapter {
+		@Override
+		public void focusLost(FocusEvent e) {
+			//
+			// Hide the anchor and any highlighting.
+			//
+			redraw();
 		}
 	}
 }
