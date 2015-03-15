@@ -25,16 +25,16 @@ public class GridModel<T> {
 	// Visible columns and rows.
 	private final List<Row<T>> rows;
 	private final List<Column> columns;
-	
+
 	// All column definitions.
 	private final List<Column> allColumns;
 
 	// Rows which have been filtered out - they are not ordered.
 	private final List<Row<T>> hiddenRows;
-	
+
 	// All Rows (including hidden), keyed by domain element.
 	private final Map<T, Row<T>> rowsByElement;
-	
+
 	// Visible column headers, pinned rows, etc.
 	private final List<Row<T>> columnHeaderRows;
 
@@ -49,10 +49,10 @@ public class GridModel<T> {
 
 	// The filter model.
 	private final FilterModel<T> filterModel;
-	
+
 	// Visible styling model.
 	private final StyleRegistry<T> styleRegistry;
-	
+
 	// Show/hide the row numbers.
 	private boolean showRowNumbers = false;
 
@@ -62,7 +62,7 @@ public class GridModel<T> {
 	// Providers to get / format data, images, tool-tips, etc.
 	private IGridContentProvider<T> contentProvider;
 	private IGridLabelProvider<T> labelProvider;
-	
+
 	public interface IModelListener {
 		void modelChanged();
 		void selectionChanged();
@@ -96,7 +96,7 @@ public class GridModel<T> {
 	public SortModel<T> getSortModel() {
 		return sortModel;
 	}
-	
+
 	public FilterModel<T> getFilterModel() {
 		return filterModel;
 	}
@@ -115,58 +115,58 @@ public class GridModel<T> {
 		checkWidget();
 		return groupByColumns;
 	}
-	
+
 	/**
 	 * Returns all of the visible elements in the grid. Not a performant method.
 	 */
 	public List<T> getElements() {
 		checkWidget();
-		
+
 		//
 		// To ensure the elements are in visible sequence, do this.
 		//
 		final List<T> elements = new ArrayList<>();
-		for (Row<T> row : rows) {
+		for (final Row<T> row : rows) {
 			elements.add(row.getElement());
 		}
-		
+
 		return elements;
 	}
-	
+
 	public Collection<T> getSelection() {
 		checkWidget();
 		return selectionModel.getSelectedElements();
 	}
-	
+
 	/**
 	 * The number of VISIBLE rows.
 	 */
 	public int getRowCount(final boolean visible, final RowCountScope scope) {
 		final Collection<Row<T>> rowsToCount = visible ? rows : hiddenRows;
-		
+
 		switch (scope) {
 			case ALL:
 				return rowsToCount.size();
-				
+
 			case CHILDREN:
 				int childCount = 0;
-				for (Row<T> row : rowsToCount) {
+				for (final Row<T> row : rowsToCount) {
 					if (!isParentRow(row)) {
 						childCount++;
 					}
 				}
 				return childCount;
-				
+
 			case PARENTS:
 				int parentCount = 0;
-				for (Row<T> row : rowsToCount) {
+				for (final Row<T> row : rowsToCount) {
 					if (isParentRow(row) || !isGroupRow(row)) {
 						parentCount++;
 					}
 				}
 				return parentCount;
 		}
-		
+
 		return -1;
 	}
 
@@ -174,12 +174,12 @@ public class GridModel<T> {
 		checkWidget();
 		return rows;
 	}
-	
+
 	public Collection<Row<T>> getHiddenRows() {
 		checkWidget();
 		return hiddenRows;
 	}
-	
+
 	public Collection<Row<T>> getAllRows() {
 		checkWidget();
 		return rowsByElement.values();
@@ -202,15 +202,15 @@ public class GridModel<T> {
 	public void setLabelProvider(final IGridLabelProvider<T> labelProvider) {
 		this.labelProvider = labelProvider;
 	}
-	
+
 	public void setContentProvider(final IGridContentProvider<T> contentProvider) {
 		this.contentProvider = contentProvider;
-		
+
 		//
 		// Add a collapsed group filter to the model.
 		//
 		this.filterModel.addFilters(Collections.singletonList((Filter<T>) new CollapsedGroupFilter<T>(contentProvider)));
-	}	
+	}
 
 	public IGridContentProvider<T> getContentProvider() {
 		return contentProvider;
@@ -227,7 +227,7 @@ public class GridModel<T> {
 		}
 
 		allColumns.add(column);
-		
+
 		if (column.getSortDirection() != SortDirection.NONE) {
 			getSortModel().sort(column, false, true, false);
 		}
@@ -324,7 +324,7 @@ public class GridModel<T> {
 
 	public void addElements(final List<T> elements) {
 		checkWidget();
-		
+
 		for (final T element : elements) {
 			//
 			// If this element has a parent that's not here yet ignore it - the parent will add all it's children later. Otherwise, groups grids will get
@@ -334,14 +334,14 @@ public class GridModel<T> {
 //			if (rowsByElement.containsKey(element) || (isChildElement(element) && !rowsByElement.containsKey(getParentElement(element)))) {
 //				continue;
 //			}
-			
+
 			//
 			// Add a row for the element.
 			//
 			final Row<T> row = new Row<T>(element);
 			row.setHeight(labelProvider.getDefaultRowHeight(element));
 			addRow(row);
-			
+
 			//
 			// Add any children now.
 			//
@@ -357,9 +357,9 @@ public class GridModel<T> {
 
 		fireChangeEvent();
 	}
-	
+
 	private void addRow(final Row<T> row) {
-		
+
 		//
 		// Check the filter model.
 		//
@@ -368,30 +368,30 @@ public class GridModel<T> {
 			// Make the row visible.
 			//
 			showRow(row);
-			
+
 		} else {
-			hideRow(row);			
+			hideRow(row);
 		}
-		
+
 		//
 		// Cache the row by it's domain element.
 		//
 		rowsByElement.put(row.getElement(), row);
 	}
-	
+
 	public void removeElements(final List<T> elements) {
 		checkWidget();
-		
+
 		for (final T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
 			rows.remove(row);
 			hiddenRows.remove(row);
 			rowsByElement.remove(element);
-			
+
 			if (row.isSelected()) {
 				selectionModel.removeRow(row);
 			}
-			
+
 			if (row.isPinned()) {
 				columnHeaderRows.remove(row);
 			}
@@ -399,27 +399,27 @@ public class GridModel<T> {
 
 		fireChangeEvent();
 	}
-	
+
 	public void updateElements(final List<T> elements) {
 		checkWidget();
 
 // TODO: To Ensure the row maintains it's position,	we might need it to cache it's visible index - to be fast.
-// TODO: Consider groups need to compare with other groups and children with children.		
+// TODO: Consider groups need to compare with other groups and children with children.
 //		for (Object element : elements) {
 //			final Row row = rowsByElement.get(element);
 //			final int expectedIndex = sortModel.getSortedRowIndex(row);
-//			final int actualIndex = 
-//			
+//			final int actualIndex =
+//
 //		}
-		
+
 		// TODO: Re-apply it's filters (will have to clear existing matches first).
-		
+
 		fireChangeEvent();
 	}
-	
+
 	public void clearElements() {
 		checkWidget();
-		
+
 		//
 		// Clear rows.
 		//
@@ -429,8 +429,8 @@ public class GridModel<T> {
 		//
 		// Clear all selections.
 		//
-		selectionModel.clear(false);	
-		
+		selectionModel.clear(false);
+
 		fireChangeEvent();
 	}
 
@@ -442,30 +442,30 @@ public class GridModel<T> {
 		} else {
 			rows.add(row);
 		}
-		
+
 		row.setVisible(true);
 		hiddenRows.remove(row);
 	}
-	
+
 	public void hideRow(final Row<T> row) {
 		rows.remove(row);
 		selectionModel.removeRow(row);
 		hiddenRows.add(row);
 		row.setVisible(false);
 	}
-	
+
 	public void groupBy(final List<Column> columns) {
 		checkWidget();
 
 		groupByColumns.addAll(columns);
-		
+
 		//
 		// Hide the columns.
 		//
-		for (Column column : columns) {
+		for (final Column column : columns) {
 			column.setVisible(false);
 		}
-		
+
 		rebuildVisibleColumns();
 
 //		//
@@ -522,7 +522,7 @@ public class GridModel<T> {
 			listener.modelChanged();
 		}
 	}
-	
+
 	void fireSelectionChangedEvent() {
 		for (final IModelListener listener : listeners) {
 			listener.selectionChanged();
@@ -535,7 +535,7 @@ public class GridModel<T> {
 			throw new SWTException(SWT.ERROR_THREAD_INVALID_ACCESS);
 		}
 	}
-	
+
 	public boolean isShowRowNumbers() {
 		checkWidget();
 		return showRowNumbers;
@@ -592,11 +592,11 @@ public class GridModel<T> {
 	public boolean isParentElement(final T element) {
 		return ((element != null) && (contentProvider.getChildren(element) != null));
 	}
-	
+
 	public boolean isChildElement(final T element) {
 		return (contentProvider.getParent(element) != null);
 	}
-	
+
 	public T getParentElement(final T element) {
 		return contentProvider.getParent(element);
 	}
@@ -708,7 +708,7 @@ public class GridModel<T> {
 //		}
 //		return rows;
 //	}
-//	
+//
 //	public Row<T> getRowForElement(final T element) {
 //		return rowsByElement.get(element);
 //	}

@@ -40,7 +40,6 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	// TODO: Focus/Keyboard navigation / anchor.
 	// Bug: anchorElement is used for range selection but might need a new construct now it's changed purpose.
 	// Bug: CollapseFilter should opt-out of clearing selection.
-	// TODO: Code-clean-up
 	// Bug: There's a slight wobble when scrolling vertically.
 	// TODO: Middle-mouse scrolling.
 	// TODO: Reposition/resize columns via DnD.
@@ -50,13 +49,13 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	// TODO: Select next row/group if current is removed.
 	// TODO: Right-click to select before raising event.
 	// TODO: Column pinning.
-	// TODO: In-line editing.		
+	// TODO: In-line editing.
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
-	// TODO: Evaluate performance gain vs memory overhead of the extent cache in the renderer.	
+	// TODO: Evaluate performance gain vs memory overhead of the extent cache in the renderer.
 	// TODO: Make setting to pad group values by their column width.
 	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
-	
+
 	// Models.
 	private final GridModel<T> gridModel;
 	private IGridLabelProvider<T> labelProvider;
@@ -71,7 +70,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	private final ResizeListener resizeListener;
 	private final DisposeListener disposeListener;
 	private final FocusListener focusListener;
-	
+
 	// Keyboard and mouse input handling.
 	private final GridMouseHandler<T> mouseHandler;
 	private final GridKeyboardHandler<T> keyboardHandler;
@@ -85,9 +84,9 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	private final Point computedArea;
 
 	private final ToolTip toolTip;
-	private String emptyMessage;	
-	
-	// Some grid behavioural flags.	
+	private String emptyMessage;
+
+	// Some grid behavioural flags.
 	private boolean highlightHoveredRow = true;
 	private boolean highlightAnchorInHeaders = true;
 	private boolean highlightAnchorCellBorder = true;
@@ -104,12 +103,12 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		resizeListener = new ResizeListener();
 		scrollListener = new ScrollListener();
 		focusListener = new GridFocusListener();
-		listeners = new ArrayList<>();						
+		listeners = new ArrayList<>();
 		toolTip = new ToolTip(parent.getShell(), SWT.NONE);
-		toolTip.setAutoHide(true);		
+		toolTip.setAutoHide(true);
 		mouseHandler = new GridMouseHandler<T>(this, gc, listeners, toolTip);
 		keyboardHandler = new GridKeyboardHandler<T>(this, gc);
-		
+
 		parent.addDisposeListener(disposeListener);
 		addKeyListener(keyboardHandler);
 		addMouseListener(mouseHandler);
@@ -121,12 +120,12 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		getVerticalBar().addSelectionListener(scrollListener);
 		getHorizontalBar().addSelectionListener(scrollListener);
 	}
-		
+
 	@Override
 	public void dispose() {
 		toolTip.dispose();
-		
-		// Remove listeners.		
+
+		// Remove listeners.
 		removeKeyListener(keyboardHandler);
 		removeMouseListener(mouseHandler);
 		removeMouseTrackListener(mouseHandler);
@@ -142,31 +141,32 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		gc.dispose();
 		super.dispose();
 	}
-	
-	public void setHighlightHoveredRow(boolean highlightHoveredRow) {
+
+	public void setHighlightHoveredRow(final boolean highlightHoveredRow) {
 		this.highlightHoveredRow = highlightHoveredRow;
 	}
-	
+
 	public boolean isHighlightHoveredRow() {
 		return highlightHoveredRow;
 	}
-	
-	public void setHighlightAnchorInHeaders(boolean highlightAnchorInHeaders) {
+
+	public void setHighlightAnchorInHeaders(final boolean highlightAnchorInHeaders) {
 		this.highlightAnchorInHeaders = highlightAnchorInHeaders;
 	}
-	
+
 	public boolean isHighlightAnchorInHeaders() {
 		return highlightAnchorInHeaders;
 	}
-	
+
 	public boolean isHighlightAnchorCellBorder() {
 		return highlightAnchorCellBorder;
 	}
-	
-	public void setHighlightAnchorCellBorder(boolean highlightAnchorCellBorder) {
+
+	public void setHighlightAnchorCellBorder(final boolean highlightAnchorCellBorder) {
 		this.highlightAnchorCellBorder = highlightAnchorCellBorder;
 	}
-	
+
+	@Override
 	public void checkWidget() {
 		super.checkWidget();
 	}
@@ -175,96 +175,96 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 		checkWidget();
 		return gridModel;
 	}
-	
+
 	public StyleRegistry<T> getStyleRegistry() {
 		checkWidget();
 		return gridModel.getStyleRegistry();
 	}
-	
+
 	public void addColumns(final List<Column> columns) {
 		checkWidget();
 		gridModel.addColumns(columns);
 	}
-	
+
 	public Collection<Column> getColumns() {
 		checkWidget();
 		return gridModel.getColumns();
 	}
-	
+
 	public Column getColumn(final int columnIndex) {
 		checkWidget();
 		return gridModel.getColumns().get(columnIndex);
 	}
-	
+
 	public Column getColumnById(final String columnId) {
 		checkWidget();
 		return gridModel.getColumnById(columnId);
 	}
-	
+
 	public void groupBy(final List<Column> columns) {
 		checkWidget();
 		gridModel.groupBy(columns);
 	}
-	
+
 	public Column getGroupColumn(final int columnIndex) {
 		checkWidget();
 		return gridModel.getGroupByColumns().get(columnIndex);
 	}
-	
+
 	public void addElements(final List<T> elements) {
 		checkWidget();
 		gridModel.addElements(elements);
 	}
-	
+
 	public void removeElements(final List<T> elements) {
 		checkWidget();
 		gridModel.removeElements(elements);
 	}
-	
+
 	public void updateElements(final List<T> elements) {
 		checkWidget();
 		gridModel.updateElements(elements);
 	}
-	
+
 	public void clearElements() {
 		checkWidget();
 		gridModel.clearElements();
 	}
-	
+
 	public Collection<T> getSelection() {
 		checkWidget();
 		return gridModel.getSelectionModel().getSelectedElements();
 	}
-	
+
 	public Column getAnchorColumn() {
 		return gridModel.getSelectionModel().getAnchorColumn();
 	}
-	
+
 	public int getRowCount(final boolean visible, final RowCountScope scope) {
 		checkWidget();
 		return gridModel.getRowCount(visible, scope);
 	}
-	
+
 	public void applyFilters() {
 		checkWidget();
 		gridModel.getFilterModel().applyFilters();
 	}
-	
+
 	public Collection<Filter<T>> getFilters() {
 		checkWidget();
 		return gridModel.getFilterModel().getFilters();
 	}
-	
+
 	public void addFilters(final Collection<Filter<T>> filters) {
 		checkWidget();
 		gridModel.getFilterModel().addFilters(filters);
 	}
-	
+
 	public void removeFilters(final Collection<Filter<T>> filters) {
 		checkWidget();
 		gridModel.getFilterModel().removeFilters(filters);
 	}
-	
+
 	@Override
 	public void modelChanged() {
 		invalidateComputedArea();
@@ -275,21 +275,21 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 			listener.gridChanged();
 		}
 	}
-	
+
 	@Override
 	public void selectionChanged() {
 		redraw();
-		
+
 		for (final IGridListener<T> listener : listeners) {
 			listener.selectionChanged(gridModel.getSelectionModel().getSelectedElements());
 		}
 	}
-	
+
 	public GridMouseHandler<T> getMouseHandler() {
 		return mouseHandler;
 	}
-	
-	public GridRenderer<T> getGridRenderer() {		
+
+	public GridRenderer<T> getGridRenderer() {
 		return gridRenderer;
 	}
 
@@ -311,7 +311,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	public void setLabelProvider(final IGridLabelProvider<T> labelProvider) {
 		checkWidget();
 		this.labelProvider = labelProvider;
-		
+
 		if (this.gridModel != null) {
 			this.gridModel.setLabelProvider(labelProvider);
 		}
@@ -383,22 +383,22 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	public void setEmptyMessage(final String emptyMessage) {
 		this.emptyMessage = emptyMessage;
 	}
-	
+
 	public boolean isShowRowNumbers() {
 		checkWidget();
 		return gridModel.isShowRowNumbers();
 	}
-	
-	public void setShowRowNumbers(boolean show) {
+
+	public void setShowRowNumbers(final boolean show) {
 		checkWidget();
-		gridModel.setShowRowNumbers(show);		
+		gridModel.setShowRowNumbers(show);
 	}
-	
-	public boolean isHideNoneHighlightedRows() {		
+
+	public boolean isHideNoneHighlightedRows() {
 		checkWidget();
 		return gridModel.getFilterModel().isHideNoneHighlightedRows();
 	}
-	
+
 	public void setHideNoneHighlightedRows(final boolean hideNoneHighlightedRows) {
 		checkWidget();
 		gridModel.getFilterModel().setHideNoneHighlightedRows(hideNoneHighlightedRows);
@@ -411,7 +411,7 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	public void removeListener(final IGridListener<T> listener) {
 		this.listeners.remove(listener);
 	}
-	
+
 	public void reveal(final Column column, final T element) {
 		checkWidget();
 		viewport.reveal(gc, column, gridModel.getRow(element));
@@ -440,10 +440,10 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 			dispose();
 		}
 	}
-	
+
 	private class GridFocusListener extends FocusAdapter {
 		@Override
-		public void focusLost(FocusEvent e) {
+		public void focusLost(final FocusEvent e) {
 			//
 			// Hide the anchor and any highlighting.
 			//

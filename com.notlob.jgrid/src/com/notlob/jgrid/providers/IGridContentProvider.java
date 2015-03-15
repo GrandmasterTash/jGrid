@@ -7,7 +7,7 @@ public interface IGridContentProvider<T> {
 	T getParent(final T element);
 
 	T[] getChildren(final T element);
-	
+
 	// NOTE: It is more efficient to leave in the domain model - otherwise the expand/collapse filter would have to constantly look-up the parent element's row in a hashmap.
 	// This way the domain model can use the direct parent reference.
 	boolean isCollapsed(final T element);

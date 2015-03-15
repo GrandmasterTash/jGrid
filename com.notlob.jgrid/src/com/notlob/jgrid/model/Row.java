@@ -16,13 +16,13 @@ public class Row<T> {
 	private boolean pinned;
 	private int height;
 	private final T element;
-	
+
 	// If this row has matched a filter which highlights results, store the matches here.
 	private Collection<IHighlightingFilter> filterMatches;
-	
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public final static Row COLUMN_HEADER_ROW = new Row(null);
-	
+
 	Row(final T element) {
 		this.element = element;
 		height = -1;
@@ -52,11 +52,11 @@ public class Row<T> {
 	public boolean isVisible() {
 		return visible;
 	}
-	
+
 	void setVisible(final boolean visible) {
 		this.visible = visible;
 	}
-	
+
 	public boolean isSelected() {
 		return selected;
 	}
@@ -73,19 +73,19 @@ public class Row<T> {
 	void setPinned(final boolean pinned) {
 		this.pinned = pinned;
 	}
-		
+
 	public void addFilterMatch(final IHighlightingFilter filter) {
 		if (this.filterMatches == null) {
 			this.filterMatches = new ArrayList<>();
 		}
-		
+
 		filterMatches.add(filter);
 	}
-	
+
 	public Collection<IHighlightingFilter> getFilterMatches() {
 		return filterMatches;
 	}
-	
+
 	public boolean hasFilterMatches() {
 		return (filterMatches != null) && (!filterMatches.isEmpty());
 	}

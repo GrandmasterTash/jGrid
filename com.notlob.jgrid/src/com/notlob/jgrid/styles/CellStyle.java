@@ -4,47 +4,47 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 
 public class CellStyle {
-	
+
 	// TODO: Mouse cursor.
-	
+
 	private InheritanceStyle inheritanceStyle;
 	private ContentStyle contentStyle;
 	private boolean allowContentOverlap;
-	
+
 	private FontData fontData;
-	
+
 	private AlignmentStyle imageAlignment;
 	private AlignmentStyle textAlignment;
-	
+
 	private int paddingTop;
 	private int paddingRight;
 	private int paddingBottom;
-	private int paddingLeft;	
+	private int paddingLeft;
 	private int paddingImageText; // If both alignments are the same for image and text.
 	private int paddingInnerBorder; // The gap between the outer border and the inner border.
-	
+
 	private RGB foreground;
 	private RGB background;
 	private RGB backgroundGradient1;
 	private RGB backgroundGradient2;
-	
+
 	private RGB backgroundAlternate;
 	private RGB backgroundAlternateGradient1;
 	private RGB backgroundAlternateGradient2;
-	
+
 	private int foregroundOpacity;
 	private int backgroundOpacity;
-	
+
 	private BorderStyle borderInnerTop;
 	private BorderStyle borderInnerRight;
 	private BorderStyle borderInnerBottom;
 	private BorderStyle borderInnerLeft;
-	
+
 	private BorderStyle borderOuterTop;
 	private BorderStyle borderOuterRight;
-	private BorderStyle borderOuterBottom;	
+	private BorderStyle borderOuterBottom;
 	private BorderStyle borderOuterLeft;
-	
+
 	public CellStyle() {
 		foregroundOpacity = 255;
 		backgroundOpacity = 255;
@@ -56,7 +56,7 @@ public class CellStyle {
 		copy.inheritanceStyle = inheritanceStyle;
 		copy.contentStyle = contentStyle;
 		copy.allowContentOverlap = allowContentOverlap;
-		
+
 		if (fontData != null) {
 			copy.fontData = new FontData();
 			copy.fontData.setHeight(fontData.getHeight());
@@ -64,7 +64,7 @@ public class CellStyle {
 			copy.fontData.setName(fontData.getName());
 			copy.fontData.setStyle(fontData.getStyle());
 		}
-		
+
 		copy.imageAlignment = imageAlignment;
 		copy.textAlignment = textAlignment;
 		copy.paddingTop = paddingTop;
@@ -76,10 +76,10 @@ public class CellStyle {
 		copy.foreground = foreground == null ? null : new RGB(foreground.red, foreground.green, foreground.blue);
 		copy.background = background == null ? null : new RGB(background.red, background.green, background.blue);
 		copy.backgroundGradient1 = backgroundGradient1 == null ? null : new RGB(backgroundGradient1.red, backgroundGradient1.green, backgroundGradient1.blue);
-		copy.backgroundGradient2 = backgroundGradient2 == null ? null : new RGB(backgroundGradient2.red, backgroundGradient2.green, backgroundGradient2.blue);		
+		copy.backgroundGradient2 = backgroundGradient2 == null ? null : new RGB(backgroundGradient2.red, backgroundGradient2.green, backgroundGradient2.blue);
 		copy.backgroundAlternate = backgroundAlternate == null ? null : new RGB(backgroundAlternate.red, backgroundAlternate.green, backgroundAlternate.blue);
 		copy.backgroundAlternateGradient1 = backgroundAlternateGradient1 == null ? null : new RGB(backgroundAlternateGradient1.red, backgroundAlternateGradient1.green, backgroundAlternateGradient1.blue);
-		copy.backgroundAlternateGradient2 = backgroundAlternateGradient2 == null ? null : new RGB(backgroundAlternateGradient2.red, backgroundAlternateGradient2.green, backgroundAlternateGradient2.blue);		
+		copy.backgroundAlternateGradient2 = backgroundAlternateGradient2 == null ? null : new RGB(backgroundAlternateGradient2.red, backgroundAlternateGradient2.green, backgroundAlternateGradient2.blue);
 		copy.foregroundOpacity = foregroundOpacity;
 		copy.backgroundOpacity = backgroundOpacity;
 		copy.borderInnerTop = BorderStyle.copy(borderInnerTop);
@@ -92,28 +92,28 @@ public class CellStyle {
 		copy.borderOuterLeft = BorderStyle.copy(borderOuterLeft);
 		return copy;
 	}
-	
+
 	public InheritanceStyle getInheritanceStyle() {
 		return inheritanceStyle;
 	}
 
-	public void setInheritanceStyle(InheritanceStyle inheritanceStyle) {
+	public void setInheritanceStyle(final InheritanceStyle inheritanceStyle) {
 		this.inheritanceStyle = inheritanceStyle;
 	}
-	
+
 	public ContentStyle getContentStyle() {
 		return contentStyle;
 	}
 
-	public void setContentStyle(ContentStyle contentStyle) {
+	public void setContentStyle(final ContentStyle contentStyle) {
 		this.contentStyle = contentStyle;
 	}
-	
+
 	public boolean isAllowContentOverlap() {
 		return allowContentOverlap;
 	}
-	
-	public void setAllowContentOverlap(boolean allowContentOverlap) {
+
+	public void setAllowContentOverlap(final boolean allowContentOverlap) {
 		this.allowContentOverlap = allowContentOverlap;
 	}
 
@@ -121,7 +121,7 @@ public class CellStyle {
 		return fontData;
 	}
 
-	public void setFontData(FontData fontData) {
+	public void setFontData(final FontData fontData) {
 		this.fontData = fontData;
 	}
 
@@ -129,7 +129,7 @@ public class CellStyle {
 		return imageAlignment;
 	}
 
-	public void setImageAlignment(AlignmentStyle imageAlignment) {
+	public void setImageAlignment(final AlignmentStyle imageAlignment) {
 		this.imageAlignment = imageAlignment;
 	}
 
@@ -137,7 +137,7 @@ public class CellStyle {
 		return textAlignment;
 	}
 
-	public void setTextAlignment(AlignmentStyle textAlignment) {
+	public void setTextAlignment(final AlignmentStyle textAlignment) {
 		this.textAlignment = textAlignment;
 	}
 
@@ -145,7 +145,7 @@ public class CellStyle {
 		return paddingTop;
 	}
 
-	public void setPaddingTop(int paddingTop) {
+	public void setPaddingTop(final int paddingTop) {
 		this.paddingTop = paddingTop;
 	}
 
@@ -153,7 +153,7 @@ public class CellStyle {
 		return paddingRight;
 	}
 
-	public void setPaddingRight(int paddingRight) {
+	public void setPaddingRight(final int paddingRight) {
 		this.paddingRight = paddingRight;
 	}
 
@@ -161,7 +161,7 @@ public class CellStyle {
 		return paddingBottom;
 	}
 
-	public void setPaddingBottom(int paddingBottom) {
+	public void setPaddingBottom(final int paddingBottom) {
 		this.paddingBottom = paddingBottom;
 	}
 
@@ -169,7 +169,7 @@ public class CellStyle {
 		return paddingLeft;
 	}
 
-	public void setPaddingLeft(int paddingLeft) {
+	public void setPaddingLeft(final int paddingLeft) {
 		this.paddingLeft = paddingLeft;
 	}
 
@@ -177,7 +177,7 @@ public class CellStyle {
 		return paddingImageText;
 	}
 
-	public void setPaddingImageText(int paddingImageText) {
+	public void setPaddingImageText(final int paddingImageText) {
 		this.paddingImageText = paddingImageText;
 	}
 
@@ -185,7 +185,7 @@ public class CellStyle {
 		return paddingInnerBorder;
 	}
 
-	public void setPaddingInnerBorder(int paddingInnerBorder) {
+	public void setPaddingInnerBorder(final int paddingInnerBorder) {
 		this.paddingInnerBorder = paddingInnerBorder;
 	}
 
@@ -193,7 +193,7 @@ public class CellStyle {
 		return foreground;
 	}
 
-	public void setForeground(RGB foreground) {
+	public void setForeground(final RGB foreground) {
 		this.foreground = foreground;
 	}
 
@@ -201,7 +201,7 @@ public class CellStyle {
 		return background;
 	}
 
-	public void setBackground(RGB background) {
+	public void setBackground(final RGB background) {
 		this.background = background;
 	}
 
@@ -209,7 +209,7 @@ public class CellStyle {
 		return backgroundGradient1;
 	}
 
-	public void setBackgroundGradient1(RGB backgroundGradient1) {
+	public void setBackgroundGradient1(final RGB backgroundGradient1) {
 		this.backgroundGradient1 = backgroundGradient1;
 	}
 
@@ -217,15 +217,15 @@ public class CellStyle {
 		return backgroundGradient2;
 	}
 
-	public void setBackgroundGradient2(RGB backgroundGradient2) {
+	public void setBackgroundGradient2(final RGB backgroundGradient2) {
 		this.backgroundGradient2 = backgroundGradient2;
 	}
-	
+
 	public RGB getBackgroundAlternate() {
 		return backgroundAlternate != null ? backgroundAlternate : background;
 	}
 
-	public void setBackgroundAlternate(RGB backgroundAlternate) {
+	public void setBackgroundAlternate(final RGB backgroundAlternate) {
 		this.backgroundAlternate = backgroundAlternate;
 	}
 
@@ -233,7 +233,7 @@ public class CellStyle {
 		return backgroundAlternateGradient1;
 	}
 
-	public void setBackgroundAlternateGradient1(RGB backgroundAlternateGradient1) {
+	public void setBackgroundAlternateGradient1(final RGB backgroundAlternateGradient1) {
 		this.backgroundAlternateGradient1 = backgroundAlternateGradient1;
 	}
 
@@ -241,31 +241,31 @@ public class CellStyle {
 		return backgroundAlternateGradient2;
 	}
 
-	public void setBackgroundAlternateGradient2(RGB backgroundAlternateGradient2) {
+	public void setBackgroundAlternateGradient2(final RGB backgroundAlternateGradient2) {
 		this.backgroundAlternateGradient2 = backgroundAlternateGradient2;
 	}
 
 	public int getForegroundOpacity() {
 		return foregroundOpacity;
 	}
-	
-	public void setForegroundOpacity(int foregroundOpacity) {
+
+	public void setForegroundOpacity(final int foregroundOpacity) {
 		this.foregroundOpacity = foregroundOpacity;
 	}
-	
+
 	public int getBackgroundOpacity() {
 		return backgroundOpacity;
 	}
-	
-	public void setBackgroundOpacity(int backgroundOpacity) {
+
+	public void setBackgroundOpacity(final int backgroundOpacity) {
 		this.backgroundOpacity = backgroundOpacity;
 	}
-	
+
 	public BorderStyle getBorderInnerTop() {
 		return borderInnerTop;
 	}
 
-	public void setBorderInnerTop(BorderStyle borderInnerTop) {
+	public void setBorderInnerTop(final BorderStyle borderInnerTop) {
 		this.borderInnerTop = borderInnerTop;
 	}
 
@@ -273,7 +273,7 @@ public class CellStyle {
 		return borderInnerRight;
 	}
 
-	public void setBorderInnerRight(BorderStyle borderInnerRight) {
+	public void setBorderInnerRight(final BorderStyle borderInnerRight) {
 		this.borderInnerRight = borderInnerRight;
 	}
 
@@ -281,7 +281,7 @@ public class CellStyle {
 		return borderInnerBottom;
 	}
 
-	public void setBorderInnerBottom(BorderStyle borderInnerBottom) {
+	public void setBorderInnerBottom(final BorderStyle borderInnerBottom) {
 		this.borderInnerBottom = borderInnerBottom;
 	}
 
@@ -289,7 +289,7 @@ public class CellStyle {
 		return borderInnerLeft;
 	}
 
-	public void setBorderInnerLeft(BorderStyle borderInnerLeft) {
+	public void setBorderInnerLeft(final BorderStyle borderInnerLeft) {
 		this.borderInnerLeft = borderInnerLeft;
 	}
 
@@ -297,7 +297,7 @@ public class CellStyle {
 		return borderOuterTop;
 	}
 
-	public void setBorderOuterTop(BorderStyle borderOuterTop) {
+	public void setBorderOuterTop(final BorderStyle borderOuterTop) {
 		this.borderOuterTop = borderOuterTop;
 	}
 
@@ -305,7 +305,7 @@ public class CellStyle {
 		return borderOuterRight;
 	}
 
-	public void setBorderOuterRight(BorderStyle borderOuterRight) {
+	public void setBorderOuterRight(final BorderStyle borderOuterRight) {
 		this.borderOuterRight = borderOuterRight;
 	}
 
@@ -313,7 +313,7 @@ public class CellStyle {
 		return borderOuterBottom;
 	}
 
-	public void setBorderOuterBottom(BorderStyle borderOuterBottom) {
+	public void setBorderOuterBottom(final BorderStyle borderOuterBottom) {
 		this.borderOuterBottom = borderOuterBottom;
 	}
 
@@ -321,7 +321,7 @@ public class CellStyle {
 		return borderOuterLeft;
 	}
 
-	public void setBorderOuterLeft(BorderStyle borderOuterLeft) {
+	public void setBorderOuterLeft(final BorderStyle borderOuterLeft) {
 		this.borderOuterLeft = borderOuterLeft;
 	}
 }

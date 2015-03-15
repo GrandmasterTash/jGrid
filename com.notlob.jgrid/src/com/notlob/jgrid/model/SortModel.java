@@ -93,7 +93,7 @@ public class SortModel<T> {
 		// Now sort the data.
 		//
 		Collections.sort(gridModel.getRows(), rowComparator);
-		
+
 		if (notify) {
 			gridModel.fireChangeEvent();
 		}

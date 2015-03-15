@@ -10,7 +10,7 @@ public class SelectionModel<T> {
 	private final GridModel<T> gridModel;
 	private final Set<T> selectedElements;
 	private T anchorElement;		// Used for SHIFT selects and keyboard navigation.
-	private Column anchorColumn;	//	
+	private Column anchorColumn;	//
 	private Column lastChildAnchorColumn;  // Used when moving the anchor up/down with the keyboard.
 	private Column lastParentAnchorColumn; // Gives some consistency to the position rather than snapping to the first column.
 
@@ -22,52 +22,52 @@ public class SelectionModel<T> {
 	public T getAnchorElement() {
 		return anchorElement;
 	}
-	
+
 	public void setAnchorElement(final T anchorElement) {
 		this.anchorElement = anchorElement;
 	}
-	
+
 	public Column getAnchorColumn() {
 		return anchorColumn;
 	}
-	
+
 	public void setAnchorColumn(final Column anchorColumn) {
 		if (this.anchorColumn != null) {
 			this.anchorColumn.setAnchor(false);
 		}
-		
+
 		this.anchorColumn = anchorColumn;
-		
+
 		if (anchorColumn != null) {
 			anchorColumn.setAnchor(true);
-			
+
 			if (anchorElement != null) {
 				//
 				// Track the last anchor column by type of element - used in keyboard navigation.
 				//
 				if (gridModel.isParentElement(anchorElement)) {
 					lastParentAnchorColumn = anchorColumn;
-					
+
 				} else {
 					lastChildAnchorColumn = anchorColumn;
-				}			
+				}
 			}
 		}
 	}
-	
+
 	public Column getLastChildAnchorColumn() {
 		if (lastChildAnchorColumn == null && !gridModel.getColumns().isEmpty()) {
 			lastChildAnchorColumn = gridModel.getColumns().get(0);
 		}
-		
+
 		return lastChildAnchorColumn;
 	}
-	
+
 	public Column getLastParentAnchorColumn() {
 		if (lastParentAnchorColumn == null && !gridModel.getGroupByColumns().isEmpty()) {
 			lastParentAnchorColumn = gridModel.getGroupByColumns().get(0);
 		}
-		
+
 		return lastParentAnchorColumn;
 	}
 
@@ -94,9 +94,9 @@ public class SelectionModel<T> {
 		for (final Object element : selectedElements) {
 			gridModel.getRowsByElement().get(element).setSelected(false);
 		}
-		
+
 		selectedElements.clear();
-		
+
 		if (notify) {
 			gridModel.fireSelectionChangedEvent();
 		}
@@ -130,13 +130,13 @@ public class SelectionModel<T> {
 			if (anchorColumn != null) {
 				anchorColumn.setAnchor(false);
 			}
-			
+
 			anchorElement = null;
 			anchorColumn = null;
-			
+
 		} else {
 			anchorElement = rowsToSelect.get(0).getElement();
-			
+
 			if (anchorColumn  == null && !gridModel.getColumns().isEmpty()) {
 				anchorColumn = gridModel.getColumns().get(0);
 				anchorColumn.setAnchor(true);
@@ -179,7 +179,7 @@ public class SelectionModel<T> {
 	void removeRow(final Row<T> row) {
 		selectedElements.remove(row.getElement());
 		row.setSelected(false);
-		
+
 		if (anchorElement == row.getElement()) {
 			anchorElement = null;
 		}
@@ -208,7 +208,7 @@ public class SelectionModel<T> {
 		// If all child rows of a group are selected, select the group.
 		//
 		checkGroupSelection(rowsToSelect);
-		
+
 		//
 		// Update the anchor the the row.
 		//

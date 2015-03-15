@@ -5,13 +5,13 @@ import com.notlob.jgrid.providers.IGridContentProvider;
 
 /**
  * Applied to the filter model, checks groups to see if they are collapse/expanded.
- * 
+ *
  * @author Stef
  */
 public class CollapsedGroupFilter<T> extends Filter<T> {
 
 	private final IGridContentProvider<T> contentProvider;
-	
+
 	public CollapsedGroupFilter(final IGridContentProvider<T> contentProvider) {
 		this.contentProvider = contentProvider;
 	}
@@ -21,7 +21,7 @@ public class CollapsedGroupFilter<T> extends Filter<T> {
 	 */
 	@Override
 	public boolean matches(final Row<T> row) {
-		final T parent = contentProvider.getParent(row.getElement());				
+		final T parent = contentProvider.getParent(row.getElement());
 		return (parent == null) || (!contentProvider.isCollapsed(parent));
 	}
 

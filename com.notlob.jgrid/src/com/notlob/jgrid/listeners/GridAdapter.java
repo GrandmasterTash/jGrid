@@ -11,9 +11,9 @@ public class GridAdapter<T> implements IGridListener<T> {
 	@Override
 	public void gridChanged() {
 	}
-	
+
 	@Override
-	public void selectionChanged(Collection<T> selectedElements) {
+	public void selectionChanged(final Collection<T> selectedElements) {
 	}
 
 	@Override
@@ -27,25 +27,25 @@ public class GridAdapter<T> implements IGridListener<T> {
 	@Override
 	public void rightClick(final Column column, final T element, final Point location, final int modifier) {
 	}
-	
+
 	@Override
-	public void headerClick(Column column, Point location, int modifier) {
+	public void headerClick(final Column column, final Point location, final int modifier) {
 	}
 
 	@Override
-	public void headerDoubleClick(Column column, Point location, int modifier) {
+	public void headerDoubleClick(final Column column, final Point location, final int modifier) {
 	}
-	
+
 	@Override
-	public void headerRightClick(Column column, Point location, int modifier) {
+	public void headerRightClick(final Column column, final Point location, final int modifier) {
 	}
-	
+
 	@Override
-	public void groupExpanded(T element) {
+	public void groupExpanded(final T element) {
 	}
-	
+
 	@Override
-	public void groupCollapsed(T element) {
+	public void groupCollapsed(final T element) {
 	}
 
 }

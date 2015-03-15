@@ -25,14 +25,14 @@ import com.notlob.jgrid.model.Viewport;
 // TODO: Expose more mouse events for cells.
 
 public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListener, MouseTrackListener/*, MouseWheelListener*/ {
-	
+
 	private final Grid<T> grid;
 	private final GridModel<T> gridModel;
 	private final Viewport<T> viewport;
 	private final Collection<IGridListener<T>> listeners;
 	private final GC gc;
 	private final ToolTip toolTip;
-	
+
 	// Track if any mouse button is in the down position.
 	private boolean mouseDown;
 	private int button; // Tracked in mouse down.
@@ -40,13 +40,13 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	private boolean shift; // Tracked in mouseMove and mouseUp.
 	private boolean ctrl;
 	private boolean alt;
-	
+
 	// Track if the mouse is over a row/column.
 	private Row<T> row = null;
 	private Column column = null;
 	private Column groupColumn = null;  // << Mouse is over a group field header.
 	private Column groupValue = null;	// << Mouse is over a group field value not the header;
-	
+
 	public GridMouseHandler(final Grid<T> grid, final GC gc, final Collection<IGridListener<T>> listeners, final ToolTip toolTip) {
 		this.grid = grid;
 		this.gridModel = grid.getGridModel();
@@ -55,53 +55,53 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		this.toolTip = toolTip;
 		this.gc = gc;
 	}
-	
+
 	public Column getColumn() {
 		return column;
 	}
-	
+
 	public Row<T> getRow() {
 		return row;
 	}
-	
+
 	public Column getGroupColumn() {
 		return groupColumn;
 	}
-	
+
 	public boolean isShift() {
 		return shift;
 	}
-	
+
 	public boolean isCtrl() {
 		return ctrl;
 	}
-	
+
 	public boolean isAlt() {
 		return alt;
 	}
-	
+
 	public void setAlt(final boolean alt) {
 		this.alt = alt;
 	}
 
 	/**
 	 * Tracks the column and row under the mouse as it moves.
-	 * 
+	 *
 	 * Returns true if the cell or row changes.
 	 */
 	@SuppressWarnings("unchecked")
-	private boolean trackCell(final int x, final int y) {		
+	private boolean trackCell(final int x, final int y) {
 		Row<T> newRow = null;
 		Column newColumn = null;
 		Column newGroupColumn = null;
 		Column newGroupValue = null;
-		
+
 		//
 		// Get the row and column indexes from the viewport.
 		//
 		final int rowIndex = viewport.getRowIndexByY(y, gc);
 		final int columnIndex = viewport.getColumnIndexByX(x, gc);
-		
+
 		if (rowIndex == -1) {
 			//
 			// See if it's the column header or filter row.
@@ -109,40 +109,40 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			if (y >= 0 ) {
 				newRow = null;
 				final int headerHeight = gridModel.getRowHeight(gc, Row.COLUMN_HEADER_ROW);
-				
+
 				if (y < headerHeight) {
 					newRow = Row.COLUMN_HEADER_ROW;
 				}
-			} 
-			
+			}
+
 		} else {
 			newRow = gridModel.getRows().get(rowIndex);
-			
+
 			//
-			// If this is a group row. 
+			// If this is a group row.
 			//
 			if (gridModel.isParentElement(newRow.getElement())) {
 				//
 				// If the mouse is over a group field header - track it.
 				//
 				newGroupColumn = grid.getGridRenderer().getGroupColumnForX(gc, newRow, x, true);
-				
+
 				//
 				// If the mouse is over a group field value - track it.
 				//
 				if (newGroupColumn == null) {
 					newGroupValue = grid.getGridRenderer().getGroupColumnForX(gc, newRow, x, false);
-				}				
-			}			
+				}
+			}
 		}
-		
+
 		if (columnIndex != -1) {
 			newColumn = gridModel.getColumns().get(columnIndex);
-			
+
 		} else {
 			newColumn = null;
-		}		
-		
+		}
+
 		if (newRow != row || newColumn != column || newGroupColumn != groupColumn || newGroupValue != groupValue) {
 			row = newRow;
 			column = newColumn;
@@ -150,28 +150,28 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			groupValue = newGroupValue;
 			return true;
 		}
-		
-		return false;		
+
+		return false;
 	}
-	
+
 	@Override
-	public void mouseEnter(MouseEvent e) {
+	public void mouseEnter(final MouseEvent e) {
 	}
-	
+
 	@Override
-	public void mouseExit(MouseEvent e) {
+	public void mouseExit(final MouseEvent e) {
 	}
-	
+
 	@Override
 	public void mouseHover(final MouseEvent e) {
 		if ((column != null) && (row != null) && (grid.getLabelProvider() != null)) {
 			final int x = e.x;
 			final int y = e.y + 16;
-			
+
 			if (row == Row.COLUMN_HEADER_ROW) {
 				final String toolTip = grid.getLabelProvider().getHeaderToolTip(column);
 				showToolTip(x, y, column.getCaption(), (toolTip != null && !toolTip.isEmpty()) ? toolTip : "");
-				
+
 			} else if (gridModel.isParentRow(row)) {
 				if (groupColumn != null) {
 					//
@@ -181,7 +181,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 					if (toolTip != null && !toolTip.isEmpty()) {
 						showToolTip(x, y, groupColumn.getCaption(), toolTip);
 					}
-					
+
 				} else if (groupValue != null) {
 					//
 					// A group row's value tool-tip.
@@ -189,9 +189,9 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 					final String toolTip = grid.getLabelProvider().getToolTip(groupValue, row.getElement());
 					if (toolTip != null && !toolTip.isEmpty()) {
 						showToolTip(x, y, groupValue.getCaption(), toolTip);
-					}					
+					}
 				}
-				
+
 			} else {
 				//
 				// Normal row's tool-tip.
@@ -203,9 +203,9 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			}
 		}
 	}
-	
+
 	@Override
-	public void mouseMove(MouseEvent e) {
+	public void mouseMove(final MouseEvent e) {
 		toolTip.setVisible(false);
 //		System.out.println("TODO: break when mousewheel causes repaint - copy whatever is causing it to the this stuff.");
 //		if (mouseDown && button == 2) {
@@ -215,11 +215,11 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 //			System.out.println("Scroll " + (e.x - downLocation.x) + "," + (e.y - downLocation.y));
 //			grid.redraw();
 //		}
-		
+
 		shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
 		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
 		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
-		
+
 		if (trackCell(e.x, e.y) /*&& grid.isHighlightHoveredRow()*/) {
 			//
 			// Repaint the grid to show the hovered row.
@@ -227,13 +227,13 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			grid.redraw();
 		}
 	}
-	
+
 //	@Override
 //	public void mouseScrolled(MouseEvent e) {
 //		// TODO: Might not need this...
-//		System.out.println("Mouse Wheel");		
+//		System.out.println("Mouse Wheel");
 //	}
-	
+
 	@Override
 	public void mouseDown(final MouseEvent e) {
 		mouseDown = true;
@@ -250,7 +250,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		mouseDown = false;
 		button = -1;
 		downLocation = null;
-		
+
 		if (grid.getCursor() == grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEALL)) {
 			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 		}
@@ -265,7 +265,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 		if (e.button == 1) { // LEFT
 			if (e.count == 1) {
-				if ((column != null) && (e.y < viewport.getViewportArea(gc).y)) {						
+				if ((column != null) && (e.y < viewport.getViewportArea(gc).y)) {
 					if (row == Row.COLUMN_HEADER_ROW) {
 						//
 						// Column sorting.
@@ -289,15 +289,15 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 								if (grid.getContentProvider().isCollapsed(row.getElement())) {
 									listener.groupExpanded(row.getElement());
 								} else {
-									listener.groupCollapsed(row.getElement());	
-								}								
+									listener.groupCollapsed(row.getElement());
+								}
 							}
-							
+
 							// Refresh filters.
-							gridModel.getFilterModel().applyFilters();							
+							gridModel.getFilterModel().applyFilters();
 							return;
 						}
-						
+
 						if (alt && (groupColumn != null)) {
 							//
 							// Toggle the sort on the group column.
@@ -307,7 +307,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						}
 					}
 				}
-				
+
 				//
 				// Handle the selection.
 				//
@@ -318,14 +318,14 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 					if (e.x < viewport.getViewportArea(gc).x) {
 						ctrl = true;
 					}
-					
+
 					if (!(shift || ctrl)) {
 						//
 						// Single row/group replace.
 						//
 						final List<Row<T>> rows = new ArrayList<>();
 						rows.addAll(gridModel.isParentRow(row) ? gridModel.getWholeGroup(row) : Collections.singletonList(row));
-						gridModel.getSelectionModel().setSelectedRows(rows);						
+						gridModel.getSelectionModel().setSelectedRows(rows);
 
 					} else if (ctrl && !shift) {
 						//
@@ -345,20 +345,20 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						//
 						// Range addition.
 						//
-						gridModel.getSelectionModel().selectRange(row, true);						
+						gridModel.getSelectionModel().selectRange(row, true);
 					}
-					
+
 					//
 					// Update the anchor column.
 					//
 					if (gridModel.isParentElement(row.getElement())) {
 						if (groupColumn != null) {
 							gridModel.getSelectionModel().setAnchorColumn(groupColumn);
-							
+
 						} else if (groupValue != null) {
 							gridModel.getSelectionModel().setAnchorColumn(groupValue);
 						}
-						
+
 					} else {
 						gridModel.getSelectionModel().setAnchorColumn(column);
 					}
@@ -416,7 +416,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						} else {
 							listener.click(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
 						}
-						
+
 					} else if (e.count > 1) {
 						if (row == Row.COLUMN_HEADER_ROW) {
 							listener.headerDoubleClick(column, new Point(e.x, e.y), e.stateMask);
@@ -435,7 +435,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			}
 		}
 	}
-	
+
 	private void showToolTip(final int x, final int y, final String boldText, final String message) {
 		//
 		// Build a slight delay otherwise the tool-tip would swallow clicks meant for the grid.
@@ -447,7 +447,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				toolTip.setLocation(location);
 				toolTip.setText(boldText);
 				toolTip.setMessage(message);
-				toolTip.setVisible(true);								
+				toolTip.setVisible(true);
 			}
 		});
 	}

@@ -27,7 +27,7 @@ public class StyleRegistry<T> {
 	protected final CellStyle noDataStyle;
 	protected final CellStyle pinnedStyle;
 	protected final BorderStyle groupFooterBorder;
-	
+
 	// Filter matches are highlight in these colours.
 	protected RGB filterMatchForeground;
 	protected RGB filterMatchBackground;
@@ -38,8 +38,8 @@ public class StyleRegistry<T> {
 	protected final CellStyle selectionHeaderStyle;
 	protected final CellStyle selectionRowNumberStyle;
 	protected final CellStyle anchorStyle;
-	protected RegionStyle selectionRegionStyle;	
-	
+	protected RegionStyle selectionRegionStyle;
+
 	// Hover styles.
 	protected RegionStyle hoverRegionStyle;
 	protected RGB hoverGroupNameForeground;
@@ -112,7 +112,7 @@ public class StyleRegistry<T> {
 		groupNameStyle = groupValueStyle.copy();
 		groupNameStyle.setForeground(new RGB(39, 65, 62));
 		groupNameStyle.setFontData(new FontData("Segoe UI", 8, SWT.NORMAL));
-		
+
 		//
 		// Selection cell styles
 		//
@@ -126,7 +126,7 @@ public class StyleRegistry<T> {
 		selectionHeaderStyle.setBorderOuterRight(new BorderStyle(1, LineStyle.SOLID, new RGB(242, 149, 54)));
 		selectionHeaderStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(242, 149, 54)));
 		selectionHeaderStyle.setBorderOuterLeft(new BorderStyle(1, LineStyle.SOLID, new RGB(242, 149, 54)));
-		
+
 		//
 		// Anchor style.
 		//
@@ -136,7 +136,7 @@ public class StyleRegistry<T> {
 		anchorStyle.setBorderInnerRight(new BorderStyle(1, LineStyle.DASHED, new RGB(180, 180, 180)));
 		anchorStyle.setBorderInnerBottom(new BorderStyle(1, LineStyle.DASHED, new RGB(180, 180, 180)));
 		anchorStyle.setBorderInnerLeft(new BorderStyle(1, LineStyle.DASHED, new RGB(180, 180, 180)));
-		
+
 		//
 		// Selection region style.
 		//
@@ -159,8 +159,8 @@ public class StyleRegistry<T> {
 		hoverRegionStyle.setForegroundOpacity(200);
 		hoverRegionStyle.setBackgroundOpacity(100);
 		hoverGroupNameForeground = new RGB(0, 0, 0);
-		hoverGroupNameBackground = new RGB(255, 213, 141);		
-		
+		hoverGroupNameBackground = new RGB(255, 213, 141);
+
 		//
 		// Builds the row number cell style.
 		//
@@ -176,7 +176,7 @@ public class StyleRegistry<T> {
 		selectionRowNumberStyle.setTextAlignment(AlignmentStyle.CENTER);
 		selectionRowNumberStyle.setPaddingTop(PADDING_TOP);
 		selectionRowNumberStyle.setPaddingBottom(PADDING_BOTTOM);
-		
+
 		//
 		// Builds the corner cell style.
 		//
@@ -199,7 +199,7 @@ public class StyleRegistry<T> {
 		pinnedStyle = defaultStyle.copy();
 		pinnedStyle.setForeground(new RGB(39, 65, 62));
 		pinnedStyle.setBackground(new RGB(230, 235, 243));
-		
+
 		filterMatchForeground = new RGB(0, 97, 83);
 		filterMatchBackground = new RGB(198, 239, 206);
 	}
@@ -223,19 +223,19 @@ public class StyleRegistry<T> {
 	public CellStyle getCornerStyle() {
 		return cornerStyle;
 	}
-	
-	public void setFilterMatchBackground(RGB filterMatchBackground) {
+
+	public void setFilterMatchBackground(final RGB filterMatchBackground) {
 		this.filterMatchBackground = filterMatchBackground;
 	}
-	
-	public void setFilterMatchForeground(RGB filterMatchForeground) {
+
+	public void setFilterMatchForeground(final RGB filterMatchForeground) {
 		this.filterMatchForeground = filterMatchForeground;
 	}
-	
+
 	public RGB getFilterMatchBackground() {
 		return filterMatchBackground;
 	}
-	
+
 	public RGB getFilterMatchForeground() {
 		return filterMatchForeground;
 	}
@@ -255,19 +255,19 @@ public class StyleRegistry<T> {
 	public CellStyle getSelectionRowNumberStyle() {
 		return selectionRowNumberStyle;
 	}
-	
+
 	public RegionStyle getHoverRegionStyle() {
 		return hoverRegionStyle;
 	}
-	
+
 	public RGB getHoverGroupNameBackground() {
 		return hoverGroupNameBackground;
 	}
-	
+
 	public RGB getHoverGroupNameForeground() {
 		return hoverGroupNameForeground;
 	}
-	
+
 	public CellStyle getNoDataStyle() {
 		return noDataStyle;
 	}
@@ -283,7 +283,7 @@ public class StyleRegistry<T> {
 	public CellStyle getPinnedStyle() {
 		return pinnedStyle;
 	}
-	
+
 	public CellStyle getAnchorStyle() {
 		return anchorStyle;
 	}
@@ -293,7 +293,7 @@ public class StyleRegistry<T> {
 		if (row.isPinned()) {
 			return pinnedStyle;
 		}
-		
+
 
 		if (column != null) {
 			//
@@ -303,14 +303,14 @@ public class StyleRegistry<T> {
 			if (customStyle != null) {
 				return customStyle;
 			}
-			
+
 			//
 			// Check for a selected column header
 			//
 			if (grid.isFocusControl() && grid.isHighlightAnchorInHeaders() && row == Row.COLUMN_HEADER_ROW  && column.hasAnchor()) {
 				return selectionHeaderStyle;
 			}
-		}		
+		}
 
 		final boolean parentRow = grid.getGridModel().isParentElement(row.getElement());
 //		final boolean parentRow = ((row.getElement() != null && grid.getContentProvider().getChildren(row.getElement()) != null));
@@ -321,7 +321,7 @@ public class StyleRegistry<T> {
 		if (row.isSelected()) {
 			if (parentRow) {
 				return selectionGroupStyle;
-			}						
+			}
 
 			return selectionStyle;
 		}
@@ -376,7 +376,7 @@ public class StyleRegistry<T> {
 	public RGB getBackgroundColour() {
 		return backgroundColour;
 	}
-	
+
 	public BorderStyle getGroupFooterBorder() {
 		return groupFooterBorder;
 	}

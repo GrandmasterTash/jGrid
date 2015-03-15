@@ -18,8 +18,8 @@ public class Column {
 	private boolean visible;
 	private AlignmentStyle textAlignment;
 	private AlignmentStyle imageAlignment;
-	boolean anchor;	
-	
+	boolean anchor;
+
 	// Arbitrary things can be tagged onto a column by key.
 	private Map<String, Object> dataByKey;
 
@@ -96,28 +96,28 @@ public class Column {
 	public void setVisible(final boolean visible) {
 		this.visible = visible;
 	}
-	
+
 	public AlignmentStyle getTextAlignment() {
 		return textAlignment;
 	}
-	
-	public void setTextAlignment(AlignmentStyle textAlignment) {
+
+	public void setTextAlignment(final AlignmentStyle textAlignment) {
 		this.textAlignment = textAlignment;
 	}
-	
+
 	public AlignmentStyle getImageAlignment() {
 		return imageAlignment;
 	}
-	
-	public void setImageAlignment(AlignmentStyle imageAlignment) {
+
+	public void setImageAlignment(final AlignmentStyle imageAlignment) {
 		this.imageAlignment = imageAlignment;
 	}
-	
+
 	public boolean hasAnchor() {
 		return anchor;
 	}
-	
-	public void setAnchor(boolean anchor) {
+
+	public void setAnchor(final boolean anchor) {
 		this.anchor = anchor;
 	}
 
@@ -125,18 +125,18 @@ public class Column {
 		if (dataByKey != null) {
 			return dataByKey.get(key);
 		}
-		
+
 		return null;
 	}
-	
+
 	public void setData(final String key, final Object data) {
 		if (dataByKey == null) {
 			dataByKey = new HashMap<String, Object>();
 		}
-		
+
 		dataByKey.put(key, data);
 	}
-	
+
 	public boolean hasData(final String key) {
 		if (dataByKey != null) {
 			return dataByKey.containsKey(key);
@@ -144,7 +144,7 @@ public class Column {
 
 		return false;
 	}
-	
+
 	private class DefaultComparator implements Comparator<Object> {
 		@Override
 		public int compare(final Object o1, final Object o2) {
