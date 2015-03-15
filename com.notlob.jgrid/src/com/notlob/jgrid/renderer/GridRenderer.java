@@ -20,6 +20,7 @@ import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
+import com.notlob.jgrid.model.SelectionModel;
 import com.notlob.jgrid.model.SortDirection;
 import com.notlob.jgrid.model.Viewport;
 import com.notlob.jgrid.model.filtering.IHighlightingFilter;
@@ -53,6 +54,7 @@ public class GridRenderer<T> implements PaintListener {
 	protected final Point fieldLocation;
 	protected final Point groupBottomLeft;
 	protected final Point groupBottomRight;
+	protected final Rectangle groupFieldBounds;
 	protected final TextLayout textLayout;
 
 	// The current row index being painted (used for painting row numbers).
@@ -103,6 +105,7 @@ public class GridRenderer<T> implements PaintListener {
 		hoverRegion = new Rectangle(0, 0, 0, 0);
 		groupBottomLeft = new Point(0, 0);
 		groupBottomRight = new Point(0, 0);
+		groupFieldBounds = new Rectangle(0, 0, 0, 0);
 		textLayout = new TextLayout(grid.getDisplay());
 		errorImage = ResourceManager.getInstance().getImage("cell_error.gif");
 	}
@@ -245,7 +248,7 @@ public class GridRenderer<T> implements PaintListener {
 				
 			}
 			
-			if (grid.isFocusControl() && grid.isHighlightHoveredRow() && !row.isSelected() && (row == grid.getMouseHandler().getRow())) {
+			if (grid.isHighlightHoveredRow() && !row.isSelected() && (row == grid.getMouseHandler().getRow())) {
 				//
 				// The row has the mouse hovering over it, so paint it with the hover style. If the mouse is over a group field name though, don't highlight.
 				//
@@ -426,18 +429,7 @@ public class GridRenderer<T> implements PaintListener {
 			gc.setBackground(getColour(alternate ? groupValueStyle.getBackgroundAlternate() : groupValueStyle.getBackground()));
 			gc.fillRectangle(rowBounds);
 		}
-		
-		//
-		// Paint any footer border.
-		//
-		if ((row.getElement() != null) && (renderPass == RenderPass.BACKGROUND) && (getStyleRegistry().getGroupFooterBorder() != null)) {
-			groupBottomLeft.x = rowBounds.x;
-			groupBottomLeft.y = rowBounds.y + rowBounds.height - 1;
-			groupBottomRight.x = rowBounds.x + rowBounds.width; 
-			groupBottomRight.y = groupBottomLeft.y; 			
-			paintBorderLine(gc, getStyleRegistry().getGroupFooterBorder(), groupBottomLeft, groupBottomRight);
-		}
-			
+				
 		//
 		// Paint the expand/collapse icon.
 		//
@@ -456,6 +448,17 @@ public class GridRenderer<T> implements PaintListener {
 				final CellStyle valueStyle = grid.getStyleRegistry().getCellStyle(column, row, grid);
 				paintGroupCellContent(gc, column, row, groupNameStyle, valueStyle);
 			}
+		}
+		
+		//
+		// Paint any footer border.
+		//
+		if ((row.getElement() != null) && (renderPass == RenderPass.FOREGROUND) && (getStyleRegistry().getGroupFooterBorder() != null)) {
+			groupBottomLeft.x = rowBounds.x;
+			groupBottomLeft.y = rowBounds.y + rowBounds.height - 1;
+			groupBottomRight.x = rowBounds.x + rowBounds.width; 
+			groupBottomRight.y = groupBottomLeft.y; 			
+			paintBorderLine(gc, getStyleRegistry().getGroupFooterBorder(), groupBottomLeft, groupBottomRight);
 		}
 		
 		gc.setClipping(oldClipping);
@@ -478,11 +481,11 @@ public class GridRenderer<T> implements PaintListener {
 		}
 		
 		//
-		// Highlight the field name if the mouse is over it.
+		// Highlight the field name if its field has the anchor.
 		//
-		// TODO: Turn these into styles and have the correct style passed into this method.
-		final boolean groupNameHovered = column == grid.getMouseHandler().getGroupColumn() && row == grid.getMouseHandler().getRow();
-		if (groupNameHovered) {
+		// TODO: Use the selection header background?		
+		final boolean hasAnchor = (grid.isFocusControl() && (column == getSelectionModel().getAnchorColumn()) && (row.getElement() == getSelectionModel().getAnchorElement()));
+		if (hasAnchor) {
 			gc.setForeground(getColour(getStyleRegistry().getHoverGroupNameForeground()));
 			gc.setBackground(getColour(getStyleRegistry().getHoverGroupNameBackground()));
 		} else {
@@ -497,12 +500,12 @@ public class GridRenderer<T> implements PaintListener {
 			gc.drawImage(sortImage, fieldLocation.x, fieldLocation.y);					
 		}
 		fieldLocation.x += sortImage.getBounds().width + SPACING__GROUP_FIELD;
-		
+						
 		//
 		// Field name text.
 		//				
 		gc.setFont(getFont(groupNameStyle.getFontData()));
-		gc.drawText(name, fieldLocation.x, fieldLocation.y, !groupNameHovered);
+		gc.drawText(name, fieldLocation.x, fieldLocation.y, !hasAnchor);
 		fieldLocation.x += extentCache.get(name).x + SPACING__GROUP_FIELD;
 			
 		final boolean filterMatch = hasStyleableFilterMatch(row, column);
@@ -519,6 +522,11 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			gc.setForeground(getColour(groupValueStyle.getForeground()));				
 		}			
+				
+		groupFieldBounds.x = fieldLocation.x;
+		groupFieldBounds.y = fieldLocation.y;	
+		groupFieldBounds.width = 0;
+		groupFieldBounds.height = 0;
 		
 		//
 		// Field value image.
@@ -528,6 +536,8 @@ public class GridRenderer<T> implements PaintListener {
 			if (image != null) {
 				gc.drawImage(image, fieldLocation.x, fieldLocation.y);	
 				fieldLocation.x += image.getBounds().width + SPACING__GROUP_FIELD;
+				groupFieldBounds.width += image.getBounds().width;
+				groupFieldBounds.height += image.getBounds().height;
 			}
 		}
 		
@@ -538,9 +548,13 @@ public class GridRenderer<T> implements PaintListener {
 			case IMAGE_THEN_TEXT:
 			case TEXT:
 			case TEXT_THEN_IMAGE:
+				final Point valueExtent = extentCache.get(value);
 				gc.setFont(getFont(groupValueStyle.getFontData()));
 				gc.drawText(value, fieldLocation.x, fieldLocation.y, true);
-				fieldLocation.x += (extentCache.get(value).x + PADDING__GROUP_FIELD);			
+				fieldLocation.x += (valueExtent.x + SPACING__GROUP_FIELD);
+				groupFieldBounds.width += valueExtent.x;
+				groupFieldBounds.height += valueExtent.y;
+				
 			default:
 				// No-op.
 		}
@@ -553,7 +567,19 @@ public class GridRenderer<T> implements PaintListener {
 			if (image != null) {
 				gc.drawImage(image, fieldLocation.x, fieldLocation.y);	
 				fieldLocation.x += image.getBounds().width + SPACING__GROUP_FIELD;
+				groupFieldBounds.width += image.getBounds().width;
+				groupFieldBounds.height += image.getBounds().height;
 			}
+		}
+		
+		//
+		// Paint the anchor border.
+		//
+		if (hasAnchor) {
+			paintBorderLine(gc, getStyleRegistry().getAnchorStyle().getBorderInnerTop(), getTopLeft(groupFieldBounds), getTopRight(groupFieldBounds));
+			paintBorderLine(gc, getStyleRegistry().getAnchorStyle().getBorderInnerBottom(), getBottomLeft(groupFieldBounds), getBottomRight(groupFieldBounds));
+			paintBorderLine(gc, getStyleRegistry().getAnchorStyle().getBorderInnerLeft(), getTopLeft(groupFieldBounds), getBottomLeft(groupFieldBounds));
+			paintBorderLine(gc, getStyleRegistry().getAnchorStyle().getBorderInnerRight(), getTopRight(groupFieldBounds), getBottomRight(groupFieldBounds));
 		}
 	}
 	
@@ -1041,6 +1067,10 @@ public class GridRenderer<T> implements PaintListener {
 
 	protected GridModel<T> getGridModel() {
 		return grid.getGridModel();
+	}
+	
+	protected SelectionModel<T> getSelectionModel() {
+		return getGridModel().getSelectionModel();
 	}
 
 	protected StyleRegistry<T> getStyleRegistry() {

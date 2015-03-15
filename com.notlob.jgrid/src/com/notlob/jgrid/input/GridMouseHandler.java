@@ -37,6 +37,9 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	private boolean mouseDown;
 	private int button; // Tracked in mouse down.
 	private Point downLocation = null;
+	private boolean shift; // Tracked in mouseMove and mouseUp.
+	private boolean ctrl;
+	private boolean alt;
 	
 	// Track if the mouse is over a row/column.
 	private Row<T> row = null;
@@ -63,6 +66,22 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	
 	public Column getGroupColumn() {
 		return groupColumn;
+	}
+	
+	public boolean isShift() {
+		return shift;
+	}
+	
+	public boolean isCtrl() {
+		return ctrl;
+	}
+	
+	public boolean isAlt() {
+		return alt;
+	}
+	
+	public void setAlt(final boolean alt) {
+		this.alt = alt;
 	}
 
 	/**
@@ -197,6 +216,10 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 //			grid.redraw();
 //		}
 		
+		shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
+		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
+		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
+		
 		if (trackCell(e.x, e.y) /*&& grid.isHighlightHoveredRow()*/) {
 			//
 			// Repaint the grid to show the hovered row.
@@ -236,8 +259,9 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		// Get the event details.
 		//
 		trackCell(e.x, e.y);
-		final boolean shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
-		boolean ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
+		shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
+		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
+		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
 
 		if (e.button == 1) { // LEFT
 			if (e.count == 1) {
@@ -274,7 +298,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 							return;
 						}
 						
-						if (groupColumn != null && grid.isClickGroupFieldNameToSort()) {
+						if (alt && (groupColumn != null)) {
 							//
 							// Toggle the sort on the group column.
 							//
@@ -295,11 +319,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						ctrl = true;
 					}
 					
-					//
-					// Update the anchor column.
-					//
-					gridModel.getSelectionModel().setAnchorColumn(column);
-
 					if (!(shift || ctrl)) {
 						//
 						// Single row/group replace.
@@ -327,6 +346,21 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						// Range addition.
 						//
 						gridModel.getSelectionModel().selectRange(row, true);						
+					}
+					
+					//
+					// Update the anchor column.
+					//
+					if (gridModel.isParentElement(row.getElement())) {
+						if (groupColumn != null) {
+							gridModel.getSelectionModel().setAnchorColumn(groupColumn);
+							
+						} else if (groupValue != null) {
+							gridModel.getSelectionModel().setAnchorColumn(groupValue);
+						}
+						
+					} else {
+						gridModel.getSelectionModel().setAnchorColumn(column);
 					}
 				}
 

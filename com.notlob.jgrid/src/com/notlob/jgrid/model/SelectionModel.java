@@ -10,7 +10,9 @@ public class SelectionModel<T> {
 	private final GridModel<T> gridModel;
 	private final Set<T> selectedElements;
 	private T anchorElement;		// Used for SHIFT selects and keyboard navigation.
-	private Column anchorColumn;	// 
+	private Column anchorColumn;	//	
+	private Column lastChildAnchorColumn;  // Used when moving the anchor up/down with the keyboard.
+	private Column lastParentAnchorColumn; // Gives some consistency to the position rather than snapping to the first column.
 
 	public SelectionModel(final GridModel<T> gridModel) {
 		this.gridModel = gridModel;
@@ -38,8 +40,36 @@ public class SelectionModel<T> {
 		
 		if (anchorColumn != null) {
 			anchorColumn.setAnchor(true);
+			
+			if (anchorElement != null) {
+				//
+				// Track the last anchor column by type of element - used in keyboard navigation.
+				//
+				if (gridModel.isParentElement(anchorElement)) {
+					lastParentAnchorColumn = anchorColumn;
+					
+				} else {
+					lastChildAnchorColumn = anchorColumn;
+				}			
+			}
 		}
-	}	
+	}
+	
+	public Column getLastChildAnchorColumn() {
+		if (lastChildAnchorColumn == null && !gridModel.getColumns().isEmpty()) {
+			lastChildAnchorColumn = gridModel.getColumns().get(0);
+		}
+		
+		return lastChildAnchorColumn;
+	}
+	
+	public Column getLastParentAnchorColumn() {
+		if (lastParentAnchorColumn == null && !gridModel.getGroupByColumns().isEmpty()) {
+			lastParentAnchorColumn = gridModel.getGroupByColumns().get(0);
+		}
+		
+		return lastParentAnchorColumn;
+	}
 
 	// TODO: Make this un-modifiable to ensure the .selected flag is ref integ?
 	public Set<T> getSelectedElements() {

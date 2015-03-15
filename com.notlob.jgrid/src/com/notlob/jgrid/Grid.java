@@ -38,11 +38,13 @@ import com.notlob.jgrid.styles.StyleRegistry;
 public class Grid<T> extends Composite implements GridModel.IModelListener {
 
 	// TODO: Focus/Keyboard navigation / anchor.
-	// TODO: Make setting to toggle group name click behaviour - click vs alt + click.
 	// Bug: anchorElement is used for range selection but might need a new construct now it's changed purpose.
 	// Bug: CollapseFilter should opt-out of clearing selection.
+	// TODO: Code-clean-up
+	// Bug: There's a slight wobble when scrolling vertically.
 	// TODO: Middle-mouse scrolling.
 	// TODO: Reposition/resize columns via DnD.
+	// TODO: Need a solution for too many group values to fit viewport.
 	// TODO: Column selection mode.
 	// TODO: Empty data message.
 	// TODO: Select next row/group if current is removed.
@@ -89,7 +91,6 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	private boolean highlightHoveredRow = true;
 	private boolean highlightAnchorInHeaders = true;
 	private boolean highlightAnchorCellBorder = true;
-	private boolean clickGroupFieldNameToSort = true; // TODO: Expand to enum, NO, YES, YES_WITH_ALT
 
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
@@ -164,14 +165,6 @@ public class Grid<T> extends Composite implements GridModel.IModelListener {
 	
 	public void setHighlightAnchorCellBorder(boolean highlightAnchorCellBorder) {
 		this.highlightAnchorCellBorder = highlightAnchorCellBorder;
-	}
-	
-	public void setClickGroupFieldNameToSort(boolean clickGroupFieldNameToSort) {
-		this.clickGroupFieldNameToSort = clickGroupFieldNameToSort;
-	}
-	
-	public boolean isClickGroupFieldNameToSort() {
-		return clickGroupFieldNameToSort;				
 	}
 	
 	public void checkWidget() {

@@ -1,8 +1,10 @@
 package com.notlob.jgrid.input;
 
+import java.util.List;
+
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.GC;
 
 import com.notlob.jgrid.Grid;
@@ -12,7 +14,7 @@ import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.SelectionModel;
 
 // TODO: Both this and mouse need try...catches...
-public class GridKeyboardHandler<T> extends KeyAdapter {
+public class GridKeyboardHandler<T> implements KeyListener {
 
 	private final GC gc;
 	private final Grid<T> grid;
@@ -27,6 +29,19 @@ public class GridKeyboardHandler<T> extends KeyAdapter {
 	}
 	
 	@Override
+	public void keyReleased(KeyEvent e) {
+		switch (e.keyCode) {
+//			case SWT.ALT:
+//				//
+//				// Mouse hover feedback has might have changed.
+//				//
+//				grid.getMouseHandler().setAlt(false);
+//				grid.redraw();
+//				break;
+		}
+	}
+	
+	@Override
 	public void keyPressed(KeyEvent e) {
 		
 		//
@@ -38,11 +53,16 @@ public class GridKeyboardHandler<T> extends KeyAdapter {
 		
 		final boolean shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
 		final boolean ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
-		
-		//
-		// UP, DOWN, LEFT, RIGHT
-		//
+
 		switch (e.keyCode) {
+//			case SWT.ALT:
+//				//
+//				// Mouse hover feedback has might have changed.
+//				//
+//				grid.getMouseHandler().setAlt(true);
+//				grid.redraw();
+//				break;
+				
 			case SWT.ARROW_UP:
 			case SWT.ARROW_DOWN:
 			case SWT.ARROW_LEFT:
@@ -93,10 +113,15 @@ public class GridKeyboardHandler<T> extends KeyAdapter {
 		//
 		// If there's no current anchor column, use the first visible column.
 		//
-		if (selectionModel.getAnchorColumn() == null) {		
-			final Column firstColumn = gridModel.getColumns().get(0);			
-			selectionModel.setAnchorColumn(firstColumn);
+		if (selectionModel.getAnchorColumn() == null) {
+			if (gridModel.isParentElement(selectionModel.getAnchorElement()) && !gridModel.getGroupByColumns().isEmpty()) {
+				selectionModel.setAnchorColumn(gridModel.getGroupByColumns().get(0));
+			} else {
+				selectionModel.setAnchorColumn(gridModel.getColumns().get(0));
+			}
 		}
+		
+		final T oldAnchorElement = selectionModel.getAnchorElement();
 		
 		//
 		// Now move the anchor.
@@ -121,14 +146,32 @@ public class GridKeyboardHandler<T> extends KeyAdapter {
 			final int newRowIndex = rowIndex + (direction == SWT.ARROW_UP ? -1 : 1);
 			final Row<T> newRow = gridModel.getRows().get(newRowIndex);
 			selectionModel.setAnchorElement(newRow.getElement());
+						
+			if (gridModel.isParentElement(oldAnchorElement) && !gridModel.isParentElement(newRow.getElement())) {
+				//
+				// Transitioning from a group-to-non-group row means the anchor column must change.			
+				//
+				selectionModel.setAnchorColumn(selectionModel.getLastChildAnchorColumn());
+				
+			} else if (!gridModel.isParentElement(oldAnchorElement) && gridModel.isParentElement(newRow.getElement())) {
+				//
+				// Transitioning from a non-group-to-group row means the anchor column must change.			
+				//
+				selectionModel.setAnchorColumn(selectionModel.getLastParentAnchorColumn());				
+			}
 			
 		} else if ((direction == SWT.ARROW_LEFT) || (direction == SWT.ARROW_RIGHT)) {
 			//
+			// Is this a group row or child row?
+			//
+			final List<Column> columns = gridModel.isParentElement(selectionModel.getAnchorElement()) ? gridModel.getGroupByColumns() : gridModel.getColumns();
+			
+			//
 			// Move the anchor left or right (if we're not already at the left or right edge of the grid).
 			//
-			final int columnIndex = gridModel.getColumns().indexOf(selectionModel.getAnchorColumn());
+			final int columnIndex = columns.indexOf(selectionModel.getAnchorColumn());
 				
-			if (((direction == SWT.ARROW_LEFT) && (columnIndex == 0)) || ((direction == SWT.ARROW_RIGHT) && (columnIndex == (gridModel.getColumns().size()-1)))) {
+			if (((direction == SWT.ARROW_LEFT) && (columnIndex == 0)) || ((direction == SWT.ARROW_RIGHT) && (columnIndex == (columns.size()-1)))) {
 				//
 				// We're at the left/right edge already.
 				//
@@ -139,7 +182,7 @@ public class GridKeyboardHandler<T> extends KeyAdapter {
 			// Update the anchor column.
 			//
 			final int nextColumnIndex = columnIndex + (direction == SWT.ARROW_LEFT ? -1 : 1);
-			final Column nextColumn = gridModel.getColumns().get(nextColumnIndex);
+			final Column nextColumn = columns.get(nextColumnIndex);
 			selectionModel.setAnchorColumn(nextColumn);			
 			
 		} else {
