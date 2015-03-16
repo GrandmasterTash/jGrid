@@ -40,7 +40,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	private boolean alt;
 
 	// Track if the mouse is over a row/column.
-	private Row<T> row = null;
+	private Row<T> row = null; // TODO: Rename hovered_....
 	private Column column = null;
 	private Column groupColumn = null;  // << Mouse is over a group field header.
 	private Column groupValue = null;	// << Mouse is over a group field value not the header;
@@ -281,7 +281,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 							//
 							// Toggle the sort on the group column.
 							//
-							grid.getGridModel().getSortModel().sort(groupColumn, true, ctrl, true);
+							gridModel.getSortModel().sort(groupColumn, true, ctrl, true);
 							return;
 						}
 					}

@@ -7,11 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.widgets.Display;
 
+import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.filtering.CollapsedGroupFilter;
 import com.notlob.jgrid.model.filtering.Filter;
 import com.notlob.jgrid.model.filtering.FilterModel;
@@ -20,6 +18,13 @@ import com.notlob.jgrid.providers.IGridLabelProvider;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.StyleRegistry;
 
+/**
+ *
+ * 
+ * NOTE: This is an internal class not to be manipulated by client code.
+ * 
+ * @author Stef
+ */
 public class GridModel<T> {
 
 	// Visible columns and rows.
@@ -56,7 +61,7 @@ public class GridModel<T> {
 	// Show/hide the row numbers.
 	private boolean showRowNumbers = false;
 
-	// These are notified whenever something changes.
+	// These external listeners are notified whenever something changes.
 	private final List<IModelListener> listeners;
 
 	// Providers to get / format data, images, tool-tips, etc.
@@ -68,7 +73,7 @@ public class GridModel<T> {
 		void selectionChanged();
 	}
 
-	public GridModel() {
+	public GridModel(final Grid<T> grid) {
 		rows = new ArrayList<>();
 		rowsByElement = new LinkedHashMap<>();
 		hiddenRows = new ArrayList<>();
@@ -77,19 +82,17 @@ public class GridModel<T> {
 		columnHeaderRows = new ArrayList<>();
 		groupByColumns = new ArrayList<>();
 		listeners = new ArrayList<>();
-		styleRegistry = new StyleRegistry<T>();
+		styleRegistry = new StyleRegistry<T>(grid);
 		selectionModel = new SelectionModel<T>(this);
 		sortModel = new SortModel<T>(this);
 		filterModel = new FilterModel<T>(this);
 	}
 
 	public StyleRegistry<T> getStyleRegistry() {
-		checkWidget();
 		return styleRegistry;
 	}
 
 	public SelectionModel<T> getSelectionModel() {
-		checkWidget();
 		return selectionModel;
 	}
 
@@ -102,17 +105,14 @@ public class GridModel<T> {
 	}
 
 	public List<Column> getColumns() {
-		checkWidget();
 		return columns;
 	}
 
 	public List<Column> getAllColumns() {
-		checkWidget();
 		return allColumns;
 	}
 
 	public List<Column> getGroupByColumns() {
-		checkWidget();
 		return groupByColumns;
 	}
 
@@ -120,8 +120,6 @@ public class GridModel<T> {
 	 * Returns all of the visible elements in the grid. Not a performant method.
 	 */
 	public List<T> getElements() {
-		checkWidget();
-
 		//
 		// To ensure the elements are in visible sequence, do this.
 		//
@@ -134,7 +132,6 @@ public class GridModel<T> {
 	}
 
 	public Collection<T> getSelection() {
-		checkWidget();
 		return selectionModel.getSelectedElements();
 	}
 
@@ -171,27 +168,22 @@ public class GridModel<T> {
 	}
 
 	public List<Row<T>> getRows() {
-		checkWidget();
 		return rows;
 	}
 
 	public Collection<Row<T>> getHiddenRows() {
-		checkWidget();
 		return hiddenRows;
 	}
 
 	public Collection<Row<T>> getAllRows() {
-		checkWidget();
 		return rowsByElement.values();
 	}
 
 	public List<Row<T>> getColumnHeaderRows() {
-		checkWidget();
 		return columnHeaderRows;
 	}
 
 	public Row<T> getRow(final T element) {
-		checkWidget();
 		return rowsByElement.get(element);
 	}
 
@@ -235,8 +227,6 @@ public class GridModel<T> {
 
 	@SuppressWarnings("unchecked")
 	public void addColumns(final List<Column> columns) {
-		checkWidget();
-
 		final boolean anyWereVisible = !this.columns.isEmpty();
 		boolean anyNowVisible = false;
 
@@ -270,8 +260,6 @@ public class GridModel<T> {
 	}
 
 	public void removeColumns(final List<Column> columns) {
-		checkWidget();
-
 		for (final Column column : columns) {
 			removeColumn(column);
 		}
@@ -292,8 +280,6 @@ public class GridModel<T> {
 	}
 
 	public void updateColumns(final List<Column> columns) {
-		checkWidget();
-
 		for (final Column column : columns) {
 			updateColumn(column);
 		}
@@ -311,9 +297,12 @@ public class GridModel<T> {
 			}
 		}
 	}
+	
+	public Column getColumn(final int columnIndex) {
+		return columns.get(columnIndex);
+	}
 
 	public Column getColumnById(final String columnId) {
-		checkWidget();
 		for (final Column column : allColumns) {
 			if (column.getColumnId().equalsIgnoreCase(columnId)) {
 				return column;
@@ -323,8 +312,6 @@ public class GridModel<T> {
 	}
 
 	public void addElements(final List<T> elements) {
-		checkWidget();
-
 		for (final T element : elements) {
 			//
 			// If this element has a parent that's not here yet ignore it - the parent will add all it's children later. Otherwise, groups grids will get
@@ -380,8 +367,6 @@ public class GridModel<T> {
 	}
 
 	public void removeElements(final List<T> elements) {
-		checkWidget();
-
 		for (final T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
 			rows.remove(row);
@@ -401,8 +386,6 @@ public class GridModel<T> {
 	}
 
 	public void updateElements(final List<T> elements) {
-		checkWidget();
-
 // TODO: To Ensure the row maintains it's position,	we might need it to cache it's visible index - to be fast.
 // TODO: Consider groups need to compare with other groups and children with children.
 //		for (Object element : elements) {
@@ -418,8 +401,6 @@ public class GridModel<T> {
 	}
 
 	public void clearElements() {
-		checkWidget();
-
 		//
 		// Clear rows.
 		//
@@ -455,8 +436,6 @@ public class GridModel<T> {
 	}
 
 	public void groupBy(final List<Column> columns) {
-		checkWidget();
-
 		groupByColumns.addAll(columns);
 
 		//
@@ -478,8 +457,6 @@ public class GridModel<T> {
 	}
 
 	public void ungroupBy(final Column column) {
-		checkWidget();
-
 		//
 		// Reveal the column again.
 		//
@@ -490,8 +467,6 @@ public class GridModel<T> {
 	}
 
 	public void ungroupAll() {
-		checkWidget();
-
 		//
 		// Reveal the column again.
 		//
@@ -508,12 +483,10 @@ public class GridModel<T> {
 	}
 
 	public void addListener(final IModelListener listener) {
-		checkWidget();
 		listeners.add(listener);
 	}
 
 	public void removeListener(final IModelListener listener) {
-		checkWidget();
 		listeners.remove(listener);
 	}
 
@@ -529,20 +502,18 @@ public class GridModel<T> {
 		}
 	}
 
-	// TODO: Remove this, and ensure nothing outside of the grid access this class.
-	void checkWidget() {
-		if (Display.getCurrent() == null) {
-			throw new SWTException(SWT.ERROR_THREAD_INVALID_ACCESS);
-		}
-	}
+//	// TODO: Remove this, and ensure nothing outside of the grid access this class.
+//	void checkWidget() {
+//		if (Display.getCurrent() == null) {
+//			throw new SWTException(SWT.ERROR_THREAD_INVALID_ACCESS);
+//		}
+//	}
 
 	public boolean isShowRowNumbers() {
-		checkWidget();
 		return showRowNumbers;
 	}
 
 	public void setShowRowNumbers(final boolean showRowNumbers) {
-		checkWidget();
 		this.showRowNumbers = showRowNumbers;
 		fireChangeEvent();
 	}
@@ -714,8 +685,6 @@ public class GridModel<T> {
 //	}
 
 	public void pinRows(final List<Row<T>> rows) {
-		checkWidget();
-
 		for (final Row<T> row : rows) {
 			row.setPinned(true);
 			columnHeaderRows.add(row);

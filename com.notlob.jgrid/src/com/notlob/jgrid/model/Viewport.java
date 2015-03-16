@@ -22,11 +22,14 @@ public class Viewport<T> {
 	private int lastRowIndex;
 	private int firstColumnIndex;
 	private int lastColumnIndex;
-	private final Rectangle viewportArea;
+	
 	private final Grid<T> grid;
+	private final GridModel<T> gridModel;
+	private final Rectangle viewportArea;
 
 	public Viewport(final Grid<T> grid) {
 		this.grid = grid;
+		this.gridModel = grid.getGridModel();
 		this.viewportArea = new Rectangle(-1, -1, -1, -1);
 		invalidate();
 	}
@@ -51,7 +54,6 @@ public class Viewport<T> {
 			return;
 		}
 
-		final GridModel<T> gridModel = grid.getGridModel();
 		final Rectangle viewportArea = getViewportArea(gc);
 		final int originX = grid.getHorizontalBar().getSelection();
 		final int originY = grid.getVerticalBar().getSelection();
@@ -73,13 +75,6 @@ public class Viewport<T> {
 				setLastRowIndex(rowIndex);
 				break;
 			}
-
-//			if ((y - gridModel.getRowHeight(gc, row)) > (originY + viewportArea.height) && getLastRowIndex() == -1) {
-//				setLastRowIndex(rowIndex);
-//				break;
-//			}
-//
-//			y += gridModel.getRowHeight(gc, row);
 		}
 
 		//
@@ -125,7 +120,6 @@ public class Viewport<T> {
 			return viewportArea;
 		}
 
-		final GridModel<T> gridModel = grid.getGridModel();
 		viewportArea.x = grid.getClientArea().x;
 		viewportArea.y = grid.getClientArea().y;
 		viewportArea.width = grid.getClientArea().width;
@@ -134,19 +128,19 @@ public class Viewport<T> {
 		//
 		// Shift the viewport down to make room for column header row(s).
 		//
-		for (final Row<T> row : grid.getGridModel().getColumnHeaderRows()) {
-			viewportArea.y += (gridModel.getRowHeight(gc, row) + grid.getGridModel().getStyleRegistry().getCellSpacingVertical());
+		for (final Row<T> row : gridModel.getColumnHeaderRows()) {
+			viewportArea.y += (gridModel.getRowHeight(gc, row) + gridModel.getStyleRegistry().getCellSpacingVertical());
 			viewportArea.height -= viewportArea.y;
 		}
 
 		//
 		// Shift the viewport right enough to show the longest row number.
 		//
-		if (grid.getGridModel().isShowRowNumbers()) {
-			final CellStyle cellStyle = grid.getStyleRegistry().getRowNumberStyle();
+		if (gridModel.isShowRowNumbers()) {
+			final CellStyle cellStyle = gridModel.getStyleRegistry().getRowNumberStyle();
 			gc.setFont(ResourceManager.getInstance().getFont(cellStyle.getFontData()));
 
-			final Point extent = gc.textExtent(String.valueOf(grid.getGridModel().getRows().size()));
+			final Point extent = gc.textExtent(String.valueOf(gridModel.getRows().size()));
 			extent.x += cellStyle.getPaddingLeft() + cellStyle.getPaddingRight();
 
 			viewportArea.x += extent.x;
@@ -166,7 +160,7 @@ public class Viewport<T> {
 		int x = viewportArea.x;
 
 		for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
-			final Column column = grid.getColumn(columnIndex);
+			final Column column = gridModel.getColumn(columnIndex);
 			x += column.getWidth();
 		}
 
@@ -178,11 +172,11 @@ public class Viewport<T> {
 	 * This stops flickering on the right-most column when horizontally scrolling.
 	 */
 	public int getLastVisibleColumnIndex() {
-		return (lastColumnIndex == -1) ? -1 : Math.min(lastColumnIndex + 2, grid.getColumns().size());
+		return (lastColumnIndex == -1) ? -1 : Math.min(lastColumnIndex + 2, gridModel.getColumns().size());
 	}
 
 	public int getLastVisibleRowIndex() {
-		return (lastRowIndex == -1) ? -1 : Math.min(lastRowIndex + 2, grid.getGridModel().getRows().size());
+		return (lastRowIndex == -1) ? -1 : Math.min(lastRowIndex + 2, gridModel.getRows().size());
 	}
 
 	public int getFirstRowIndex() {
@@ -225,7 +219,7 @@ public class Viewport<T> {
 
 		if (x >= currentX) {
 			for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastColumnIndex(); columnIndex++) {
-				final Column column = grid.getColumn(columnIndex);
+				final Column column = gridModel.getColumn(columnIndex);
 				currentX += column.getWidth();
 
 				if (x <= currentX) {
@@ -240,7 +234,7 @@ public class Viewport<T> {
 	public int getColumnX(final Column column) {
 		int x = 0;
 
-		for (final Column current : grid.getColumns()) {
+		for (final Column current : gridModel.getColumns()) {
 			if (current == column) {
 				return x;
 			}
@@ -255,7 +249,6 @@ public class Viewport<T> {
 	 * Find the row at the pixel coordinates specified.
 	 */
 	public int getRowIndexByY(final int y, final GC gc) {
-		final GridModel<T> gridModel = grid.getGridModel();
 		final Rectangle viewportArea = getViewportArea(gc);
 		int currentY = viewportArea.y;
 
@@ -294,7 +287,6 @@ public class Viewport<T> {
 	 * Locate the y pixel co-ordinate of the row in the viewport's coordinates.
 	 */
 	public int getRowViewportY(final GC gc, final Row<T> row) {
-		final GridModel<T> gridModel = grid.getGridModel();
 		final Rectangle viewportArea = getViewportArea(gc);
 		int currentY = viewportArea.y;
 
@@ -314,12 +306,12 @@ public class Viewport<T> {
 	private int getRowY(final GC gc, final Row<T> row) {
 		int currentY = 0;
 
-		for (final Row<T> current : grid.getGridModel().getRows()) {
+		for (final Row<T> current : gridModel.getRows()) {
 			if (current == row) {
 				return currentY;
 			}
 
-			currentY += grid.getGridModel().getRowHeight(gc, current);
+			currentY += gridModel.getRowHeight(gc, current);
 		}
 
 		return -1;
@@ -330,8 +322,8 @@ public class Viewport<T> {
 	 */
 	public void reveal(final GC gc, final Column column, final Row<T> row) {
 
-		final int rowIndex = grid.getGridModel().getRows().indexOf(row);
-		final int columnIndex = grid.getGridModel().getColumns().indexOf(column);
+		final int rowIndex = gridModel.getRows().indexOf(row);
+		final int columnIndex = gridModel.getColumns().indexOf(column);
 
 		//
 		// Check which direction we need to scroll vertically and horizontally and by how many rows and columns.
@@ -343,11 +335,11 @@ public class Viewport<T> {
 			//
 			// Last column edge case - select max scroll.
 			//
-			if (columnIndex == (grid.getColumns().size()-1)) {
+			if (columnIndex == (gridModel.getColumns().size()-1)) {
 				grid.getHorizontalBar().setSelection(grid.getHorizontalBar().getMaximum());
 
 			} else {
-				final Column scrollToColumn = grid.getGridModel().getColumns().get(columnIndex + 1);
+				final Column scrollToColumn = gridModel.getColumns().get(columnIndex + 1);
 
 				if (hDelta < 0) {
 					grid.getHorizontalBar().setSelection(getColumnX(scrollToColumn) - scrollToColumn.getWidth());
@@ -361,20 +353,19 @@ public class Viewport<T> {
 			//
 			// Last row edge case - select max scroll.
 			//
-			if (rowIndex == (grid.getGridModel().getRows().size()-1)) {
+			if (rowIndex == (gridModel.getRows().size()-1)) {
 				grid.getVerticalBar().setSelection(grid.getVerticalBar().getMaximum());
 
 			} else {
-				final Row<T> scrollToRow = grid.getGridModel().getRows().get(rowIndex + 1);
+				final Row<T> scrollToRow = gridModel.getRows().get(rowIndex + 1);
 
 				if (vDelta < 0) {
-					grid.getVerticalBar().setSelection(getRowY(gc, scrollToRow) - grid.getGridModel().getRowHeight(gc, scrollToRow));
+					grid.getVerticalBar().setSelection(getRowY(gc, scrollToRow) - gridModel.getRowHeight(gc, scrollToRow));
 				} else {
 					grid.getVerticalBar().setSelection((getRowY(gc, scrollToRow) - viewportArea.height));
 				}
 			}
 		}
-
 	}
 
 	@Override

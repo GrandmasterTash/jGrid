@@ -13,6 +13,8 @@ import com.notlob.jgrid.model.Row;
 
 // TODO: Make this lot protected / overridable.
 public class StyleRegistry<T> {
+	
+	private final Grid<T> grid;
 
 	protected RGB backgroundColour;
 	protected int cellSpacingVertical;
@@ -52,7 +54,8 @@ public class StyleRegistry<T> {
 	protected final Map<Column, CellStyle> columnStyles;
 	protected final Map<Row<T>, CellStyle> rowStyles;
 
-	public StyleRegistry() {
+	public StyleRegistry(final Grid<T> grid) {
+		this.grid = grid;
 		rowStyles = new HashMap<>();
 		columnStyles = new HashMap<>();
 		customStyles = new HashMap<>();
@@ -288,7 +291,7 @@ public class StyleRegistry<T> {
 		return anchorStyle;
 	}
 
-	public CellStyle getCellStyle(final Column column, final Row<T> row, final Grid<T> grid) {
+	public CellStyle getCellStyle(final Column column, final Row<T> row) {
 
 		if (row.isPinned()) {
 			return pinnedStyle;
@@ -313,7 +316,6 @@ public class StyleRegistry<T> {
 		}
 
 		final boolean parentRow = grid.getGridModel().isParentElement(row.getElement());
-//		final boolean parentRow = ((row.getElement() != null && grid.getContentProvider().getChildren(row.getElement()) != null));
 
 		//
 		// Check for a selected row.

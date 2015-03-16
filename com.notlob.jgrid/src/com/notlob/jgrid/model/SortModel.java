@@ -42,7 +42,6 @@ public class SortModel<T> {
 	}
 
 	public void setGroupMixType(final GroupMixType groupMixType) {
-		gridModel.checkWidget();
 		this.groupMixType = groupMixType;
 		refresh();
 		gridModel.fireChangeEvent();
@@ -53,14 +52,12 @@ public class SortModel<T> {
 	}
 
 	public void setParentRowsAboveChildren(final boolean parentRowsAboveChildren) {
-		gridModel.checkWidget();
 		this.parentRowsAboveChildren = parentRowsAboveChildren;
 		refresh();
 		gridModel.fireChangeEvent();
 	}
 
 	public void setRowComparator(final Comparator<Row<T>> rowComparator) {
-		gridModel.checkWidget();
 		this.rowComparator = rowComparator;
 	}
 
@@ -68,8 +65,6 @@ public class SortModel<T> {
 	 * Toggle the column's sort and apply to the current sort model (or replace the current model).
 	 */
 	public void sort(final Column column, final boolean toggle, final boolean append, final boolean notify) {
-		gridModel.checkWidget();
-
 		//
 		// Toggle the sort direction on the column.
 		//
@@ -130,7 +125,6 @@ public class SortModel<T> {
 	 * Clear the current sorts.
 	 */
 	public void clear() {
-		gridModel.checkWidget();
 		clearInternal();
 		Collections.sort(gridModel.getRows(), rowComparator);
 		gridModel.fireChangeEvent();
@@ -152,7 +146,6 @@ public class SortModel<T> {
 	 * Ascertain where the specified row should live given the current sort model.
 	 */
 	public int getSortedRowIndex(final Row<T> row) {
-		gridModel.checkWidget();
 		final int index = Collections.binarySearch(gridModel.getRows(), row, rowComparator);
 		return (index * -1) - 1;
 	}
