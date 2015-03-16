@@ -35,8 +35,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 	// Track if any mouse button is in the down position.
 	private boolean mouseDown;
-	private int button; // Tracked in mouse down.
-	private Point downLocation = null;
 	private boolean shift; // Tracked in mouseMove and mouseUp.
 	private boolean ctrl;
 	private boolean alt;
@@ -207,20 +205,11 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	@Override
 	public void mouseMove(final MouseEvent e) {
 		toolTip.setVisible(false);
-//		System.out.println("TODO: break when mousewheel causes repaint - copy whatever is causing it to the this stuff.");
-//		if (mouseDown && button == 2) {
-//			// TODO: Scroll the viewport.
-//			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEALL));
-//			grid.getVerticalBar().setSelection(grid.getVerticalBar().getSelection() + (e.x - downLocation.x));
-//			System.out.println("Scroll " + (e.x - downLocation.x) + "," + (e.y - downLocation.y));
-//			grid.redraw();
-//		}
-
 		shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
 		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
 		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
 
-		if (trackCell(e.x, e.y) /*&& grid.isHighlightHoveredRow()*/) {
+		if (trackCell(e.x, e.y)) {
 			//
 			// Repaint the grid to show the hovered row.
 			//
@@ -228,17 +217,9 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		}
 	}
 
-//	@Override
-//	public void mouseScrolled(MouseEvent e) {
-//		// TODO: Might not need this...
-//		System.out.println("Mouse Wheel");
-//	}
-
 	@Override
 	public void mouseDown(final MouseEvent e) {
 		mouseDown = true;
-		button = e.button;
-		downLocation = new Point(e.x, e.y);
 	}
 
 	@Override
@@ -248,8 +229,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		}
 
 		mouseDown = false;
-		button = -1;
-		downLocation = null;
 
 		if (grid.getCursor() == grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEALL)) {
 			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
@@ -357,6 +336,9 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 						} else if (groupValue != null) {
 							gridModel.getSelectionModel().setAnchorColumn(groupValue);
+							
+						} else if (!gridModel.getGroupByColumns().isEmpty()) {
+							gridModel.getSelectionModel().setAnchorColumn(gridModel.getGroupByColumns().get(0));
 						}
 
 					} else {

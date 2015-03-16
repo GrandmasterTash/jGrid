@@ -485,7 +485,7 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		// TODO: Use the selection header background?
 		final boolean hasAnchor = (grid.isFocusControl() && (column == getSelectionModel().getAnchorColumn()) && (row.getElement() == getSelectionModel().getAnchorElement()));
-		if (hasAnchor) {
+		if (hasAnchor && grid.isHighlightAnchorInHeaders()) {
 			gc.setForeground(getColour(getStyleRegistry().getHoverGroupNameForeground()));
 			gc.setBackground(getColour(getStyleRegistry().getHoverGroupNameBackground()));
 		} else {
@@ -505,7 +505,7 @@ public class GridRenderer<T> implements PaintListener {
 		// Field name text.
 		//
 		gc.setFont(getFont(groupNameStyle.getFontData()));
-		gc.drawText(name, fieldLocation.x, fieldLocation.y, !hasAnchor);
+		gc.drawText(name, fieldLocation.x, fieldLocation.y, (!hasAnchor || !grid.isHighlightAnchorInHeaders()));
 		fieldLocation.x += extentCache.get(name).x + SPACING__GROUP_FIELD;
 
 		final boolean filterMatch = hasStyleableFilterMatch(row, column);

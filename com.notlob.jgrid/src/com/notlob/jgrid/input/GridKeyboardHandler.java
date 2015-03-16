@@ -1,5 +1,6 @@
 package com.notlob.jgrid.input;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -67,17 +68,21 @@ public class GridKeyboardHandler<T> implements KeyListener {
 			case SWT.ARROW_DOWN:
 			case SWT.ARROW_LEFT:
 			case SWT.ARROW_RIGHT:
-				if (ctrl) {
-					//
-					// Move the anchor.
-					//
-					moveAnchor(e.keyCode);
-
-					// TODO: Render anchor on group values.
-
+				//
+				// Move the anchor.
+				//
+				moveAnchor(e.keyCode);
+				
+				
+				
+				if (shift) {
+					// Expand selection range from previous anchor.
 				}
-
-				// TODO: Move / add-to selection.
+				
+				if (!ctrl && !shift) {
+					// Set the new selection to the anchor row / column.
+					selectionModel.setSelectedRows(Collections.singletonList(gridModel.getRow(selectionModel.getAnchorElement())));
+				}
 
 				break;
 		}
@@ -189,7 +194,7 @@ public class GridKeyboardHandler<T> implements KeyListener {
 			throw new IllegalArgumentException(String.format("Unknown direction %s", direction));
 		}
 
-		if ((selectionModel.getAnchorElement() != null) && (selectionModel.getAnchorElement() != null)) {
+		if ((selectionModel.getAnchorElement() != null) && (selectionModel.getAnchorElement() != null) && !gridModel.isParentElement(selectionModel.getAnchorElement())) {
 			//
 			// Ensure the anchor cell is visible.
 			//

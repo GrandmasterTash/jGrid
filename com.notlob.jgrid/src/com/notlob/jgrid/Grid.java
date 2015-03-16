@@ -35,21 +35,32 @@ import com.notlob.jgrid.providers.IGridLabelProvider;
 import com.notlob.jgrid.renderer.GridRenderer;
 import com.notlob.jgrid.styles.StyleRegistry;
 
-public class Grid<T> extends Composite implements GridModel.IModelListener {
+public class Grid<T> extends Composite implements GridModel.IModelListener { // TODO: Ditch this and tightly couple model to grid.
 
-	// TODO: Focus/Keyboard navigation / anchor.
+	// TODO: Increase the hotspot around group field name and values and make it rational.
 	// Bug: anchorElement is used for range selection but might need a new construct now it's changed purpose.
-	// Bug: CollapseFilter should opt-out of clearing selection.
+	// TODO: Allow group row selection without all members.
+	// Bug: CollapseFilter should opt-out of clearing selection.	
+	// Bug: Double-clicking looses the anchor.
+	
+	// TODO: Focus/Keyboard navigation / anchor.
+	
 	// Bug: There's a slight wobble when scrolling vertically.
-	// TODO: Middle-mouse scrolling.
+	// TODO: Show/hide column (GridModel.updateColumns).
 	// TODO: Reposition/resize columns via DnD.
+	
 	// TODO: Need a solution for too many group values to fit viewport.
+	
 	// TODO: Column selection mode.
+	
 	// TODO: Empty data message.
 	// TODO: Select next row/group if current is removed.
 	// TODO: Right-click to select before raising event.
+	
 	// TODO: Column pinning.
+	
 	// TODO: In-line editing.
+	
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
 	// TODO: Evaluate performance gain vs memory overhead of the extent cache in the renderer.
