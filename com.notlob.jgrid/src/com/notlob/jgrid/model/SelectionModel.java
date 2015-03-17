@@ -9,7 +9,7 @@ public class SelectionModel<T> {
 
 	private final GridModel<T> gridModel;
 	private final Set<T> selectedElements;
-	private T anchorElement;		// Used for SHIFT selects and keyboard navigation.
+	private T anchorElement;		// The anchor is the current cell cursor.
 	private Column anchorColumn;	//
 	private Column lastChildAnchorColumn;  // Used when moving the anchor up/down with the keyboard.
 	private Column lastParentAnchorColumn; // Gives some consistency to the position rather than snapping to the first column.
@@ -208,11 +208,6 @@ public class SelectionModel<T> {
 		// If all child rows of a group are selected, select the group.
 		//
 		checkGroupSelection(rowsToSelect);
-
-		//
-		// Update the anchor the the row.
-		//
-		anchorElement = row.getElement();
 
 		gridModel.fireSelectionChangedEvent();
 	}
