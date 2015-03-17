@@ -37,7 +37,6 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite {
 
-	// Bug: getRowCount needs to cache not compute.
 	// Bug: Cannot click on the last (cropped) row/column.
 	
 	// TODO: Focus/Keyboard navigation / anchor.
@@ -292,9 +291,9 @@ public class Grid<T> extends Composite {
 		return gridModel.getColumnHeaderRows();
 	}
 	
-	public int getRowCount(final boolean visible, final RowCountScope scope) {
+	public int getDetailedRowCount(final boolean visible, final RowCountScope scope) {
 		checkWidget();
-		return gridModel.getRowCount(visible, scope);
+		return gridModel.getDetailedRowCount(visible, scope);
 	}
 	
 	public int getRowHeight(final Row<T> row) {

@@ -138,7 +138,7 @@ public class GridModel<T> {
 	/**
 	 * The number of VISIBLE rows.
 	 */
-	public int getRowCount(final boolean visible, final RowCountScope scope) {
+	public int getDetailedRowCount(final boolean visible, final RowCountScope scope) {
 		final Collection<Row<T>> rowsToCount = visible ? rows : hiddenRows;
 
 		switch (scope) {
