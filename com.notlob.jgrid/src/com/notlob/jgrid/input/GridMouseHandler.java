@@ -330,19 +330,21 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 					//
 					// Update the anchor column.
 					//
-					if (gridModel.isParentElement(row.getElement())) {
-						if (groupColumn != null) {
-							gridModel.getSelectionModel().setAnchorColumn(groupColumn);
-
-						} else if (groupValue != null) {
-							gridModel.getSelectionModel().setAnchorColumn(groupValue);
-							
-						} else if (!gridModel.getGroupByColumns().isEmpty()) {
-							gridModel.getSelectionModel().setAnchorColumn(gridModel.getGroupByColumns().get(0));
+					if (!shift) {
+						if (gridModel.isParentElement(row.getElement())) {
+							if (groupColumn != null) {
+								gridModel.getSelectionModel().setAnchorColumn(groupColumn);
+	
+							} else if (groupValue != null) {
+								gridModel.getSelectionModel().setAnchorColumn(groupValue);
+								
+							} else if (!gridModel.getGroupByColumns().isEmpty()) {
+								gridModel.getSelectionModel().setAnchorColumn(gridModel.getGroupByColumns().get(0));
+							}
+	
+						} else {
+							gridModel.getSelectionModel().setAnchorColumn(column);
 						}
-
-					} else {
-						gridModel.getSelectionModel().setAnchorColumn(column);
 					}
 				}
 
@@ -370,6 +372,11 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 								break;
 							}
 						}
+						
+						T anchorElement = null;
+						if (gridModel.isChildElement(row.getElement())) {
+							anchorElement = gridModel.getSelectionModel().getAnchorElement();
+						}
 
 						//
 						// If any are unselected, select the group, otherwise, if they are all selected,
@@ -380,6 +387,14 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 						} else if (!gridModel.isParentRow(row)) {
 							gridModel.getSelectionModel().setSelectedRows(Collections.singletonList(row));
+						}
+						
+						//
+						// Ensure the anchor is where the mouse was. Group children lose the anchor on double-click
+						// (due to the setSelection code) so we'll restore it.
+						//
+						if (gridModel.isChildElement(row.getElement())) {
+							gridModel.getSelectionModel().setAnchorElement(anchorElement);
 						}
 					}
 				}
