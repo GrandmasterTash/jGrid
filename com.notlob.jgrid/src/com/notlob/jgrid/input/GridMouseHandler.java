@@ -274,7 +274,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 							// Refresh filters.
 							gridModel.getFilterModel().applyFilters();
-							return;
+							//return; // Dont exit here - allow the group to be selected if expanding.
 						}
 
 						if (alt && (groupColumn != null)) {

@@ -13,8 +13,8 @@ import com.notlob.jgrid.model.Row;
  */
 public abstract class Filter<T> {
 
-	// TODO: Consider ditching this and moving into an abstract specialisation.
-	protected final boolean includeWholeGroup;
+//	// TODO: Consider ditching this and moving into an abstract specialisation.
+//	protected final boolean includeWholeGroup;
 
 	//
 	// Return a result with match = true if the filter matches the row's element otherwise null or match = false.
@@ -28,15 +28,15 @@ public abstract class Filter<T> {
 	public abstract String toReadableString(final boolean includeStyleTokens);
 
 	public Filter() {
-		this(true);
+//		this(true);
 	}
 
-	public Filter(final boolean includeWholeGroup) {
-		this.includeWholeGroup = includeWholeGroup;
-	}
-
-	public boolean isIncludeWholeGroup() {
-		return includeWholeGroup;
-	}
+//	public Filter(final boolean includeWholeGroup) {
+//		this.includeWholeGroup = includeWholeGroup;
+//	}
+//
+//	public boolean isIncludeWholeGroup() {
+//		return includeWholeGroup;
+//	}
 
 }

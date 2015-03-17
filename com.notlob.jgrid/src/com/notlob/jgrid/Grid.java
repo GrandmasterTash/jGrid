@@ -37,7 +37,6 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite {
 
-	// Bug: CollapseFilter should opt-out of clearing selection.	
 	// Bug: Double-clicking looses the anchor.
 	// Bug: Delete all rows can leave the anchor rendered in the column header.
 	// Bug: getRowCount needs to cache not compute.
