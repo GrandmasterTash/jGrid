@@ -37,8 +37,6 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite {
 
-	// Bug: Cannot click on the last (cropped) row/column.
-	
 	// TODO: Focus/Keyboard navigation / anchor.
 	
 	// TODO: Show/hide column (GridModel.updateColumns).
@@ -52,6 +50,7 @@ public class Grid<T> extends Composite {
 	// TODO: Empty data message.
 	// TODO: Select next row/group if current is removed.
 	// TODO: Right-click to select before raising event.
+	// TODO: Expose cell bounds api for automated testing.
 	
 	// TODO: Column pinning.
 	

@@ -183,6 +183,9 @@ public class Viewport<T> {
 		return firstRowIndex;
 	}
 
+	/**
+	 * Last (wholey visible - uncropped) row index.
+	 */
 	public int getLastRowIndex() {
 		return lastRowIndex;
 	}
@@ -191,6 +194,9 @@ public class Viewport<T> {
 		return firstColumnIndex;
 	}
 
+	/**
+	 * Last (wholey visible - uncropped) column index.
+	 */
 	public int getLastColumnIndex() {
 		return lastColumnIndex;
 	}
@@ -218,7 +224,7 @@ public class Viewport<T> {
 		int currentX = getViewportArea(gc).x;
 
 		if (x >= currentX) {
-			for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastColumnIndex(); columnIndex++) {
+			for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
 				final Column column = gridModel.getColumn(columnIndex);
 				currentX += column.getWidth();
 
@@ -268,7 +274,7 @@ public class Viewport<T> {
 			//
 			// A data row (or row number) has been clicked.
 			//
-			for (int rowIndex=getFirstRowIndex(); rowIndex<getLastRowIndex(); rowIndex++) {
+			for (int rowIndex=getFirstRowIndex(); rowIndex<getLastVisibleRowIndex(); rowIndex++) {
 				if (rowIndex < gridModel.getRows().size()) {
 					final Row<T> row = gridModel.getRows().get(rowIndex);
 					currentY += gridModel.getRowHeight(gc, row);
