@@ -1,11 +1,14 @@
 package com.notlob.jgrid.input;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.widgets.ScrollBar;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
@@ -16,11 +19,13 @@ import com.notlob.jgrid.model.SelectionModel;
 // TODO: Both this and mouse need try...catches...
 public class GridKeyboardHandler<T> implements KeyListener {
 
+	private final GC gc;
 	private final Grid<T> grid;
 	private final GridModel<T> gridModel;
 	private final SelectionModel<T> selectionModel;
 
-	public GridKeyboardHandler(final Grid<T> grid) {
+	public GridKeyboardHandler(final Grid<T> grid, final GC gc) {
+		this.gc = gc;
 		this.grid = grid;
 		this.gridModel = grid.getGridModel();
 		this.selectionModel = grid.getGridModel().getSelectionModel();
@@ -28,6 +33,14 @@ public class GridKeyboardHandler<T> implements KeyListener {
 
 	@Override
 	public void keyReleased(final KeyEvent e) {
+		final boolean ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
+		
+		if ((e.keyCode == 97) && ctrl) {
+			//
+			// CTRL+A
+			//
+			gridModel.getSelectionModel().selectAll();
+		}
 	}
 
 	@Override
@@ -75,30 +88,197 @@ public class GridKeyboardHandler<T> implements KeyListener {
 				}
 				
 				break;
+				
+			case SWT.PAGE_DOWN:
+				pageDown();
+				break;
+				
+			case SWT.PAGE_UP:
+				pageUp();
+				break;
+				
+			case SWT.HOME:
+				if (ctrl) {
+					goTopLeft();
+					
+				} else {
+					goHome();
+				}
+				break;
+				
+			case SWT.END:
+				if (ctrl) {
+					goBottomLeft();
+				} else {
+					goEnd();
+				}
+				break;
+			
+			case SWT.SPACE:
+				if (ctrl) {
+					toggleSelection();
+				}
+				break;
 		}
-
-		//
-		// PAGE-UP, PAGE-DOWN
-		//
-
-		//
-		// HOME, END, CTRL+HOME, CTRL+END
-		//
-
-		//
-		// ENTER, TAB?
-		//
-
-		//
-		// CTRL+SPACE to select?
-		//
 		
-		//
-		// CTRL+A
-		//
-
 	}
 	
+	private void toggleSelection() {
+		//
+		// Ensure an anchor exists.
+		//
+		ensureAnchorSet();
+		
+		//
+		// Toggle the row's selection (or group if it's a group row).
+		//
+		final Row<T> row = gridModel.getRow(gridModel.getSelectionModel().getAnchorElement());
+		final List<Row<T>> rows = new ArrayList<>();
+		rows.addAll(gridModel.isParentRow(row) ? gridModel.getWholeGroup(row) : Collections.singletonList(row));
+		gridModel.getSelectionModel().toggleRowSelections(rows);
+		
+	}
+
+	private void goTopLeft() {
+		//
+		// Get the first column and the current anchor row.
+		//
+		final Row<T> row = gridModel.getRows().get(0);
+		final Column column = gridModel.getColumn(0);
+		
+		//
+		// Update and reveal the anchor column.
+		//		
+		gridModel.getSelectionModel().setAnchorColumn(column);
+		gridModel.getSelectionModel().setAnchorElement(row.getElement());
+		grid.getViewport().reveal(gc, column, row);
+		
+		//
+		// Ensure the grid paints.
+		//
+		gridModel.fireChangeEvent();
+	}
+	
+	private void goBottomLeft() {
+		//
+		// Get the first column and the current anchor row.
+		//
+		final Row<T> row = gridModel.getRows().get(gridModel.getRows().size()-1);
+		final Column column = gridModel.getColumn(0);
+		
+		//
+		// Update and reveal the anchor column.
+		//		
+		gridModel.getSelectionModel().setAnchorColumn(column);
+		gridModel.getSelectionModel().setAnchorElement(row.getElement());
+		grid.getViewport().reveal(gc, column, row);
+		
+		//
+		// Ensure the grid paints.
+		//
+		gridModel.fireChangeEvent();
+	}
+	
+	private void goHome() {
+		//
+		// Ensure there's an anchor.
+		//
+		ensureAnchorSet();
+		
+		//
+		// Get the first column and the current anchor row.
+		//
+		final Row<T> row = gridModel.getRow(gridModel.getSelectionModel().getAnchorElement());
+		final Column column = gridModel.getColumn(0);
+		
+		//
+		// Update and reveal the anchor column.
+		//		
+		gridModel.getSelectionModel().setAnchorColumn(column);
+		grid.getViewport().reveal(gc, column, row);
+		
+		//
+		// Ensure the grid paints.
+		//
+		gridModel.fireChangeEvent();
+	}
+	
+	private void goEnd() {
+		//
+		// Ensure there's an anchor.
+		//
+		ensureAnchorSet();
+		
+		//
+		// Get the first column and the current anchor row.
+		//
+		final Row<T> row = gridModel.getRow(gridModel.getSelectionModel().getAnchorElement());
+		final Column column = gridModel.getColumn(gridModel.getColumns().size()-1);
+		
+		//
+		// Update and reveal the anchor column.
+		//		
+		gridModel.getSelectionModel().setAnchorColumn(column);
+		grid.getViewport().reveal(gc, column, row);
+		
+		//
+		// Ensure the grid paints.
+		//
+		gridModel.fireChangeEvent();		
+	}
+	
+	private void pageUp() {
+		//
+		// Ensure there's an anchor.
+		//
+		ensureAnchorSet();
+		
+		//
+		// Move the scrollbar down one page.
+		//
+		final ScrollBar verticalBar = grid.getVerticalBar();
+		verticalBar.setSelection(Math.max(verticalBar.getSelection() - verticalBar.getPageIncrement(), verticalBar.getMinimum()));
+		
+		//
+		// Cause a repaint.
+		//
+		gridModel.fireChangeEvent();
+		
+		//
+		// Move the anchor to the new page.
+		//
+		if (verticalBar.getSelection() != verticalBar.getMaximum()) {
+			final Row<T> row = gridModel.getRows().get(grid.getViewport().getFirstRowIndex());
+			gridModel.getSelectionModel().setAnchorElement(row.getElement());
+		}
+	}
+
+	private void pageDown() {
+		//
+		// Ensure there's an anchor.
+		//
+		ensureAnchorSet();
+		
+		//
+		// Move the scrollbar down one page.
+		//
+		final ScrollBar verticalBar = grid.getVerticalBar();
+		verticalBar.setSelection(Math.min(verticalBar.getSelection() + verticalBar.getPageIncrement(), verticalBar.getMaximum()));
+		
+		//
+		// Cause a repaint.
+		//
+		gridModel.fireChangeEvent();
+		
+		//
+		// Move the anchor to the new page.
+		//
+		if (verticalBar.getSelection() != verticalBar.getMaximum()) {
+			final Row<T> row = gridModel.getRows().get(grid.getViewport().getFirstRowIndex());
+			gridModel.getSelectionModel().setAnchorElement(row.getElement());
+		}
+	}
+
 	private void ensureAnchorSet() {
 		//
 		// If there's no current anchor element, use the first visible row.
@@ -285,4 +465,6 @@ public class GridKeyboardHandler<T> implements KeyListener {
 			}
 		}
 	}
+	
+	
 }

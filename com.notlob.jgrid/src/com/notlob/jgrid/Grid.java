@@ -37,9 +37,8 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite {
 
-	// TODO: Focus/Keyboard navigation / anchor.
-	
-	// TODO: Show/hide column (GridModel.updateColumns).
+	// Bug: Row number selection is irratic.
+	// TODO: Show/hide column (GridModel.updateColumns) - ensure we can filter on hidden columns with expression filters, ensure quickfilters are dropped.
 	// TODO: Example application.
 	// TODO: Reposition/resize columns via DnD.
 	// Bug: There's a slight wobble when scrolling vertically.	
@@ -112,7 +111,7 @@ public class Grid<T> extends Composite {
 		toolTip = new ToolTip(parent.getShell(), SWT.NONE);
 		toolTip.setAutoHide(true);
 		mouseHandler = new GridMouseHandler<T>(this, gc, listeners, toolTip);
-		keyboardHandler = new GridKeyboardHandler<T>(this);
+		keyboardHandler = new GridKeyboardHandler<T>(this, gc);
 
 		parent.addDisposeListener(disposeListener);
 		addKeyListener(keyboardHandler);
