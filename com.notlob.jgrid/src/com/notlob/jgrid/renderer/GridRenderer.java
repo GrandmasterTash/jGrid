@@ -533,8 +533,8 @@ public class GridRenderer<T> implements PaintListener {
 			final Image image = grid.getLabelProvider().getImage(column, row.getElement());
 			if (image != null) {
 				gc.drawImage(image, fieldLocation.x, fieldLocation.y);
-				fieldLocation.x += image.getBounds().width + SPACING__GROUP_FIELD;
-				groupFieldBounds.width += image.getBounds().width;
+				fieldLocation.x += image.getBounds().width + PADDING__GROUP_FIELD;
+				groupFieldBounds.width += (image.getBounds().width + PADDING__GROUP_FIELD);
 				groupFieldBounds.height += image.getBounds().height;
 			}
 		}
@@ -549,8 +549,8 @@ public class GridRenderer<T> implements PaintListener {
 				final Point valueExtent = extentCache.get(value);
 				gc.setFont(getFont(groupValueStyle.getFontData()));
 				gc.drawText(value, fieldLocation.x, fieldLocation.y, true);
-				fieldLocation.x += (valueExtent.x + SPACING__GROUP_FIELD);
-				groupFieldBounds.width += valueExtent.x;
+				fieldLocation.x += (valueExtent.x + PADDING__GROUP_FIELD);
+				groupFieldBounds.width += (valueExtent.x + PADDING__GROUP_FIELD);
 				groupFieldBounds.height += valueExtent.y;
 
 			default:
@@ -564,12 +564,12 @@ public class GridRenderer<T> implements PaintListener {
 			final Image image = grid.getLabelProvider().getImage(column, row.getElement());
 			if (image != null) {
 				gc.drawImage(image, fieldLocation.x, fieldLocation.y);
-				fieldLocation.x += image.getBounds().width + SPACING__GROUP_FIELD;
-				groupFieldBounds.width += image.getBounds().width;
+				fieldLocation.x += image.getBounds().width + PADDING__GROUP_FIELD;
+				groupFieldBounds.width += (image.getBounds().width + PADDING__GROUP_FIELD);
 				groupFieldBounds.height += image.getBounds().height;
 			}
 		}
-
+		
 		//
 		// Paint the anchor border.
 		//
@@ -593,7 +593,20 @@ public class GridRenderer<T> implements PaintListener {
 			final String name = column.getCaption();
 			final String providedValue = grid.getLabelProvider().getText(column, row.getElement());
 			final String value = providedValue == null || providedValue.isEmpty() ? "(blank)" : providedValue;
+			final int fieldLeftX = fieldLocationX;
+			
 
+			//
+			// Cache the caption and the value extents.
+			//
+			if (!extentCache.containsKey(value)) {
+				extentCache.put(value, gc.textExtent(value));
+			}
+
+			if (!extentCache.containsKey(name)) {
+				extentCache.put(name, gc.textExtent(name));
+			}
+			
 			//
 			// Sort icon.
 			//
@@ -606,15 +619,7 @@ public class GridRenderer<T> implements PaintListener {
 			gc.setFont(getFont(groupNameStyle.getFontData()));
 			final Point nameExtent = extentCache.get(name);
 
-			if (nameExtent == null) {
-				//
-				// Edge case - mouse is tracking a cell before the cell has been rendered. Seen when grid is loading with a
-				// mouse already in place.
-				//
-				return null;
-			}
-
-			if (header && (x >= fieldLocationX) && (x < (fieldLocationX + nameExtent.x))) {
+			if (header && (x >= fieldLeftX) && (x < (fieldLocationX + nameExtent.x))) {
 				return column;
 			}
 
@@ -630,7 +635,7 @@ public class GridRenderer<T> implements PaintListener {
 						return column;
 					}
 
-					fieldLocationX += image.getBounds().width + SPACING__GROUP_FIELD;
+					fieldLocationX += image.getBounds().width + PADDING__GROUP_FIELD;
 				}
 			}
 
@@ -652,8 +657,29 @@ public class GridRenderer<T> implements PaintListener {
 				default:
 					// No-op
 			}
+			
+			//
+			// Field value image.
+			//
+			if (valueStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE) {
+				final Image image = grid.getLabelProvider().getImage(column, row.getElement());
+				if (image != null) {
+					if (!header && (x >= fieldLocationX) && (x < (fieldLocationX + image.getBounds().width))) {
+						return column;
+					}
+					
+					fieldLocationX += image.getBounds().width + PADDING__GROUP_FIELD;
+				}
+			}
 		}
 
+		//
+		// Assume they've clicked to the right of the last field value.
+		//
+		if (!header && !gridModel.getGroupByColumns().isEmpty() && (x >= fieldLocationX)) {
+			return gridModel.getGroupByColumns().get(gridModel.getGroupByColumns().size()-1);
+		}
+		
 		return null;
 	}
 

@@ -37,7 +37,6 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite {
 
-	// TODO: Increase the hotspot around group field name and values and make it rational.
 	// Bug: anchorElement is used for range selection but might need a new construct now it's changed purpose.
 	// TODO: Allow group row selection without all members.
 	// Bug: CollapseFilter should opt-out of clearing selection.	
