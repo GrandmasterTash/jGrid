@@ -13,10 +13,19 @@ public class SelectionModel<T> {
 	private Column anchorColumn;	//
 	private Column lastChildAnchorColumn;  // Used when moving the anchor up/down with the keyboard.
 	private Column lastParentAnchorColumn; // Gives some consistency to the position rather than snapping to the first column.
+	private boolean selectGroupIfAllChildrenSelected = true;
 
 	public SelectionModel(final GridModel<T> gridModel) {
 		this.gridModel = gridModel;
 		selectedElements = new HashSet<>();
+	}
+	
+	public boolean isSelectGroupIfAllChildrenSelected() {
+		return selectGroupIfAllChildrenSelected;
+	}
+	
+	public void setSelectGroupIfAllChildrenSelected(boolean selectGroupIfAllChildrenSelected) {
+		this.selectGroupIfAllChildrenSelected = selectGroupIfAllChildrenSelected;
 	}
 
 	public T getAnchorElement() {
@@ -220,9 +229,8 @@ public class SelectionModel<T> {
 	 * We only need to check the first and last rows in the list (we're assuming they are in screen order).
 	 */
 	private void checkGroupSelection(final List<Row<T>> rowsToSelect) {
-		if (!rowsToSelect.isEmpty()) {
+		if (selectGroupIfAllChildrenSelected && !rowsToSelect.isEmpty()) {
 			final Row<T> firstRow = rowsToSelect.get(0);
-			// BUG: Think this logic is floored and all rows probably need checking.
 			if (gridModel.isGroupRow(firstRow)) {
 				checkGroup(gridModel.getWholeGroup(firstRow));
 			}

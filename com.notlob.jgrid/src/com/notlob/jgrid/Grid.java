@@ -37,7 +37,6 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite {
 
-	// TODO: Allow group row selection without all members.
 	// Bug: CollapseFilter should opt-out of clearing selection.	
 	// Bug: Double-clicking looses the anchor.
 	// Bug: Delete all rows can leave the anchor rendered in the column header.
@@ -104,7 +103,7 @@ public class Grid<T> extends Composite {
 	private boolean highlightHoveredRow = true;
 	private boolean highlightAnchorInHeaders = true;
 	private boolean highlightAnchorCellBorder = true;
-
+	
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
 		gc = new GC(this);
@@ -193,6 +192,16 @@ public class Grid<T> extends Composite {
 	public void setHighlightAnchorCellBorder(final boolean highlightAnchorCellBorder) {
 		checkWidget();
 		this.highlightAnchorCellBorder = highlightAnchorCellBorder;
+	}
+	
+	public boolean isSelectGroupIfAllChildrenSelected() {
+		checkWidget();
+		return gridModel.getSelectionModel().isSelectGroupIfAllChildrenSelected();
+	}
+	
+	public void setSelectGroupIfAllChildrenSelected(boolean selectGroupIfAllChildrenSelected) {
+		checkWidget();
+		gridModel.getSelectionModel().setSelectGroupIfAllChildrenSelected(selectGroupIfAllChildrenSelected);
 	}
 
 	public StyleRegistry<T> getStyleRegistry() {
