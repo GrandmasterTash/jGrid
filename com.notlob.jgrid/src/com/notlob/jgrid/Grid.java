@@ -40,22 +40,17 @@ public class Grid<T> extends Composite {
 	// TODO: Focus/Keyboard navigation / anchor.
 	
 	// TODO: Show/hide column (GridModel.updateColumns).
+	// TODO: Example application.
 	// TODO: Reposition/resize columns via DnD.
 	// Bug: There's a slight wobble when scrolling vertically.	
-	
-	// TODO: Need a solution for too many group values to fit viewport - consider 'old style' group row option - or scrolling.
-	
-	// TODO: Column selection mode.
-	
+	// TODO: Need a solution for too many group values to fit viewport - consider 'old style' group row option - or scrolling.	
+	// TODO: Column selection mode.	
 	// TODO: Empty data message.
 	// TODO: Select next row/group if current is removed.
 	// TODO: Right-click to select before raising event.
-	// TODO: Expose cell bounds api for automated testing.
-	
-	// TODO: Column pinning.
-	
-	// TODO: In-line editing.
-	
+	// TODO: Expose cell bounds api for automated testing.	
+	// TODO: Column pinning.	
+	// TODO: In-line editing.	
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
 	// TODO: Evaluate performance gain vs memory overhead of the extent cache in the renderer.
@@ -117,7 +112,7 @@ public class Grid<T> extends Composite {
 		toolTip = new ToolTip(parent.getShell(), SWT.NONE);
 		toolTip.setAutoHide(true);
 		mouseHandler = new GridMouseHandler<T>(this, gc, listeners, toolTip);
-		keyboardHandler = new GridKeyboardHandler<T>(this, gc);
+		keyboardHandler = new GridKeyboardHandler<T>(this);
 
 		parent.addDisposeListener(disposeListener);
 		addKeyListener(keyboardHandler);
