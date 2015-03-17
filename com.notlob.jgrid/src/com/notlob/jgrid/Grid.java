@@ -37,17 +37,16 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite {
 
-	// Bug: Delete all rows can leave the anchor rendered in the column header.
 	// Bug: getRowCount needs to cache not compute.
 	// Bug: Cannot click on the last (cropped) row/column.
 	
 	// TODO: Focus/Keyboard navigation / anchor.
 	
-	// Bug: There's a slight wobble when scrolling vertically.
 	// TODO: Show/hide column (GridModel.updateColumns).
 	// TODO: Reposition/resize columns via DnD.
+	// Bug: There's a slight wobble when scrolling vertically.	
 	
-	// TODO: Need a solution for too many group values to fit viewport - consider 'old style' group row option.
+	// TODO: Need a solution for too many group values to fit viewport - consider 'old style' group row option - or scrolling.
 	
 	// TODO: Column selection mode.
 	

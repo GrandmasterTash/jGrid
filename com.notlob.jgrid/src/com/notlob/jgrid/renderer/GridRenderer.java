@@ -1131,7 +1131,7 @@ public class GridRenderer<T> implements PaintListener {
 	}
 
 	protected boolean doesRowHaveAnchor(final Row<T> row) {
-		return ((row != null) && (row.getElement() == grid.getAnchorElement()));
+		return ((row != null) && (row != Row.COLUMN_HEADER_ROW) && (row.getElement() == grid.getAnchorElement()));
 	}
 
 	/**
