@@ -37,9 +37,7 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite {
 
-	// TODO: Example application.
 	// Bug: Row number selection is irratic.	
-	// TODO: Show/hide column (GridModel.updateColumns) - ensure we can filter on hidden columns with expression filters, ensure quickfilters are dropped.
 	// TODO: Reposition/resize columns via DnD.
 	// Bug: There's a slight wobble when scrolling vertically.
 	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
@@ -54,8 +52,6 @@ public class Grid<T> extends Composite {
 	// TODO: In-line editing.	
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
-	// TODO: Evaluate performance gain vs memory overhead of the extent cache in the renderer.
-	// TODO: Make setting to pad group values by their column width.	
 
 	// Models.
 	private final GridModel<T> gridModel;
@@ -240,17 +236,17 @@ public class Grid<T> extends Composite {
 		return gridModel.getGroupByColumns().get(columnIndex);
 	}
 
-	public void addElements(final List<T> elements) {
+	public void addElements(final Collection<T> elements) {
 		checkWidget();
 		gridModel.addElements(elements);
 	}
 
-	public void removeElements(final List<T> elements) {
+	public void removeElements(final Collection<T> elements) {
 		checkWidget();
 		gridModel.removeElements(elements);
 	}
 
-	public void updateElements(final List<T> elements) {
+	public void updateElements(final Collection<T> elements) {
 		checkWidget();
 		gridModel.updateElements(elements);
 	}

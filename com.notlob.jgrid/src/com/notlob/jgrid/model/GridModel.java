@@ -311,7 +311,7 @@ public class GridModel<T> {
 		return null;
 	}
 
-	public void addElements(final List<T> elements) {
+	public void addElements(final Collection<T> elements) {
 		for (final T element : elements) {
 			//
 			// If this element has a parent that's not here yet ignore it - the parent will add all it's children later. Otherwise, groups grids will get
@@ -366,7 +366,7 @@ public class GridModel<T> {
 		rowsByElement.put(row.getElement(), row);
 	}
 
-	public void removeElements(final List<T> elements) {
+	public void removeElements(final Collection<T> elements) {
 		for (final T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
 			rows.remove(row);
@@ -385,7 +385,7 @@ public class GridModel<T> {
 		fireChangeEvent();
 	}
 
-	public void updateElements(final List<T> elements) {
+	public void updateElements(final Collection<T> elements) {
 // TODO: To Ensure the row maintains it's position,	we might need it to cache it's visible index - to be fast.
 // TODO: Consider groups need to compare with other groups and children with children.
 //		for (Object element : elements) {
