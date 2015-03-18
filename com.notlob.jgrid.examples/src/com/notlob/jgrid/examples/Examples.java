@@ -53,7 +53,7 @@ public class Examples {
 			//
 			// One of the grid cells will display an icon.			
 			//
-			final InputStream input = Examples.class.getResourceAsStream("/person.png");
+			final InputStream input = Examples.class.getResourceAsStream("person.png");
 			final Image personImage = new Image(display, input);
 			input.close();
 			
