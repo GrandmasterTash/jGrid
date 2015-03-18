@@ -1,10 +1,11 @@
 package com.notlob.jgrid.util;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -43,9 +44,26 @@ public class ResourceManager {
 
 	public Image getImage(final String imagePath) {
 		if (!images.containsKey(imagePath)) {
-			final File fullPath = new File("/images", imagePath);
-			final InputStream input = getClass().getClassLoader().getResourceAsStream(fullPath.getPath());
-			images.put(imagePath, new Image(display, input));
+			final String fullPath = "/images/" + imagePath;
+
+			//
+			// Try both so we work as an RCP plugin OR a jar.
+			//
+			final InputStream input = getClass().getResourceAsStream(fullPath);
+
+			if (input == null) {
+				System.err.println("Unable to locate resource " + fullPath);
+			} 
+
+			try {
+				images.put(imagePath, new Image(display, input));
+
+			} catch (SWTException ex) {
+			} finally {
+				try {
+					input.close();
+				} catch (IOException ex) {}
+			}
 		}
 
 		return images.get(imagePath);

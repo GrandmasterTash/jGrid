@@ -402,15 +402,15 @@ public class GridModel<T> {
 
 	public void clearElements() {
 		//
+		// Clear all selections.
+		//
+		selectionModel.clear(false);
+		
+		//
 		// Clear rows.
 		//
 		rows.clear();
 		rowsByElement.clear();
-
-		//
-		// Clear all selections.
-		//
-		selectionModel.clear(false);
 
 		fireChangeEvent();
 	}
@@ -456,12 +456,15 @@ public class GridModel<T> {
 		fireChangeEvent();
 	}
 
-	public void ungroupBy(final Column column) {
+	public void ungroupBy(final List<Column> columns) {
 		//
 		// Reveal the column again.
 		//
-		groupByColumns.remove(column);
-		column.setVisible(true);
+		for (Column column : columns) {
+			column.setVisible(true);
+		}
+		
+		groupByColumns.removeAll(columns);		
 		rebuildVisibleColumns();
 		fireChangeEvent();
 	}

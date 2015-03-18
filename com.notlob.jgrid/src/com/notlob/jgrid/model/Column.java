@@ -18,7 +18,6 @@ public class Column {
 	private boolean visible;
 	private AlignmentStyle textAlignment;
 	private AlignmentStyle imageAlignment;
-	boolean anchor;
 
 	// Arbitrary things can be tagged onto a column by key.
 	private Map<String, Object> dataByKey;
@@ -111,14 +110,6 @@ public class Column {
 
 	public void setImageAlignment(final AlignmentStyle imageAlignment) {
 		this.imageAlignment = imageAlignment;
-	}
-
-	public boolean hasAnchor() {
-		return anchor;
-	}
-
-	public void setAnchor(final boolean anchor) {
-		this.anchor = anchor;
 	}
 
 	public Object getData(final String key) {

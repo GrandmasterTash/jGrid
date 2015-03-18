@@ -741,7 +741,7 @@ public class GridRenderer<T> implements PaintListener {
 			if (renderPass == RenderPass.FOREGROUND) {
 				paintCellContent(gc, bounds, column, row, cellStyle);
 
-				final CellStyle borderCellStyle = (grid.isFocusControl() && grid.isHighlightAnchorCellBorder() && (column != null) && column.hasAnchor() && doesRowHaveAnchor(row)) ? styleRegistry.getAnchorStyle() : cellStyle;
+				final CellStyle borderCellStyle = (grid.isFocusControl() && grid.isHighlightAnchorCellBorder() && (column != null) && (column == gridModel.getSelectionModel().getAnchorColumn()) && doesRowHaveAnchor(row)) ? styleRegistry.getAnchorStyle() : cellStyle;
 				paintCellBorders(gc, bounds, borderCellStyle);
 			}
 
@@ -755,6 +755,9 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			// Render a failure.
 			//
+			final RGB background = (alternate && (cellStyle.getBackgroundAlternate() != null)) ? cellStyle.getBackgroundAlternate() : cellStyle.getBackground();
+			gc.setForeground(getColour(cellStyle.getForeground()));
+			gc.setBackground(getColour(background));
 			gc.drawImage(errorImage, bounds.x + 2, bounds.y + 2);
 			gc.drawText("ERROR", bounds.x + 2 + errorImage.getBounds().width, bounds.y + 2);
 		}
@@ -825,7 +828,7 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		if ((row != null) && (cellStyle.getContentStyle() == ContentStyle.IMAGE || cellStyle.getContentStyle() == ContentStyle.IMAGE_THEN_TEXT)) {
 			final Image image = getCellImage(column, row);
-			final AlignmentStyle imageAlignment = (cellStyle.getImageAlignment() == null) ? column.getImageAlignment() : cellStyle.getImageAlignment();
+			final AlignmentStyle imageAlignment = (cellStyle.getImageAlignment() != null) ? cellStyle.getImageAlignment() : (column.getImageAlignment() != null ? column.getImageAlignment() : AlignmentStyle.LEFT_CENTER);
 
 			if (image != null) {
 				align(image.getBounds().width, image.getBounds().height, innerBounds, imageAlignment, cellStyle);

@@ -37,11 +37,13 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite {
 
-	// Bug: Row number selection is irratic.
-	// TODO: Show/hide column (GridModel.updateColumns) - ensure we can filter on hidden columns with expression filters, ensure quickfilters are dropped.
 	// TODO: Example application.
+	// Bug: Row number selection is irratic.	
+	// TODO: Show/hide column (GridModel.updateColumns) - ensure we can filter on hidden columns with expression filters, ensure quickfilters are dropped.
 	// TODO: Reposition/resize columns via DnD.
-	// Bug: There's a slight wobble when scrolling vertically.	
+	// Bug: There's a slight wobble when scrolling vertically.
+	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
+	// Bug: SelectionChanged fired if anchor moves left/right on same row 
 	// TODO: Need a solution for too many group values to fit viewport - consider 'old style' group row option - or scrolling.	
 	// TODO: Column selection mode.	
 	// TODO: Empty data message.
@@ -53,8 +55,7 @@ public class Grid<T> extends Composite {
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
 	// TODO: Evaluate performance gain vs memory overhead of the extent cache in the renderer.
-	// TODO: Make setting to pad group values by their column width.
-	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
+	// TODO: Make setting to pad group values by their column width.	
 
 	// Models.
 	private final GridModel<T> gridModel;
@@ -222,6 +223,11 @@ public class Grid<T> extends Composite {
 	public void groupBy(final List<Column> columns) {
 		checkWidget();
 		gridModel.groupBy(columns);
+	}
+	
+	public void ungroupBy(final List<Column> columns) {
+		checkWidget();
+		gridModel.ungroupBy(columns);
 	}
 
 	public List<Column> getGroupByColumns() {

@@ -41,14 +41,9 @@ public class SelectionModel<T> {
 	}
 
 	public void setAnchorColumn(final Column anchorColumn) {
-		if (this.anchorColumn != null) {
-			this.anchorColumn.setAnchor(false);
-		}
-
 		this.anchorColumn = anchorColumn;
 
 		if (anchorColumn != null) {
-			anchorColumn.setAnchor(true);
 
 			if (anchorElement != null) {
 				//
@@ -136,10 +131,6 @@ public class SelectionModel<T> {
 		// Update the selection anchor.
 		//
 		if (rowsToSelect.isEmpty()) {
-			if (anchorColumn != null) {
-				anchorColumn.setAnchor(false);
-			}
-
 			anchorElement = null;
 			anchorColumn = null;
 
@@ -148,7 +139,6 @@ public class SelectionModel<T> {
 
 			if (anchorColumn  == null && !gridModel.getColumns().isEmpty()) {
 				anchorColumn = gridModel.getColumns().get(0);
-				anchorColumn.setAnchor(true);
 			}
 		}
 

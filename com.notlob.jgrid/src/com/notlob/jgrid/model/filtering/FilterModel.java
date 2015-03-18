@@ -14,7 +14,7 @@ public class FilterModel<T> {
 	private final Collection<Filter<T>> filters;
 
 	// Toggles whether rows that do not pass a highlighting filter should be filtered out of view or not. Other filters still have the normal effect though.
-	// For example, if true, rows that match a any filter are shown and those that match none are not. If false, a row is shown regardless of whether it matches
+	// For example, if true, rows that match a filter are shown and those that match none are not. If false, a row is shown regardless of whether it matches
 	// a highlighting filter or not, although, if a filter exists which isn't a highlighting filter and the row doesn't match it, it will be hidden.
 	private boolean hideNoneHighlightedRows = true;
 
