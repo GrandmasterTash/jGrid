@@ -38,6 +38,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	private boolean shift; // Tracked in mouseMove and mouseUp.
 	private boolean ctrl;
 	private boolean alt;
+	private Column resizing;
 
 	// Track if the mouse is over a row/column.
 	private Row<T> row = null; // TODO: Rename hovered_....
@@ -208,18 +209,44 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
 		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
 		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
+		
+		if (resizing != null) {
+			System.out.println("Make " + column.getCaption() + " bigger.");
+			final int columnX = viewport.getColumnViewportX(gc, resizing);
+			resizing.setWidth(Math.max(0, (e.x - columnX)));
+			
+			//
+			// Cause the grid to repaint and recalculate the viewport.
+			//
+			gridModel.fireChangeEvent();
 
-		if (trackCell(e.x, e.y)) {
+		} else if (trackCell(e.x, e.y)) {
 			//
 			// Repaint the grid to show the hovered row.
 			//
 			grid.redraw();
+		}
+		
+		if (viewport.getColumnToResize(gc, e.x, e.y) != null) {
+			if (grid.getCursor() != grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEE)) {
+				grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEE));
+			}
+		} else if ((resizing == null) && (grid.getCursor() != grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW))) {
+			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 		}
 	}
 
 	@Override
 	public void mouseDown(final MouseEvent e) {
 		mouseDown = true;
+		
+		//
+		// See if the mouse is near a column header boundary. If so, begin a resize drag.
+		//
+		resizing = viewport.getColumnToResize(gc, e.x, e.y);
+		if (resizing != null) {
+			System.out.println("Begin resize " + resizing.getCaption());
+		}
 	}
 
 	@Override
@@ -230,17 +257,25 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 		mouseDown = false;
 
-		if (grid.getCursor() == grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEALL)) {
-			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-		}
+//		if (grid.getCursor() == grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEALL)) {
+//			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+//		}
 
 		//
 		// Get the event details.
-		//
-		trackCell(e.x, e.y);
+		//		
 		shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
 		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
 		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
+		
+		if (resizing != null) {
+			System.out.println("Apply new column size to " + column.getCaption());
+			resizing = null;
+			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+			return;
+		}
+		
+		trackCell(e.x, e.y);
 
 		if (e.button == 1) { // LEFT
 			if (e.count == 1) {

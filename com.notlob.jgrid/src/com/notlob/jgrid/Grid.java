@@ -38,7 +38,7 @@ import com.notlob.jgrid.styles.StyleRegistry;
 public class Grid<T> extends Composite {
 
 	// Bug: Row number selection is irratic.	
-	// TODO: Reposition/resize columns via DnD.
+	// TODO: Reposition columns via DnD.
 	// Bug: There's a slight wobble when scrolling vertically.
 	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
 	// Bug: SelectionChanged fired if anchor moves left/right on same row

@@ -63,6 +63,8 @@ public class GridRenderer<T> implements PaintListener {
 
 	protected final static RGB RGB__SHADOW_DARK = new RGB(80, 80, 80);
 	protected final static RGB RGB__SHADOW_HIGHLIGHT = new RGB(245, 245, 245);
+	
+	public final static int ROW_OFFSET = 1; // TODO: Consider using borderline width?
 
 	protected enum RenderPass {
 		BACKGROUND,
@@ -682,7 +684,7 @@ public class GridRenderer<T> implements PaintListener {
 		
 		return null;
 	}
-
+	
 	public Rectangle getExpandImageBounds(final GC gc, final Row<T> row) {
 		//
 		// Get the y for the row from the viewport.
@@ -695,8 +697,8 @@ public class GridRenderer<T> implements PaintListener {
 	}
 
 	protected void paintRow(final GC gc, final Point point, final Row<T> row) {
-		rowBounds.x = point.x + 1; // Shift 1 to avoid blatting the row number border line.
-		rowBounds.y = point.y + 1;
+		rowBounds.x = point.x + ROW_OFFSET; // Shift 1 to avoid blatting the row number border line.
+		rowBounds.y = point.y + ROW_OFFSET;
 		rowBounds.width = viewport.getVisibleRowWidth(gc);// (viewport.getViewportArea(gc).width);
 		rowBounds.height = getRowHeight(row);
 

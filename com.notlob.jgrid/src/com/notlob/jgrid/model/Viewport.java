@@ -5,6 +5,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import com.notlob.jgrid.Grid;
+import com.notlob.jgrid.renderer.GridRenderer;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.util.ResourceManager;
 
@@ -226,7 +227,7 @@ public class Viewport<T> {
 		if (x >= currentX) {
 			for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
 				final Column column = gridModel.getColumn(columnIndex);
-				currentX += column.getWidth();
+				currentX += column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal();
 
 				if (x <= currentX) {
 					return columnIndex;
@@ -245,10 +246,50 @@ public class Viewport<T> {
 				return x;
 			}
 
-			x += current.getWidth();
+			x += current.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal();
 		}
 
 		return -1;
+	}
+	
+	/**
+	 * Returns the x position of the column in the viewport.
+	 */
+	public int getColumnViewportX(final GC gc, final Column column) {
+		int currentX = getViewportArea(gc).x;
+
+		for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
+			final Column current = gridModel.getColumn(columnIndex);
+			
+			if (current == column) {
+				return currentX;
+			}
+			
+			currentX += current.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal();
+		}
+
+		return -1;
+	}
+	
+	/**
+	 * If the location is near the edge of a column, return that column.
+	 */
+	@SuppressWarnings("unchecked")
+	public Column getColumnToResize(GC gc, int x, int y) {		
+		final int height = gridModel.getRowHeight(gc, Row.COLUMN_HEADER_ROW);
+		final Rectangle viewportArea = getViewportArea(gc);
+		int columnHeaderX = viewportArea.x + GridRenderer.ROW_OFFSET;			
+
+		for (int columnIndex=firstColumnIndex; columnIndex<lastColumnIndex; columnIndex++) {						
+			final Column column = gridModel.getColumns().get(columnIndex);
+			columnHeaderX += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
+			
+			if ((x > (columnHeaderX - 3)) && (x < (columnHeaderX + 3)) && (y >= 0) && (y <= height)) {
+				return column;
+			}
+		}		
+		
+		return null;
 	}
 
 	/**
@@ -303,7 +344,7 @@ public class Viewport<T> {
 				return currentY;
 			}
 
-			currentY += gridModel.getRowHeight(gc, currentRow);
+			currentY += (gridModel.getRowHeight(gc, currentRow) + gridModel.getStyleRegistry().getCellSpacingVertical());
 		}
 
 		return -1;
