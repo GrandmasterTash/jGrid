@@ -211,7 +211,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
 		
 		if (resizing != null) {
-			System.out.println("Make " + column.getCaption() + " bigger.");
 			final int columnX = viewport.getColumnViewportX(gc, resizing);
 			resizing.setWidth(Math.max(0, (e.x - columnX)));
 			
@@ -244,9 +243,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		// See if the mouse is near a column header boundary. If so, begin a resize drag.
 		//
 		resizing = viewport.getColumnToResize(gc, e.x, e.y);
-		if (resizing != null) {
-			System.out.println("Begin resize " + resizing.getCaption());
-		}
 	}
 
 	@Override
@@ -257,10 +253,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 		mouseDown = false;
 
-//		if (grid.getCursor() == grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEALL)) {
-//			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-//		}
-
 		//
 		// Get the event details.
 		//		
@@ -269,7 +261,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
 		
 		if (resizing != null) {
-			System.out.println("Apply new column size to " + column.getCaption());
 			resizing = null;
 			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 			return;
