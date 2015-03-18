@@ -41,7 +41,8 @@ public class Grid<T> extends Composite {
 	// TODO: Reposition/resize columns via DnD.
 	// Bug: There's a slight wobble when scrolling vertically.
 	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
-	// Bug: SelectionChanged fired if anchor moves left/right on same row 
+	// Bug: SelectionChanged fired if anchor moves left/right on same row
+	// TODO: Column visibility.
 	// TODO: Need a solution for too many group values to fit viewport - consider 'old style' group row option - or scrolling.	
 	// TODO: Column selection mode.	
 	// TODO: Empty data message.
@@ -52,6 +53,7 @@ public class Grid<T> extends Composite {
 	// TODO: In-line editing.	
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
+	// TODO: Track grid references to ResourceManager and dispose if last grid disposed
 
 	// Models.
 	private final GridModel<T> gridModel;
