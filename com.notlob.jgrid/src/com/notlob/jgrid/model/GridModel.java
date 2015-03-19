@@ -298,10 +298,6 @@ public class GridModel<T> {
 		}
 	}
 	
-	public Column getColumn(final int columnIndex) {
-		return columns.get(columnIndex);
-	}
-
 	public Column getColumnById(final String columnId) {
 		for (final Column column : allColumns) {
 			if (column.getColumnId().equalsIgnoreCase(columnId)) {

@@ -36,24 +36,26 @@ import com.notlob.jgrid.renderer.GridRenderer;
 import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite {
-
-	// Bug: Row number selection is irratic.	
-	// TODO: Reposition columns via DnD.
+	
+	// Bug: Track grid references to ResourceManager and dispose if last grid disposed AND dispose on jvm shutdown.
+	// Bug: Row number selection is irratic.		
 	// Bug: There's a slight wobble when scrolling vertically.
 	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
 	// Bug: SelectionChanged fired if anchor moves left/right on same row
+	// BUG: Alternating group colour is on viewport not full group list.
+	// BUG: Dragging a column header width should NOT be fire general change events to grid listeners although it does need to trigger scrollbar updates.
+	// TODO: Allow ESC to cancel a resize or reposition DnD
 	// TODO: Column visibility.
-	// TODO: Need a solution for too many group values to fit viewport - consider 'old style' group row option - or scrolling.	
 	// TODO: Column selection mode.	
 	// TODO: Empty data message.
 	// TODO: Select next row/group if current is removed.
 	// TODO: Right-click to select before raising event.
-	// TODO: Expose cell bounds api for automated testing.	
+	// TODO: Expose cell bounds api for automated testing.
+	// TODO: Focus select style / un-focus select style.
 	// TODO: Column pinning.	
-	// TODO: In-line editing.	
+	// TODO: In-line editing (probably in a viewer).	
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
-	// TODO: Track grid references to ResourceManager and dispose if last grid disposed
 
 	// Models.
 	private final GridModel<T> gridModel;

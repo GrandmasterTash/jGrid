@@ -144,7 +144,7 @@ public class GridKeyboardHandler<T> implements KeyListener {
 		// Get the first column and the current anchor row.
 		//
 		final Row<T> row = gridModel.getRows().get(0);
-		final Column column = gridModel.getColumn(0);
+		final Column column = gridModel.getColumns().get(0);
 		
 		//
 		// Update and reveal the anchor column.
@@ -164,7 +164,7 @@ public class GridKeyboardHandler<T> implements KeyListener {
 		// Get the first column and the current anchor row.
 		//
 		final Row<T> row = gridModel.getRows().get(gridModel.getRows().size()-1);
-		final Column column = gridModel.getColumn(0);
+		final Column column = gridModel.getColumns().get(0);
 		
 		//
 		// Update and reveal the anchor column.
@@ -189,7 +189,7 @@ public class GridKeyboardHandler<T> implements KeyListener {
 		// Get the first column and the current anchor row.
 		//
 		final Row<T> row = gridModel.getRow(gridModel.getSelectionModel().getAnchorElement());
-		final Column column = gridModel.getColumn(0);
+		final Column column = gridModel.getColumns().get(0);
 		
 		//
 		// Update and reveal the anchor column.
@@ -213,7 +213,7 @@ public class GridKeyboardHandler<T> implements KeyListener {
 		// Get the first column and the current anchor row.
 		//
 		final Row<T> row = gridModel.getRow(gridModel.getSelectionModel().getAnchorElement());
-		final Column column = gridModel.getColumn(gridModel.getColumns().size()-1);
+		final Column column = gridModel.getColumns().get(gridModel.getColumns().size()-1);
 		
 		//
 		// Update and reveal the anchor column.

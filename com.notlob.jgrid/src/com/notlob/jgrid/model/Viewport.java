@@ -27,7 +27,10 @@ public class Viewport<T> {
 	private final Grid<T> grid;
 	private final GridModel<T> gridModel;
 	private final Rectangle viewportArea;
-
+	
+	// There number of horizontal pixels tolerance to trigger a column resize with the mouse. 
+	private final int RESIZE_DEADZONE = 3;
+	
 	public Viewport(final Grid<T> grid) {
 		this.grid = grid;
 		this.gridModel = grid.getGridModel();
@@ -161,7 +164,7 @@ public class Viewport<T> {
 		int x = viewportArea.x;
 
 		for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
-			final Column column = gridModel.getColumn(columnIndex);
+			final Column column = gridModel.getColumns().get(columnIndex);
 			x += column.getWidth();
 		}
 
@@ -226,12 +229,12 @@ public class Viewport<T> {
 
 		if (x >= currentX) {
 			for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
-				final Column column = gridModel.getColumn(columnIndex);
+				final Column column = gridModel.getColumns().get(columnIndex);				
 				currentX += column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal();
-
+				
 				if (x <= currentX) {
 					return columnIndex;
-				}
+				}								
 			}
 		}
 
@@ -259,7 +262,7 @@ public class Viewport<T> {
 		int currentX = getViewportArea(gc).x;
 
 		for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
-			final Column current = gridModel.getColumn(columnIndex);
+			final Column current = gridModel.getColumns().get(columnIndex);
 			
 			if (current == column) {
 				return currentX;
@@ -272,22 +275,50 @@ public class Viewport<T> {
 	}
 	
 	/**
-	 * If the location is near the edge of a column, return that column.
+	 * Determines if there's a column at the specified mouse location which is eligible for the operation
+	 * (RESIZE | REPOSITION) specified.
+	 *  
+	 * For RESIZE - if the location is near the edge of a column, return that column.
+	 * 
+	 * For REPOSITION - if the location is in the middle of the column (but not in the RESIZE bounds, then
+	 * return that column);
 	 */
 	@SuppressWarnings("unchecked")
-	public Column getColumnToResize(GC gc, int x, int y) {		
+	public Column getColumnForMouseOperation(final GC gc, final int x, final int y, final ColumnMouseOperation operation) {		
 		final int height = gridModel.getRowHeight(gc, Row.COLUMN_HEADER_ROW);
-		final Rectangle viewportArea = getViewportArea(gc);
-		int columnHeaderX = viewportArea.x + GridRenderer.ROW_OFFSET;			
-
-		for (int columnIndex=firstColumnIndex; columnIndex<lastColumnIndex; columnIndex++) {						
-			final Column column = gridModel.getColumns().get(columnIndex);
-			columnHeaderX += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
-			
-			if ((x > (columnHeaderX - 3)) && (x < (columnHeaderX + 3)) && (y >= 0) && (y <= height)) {
-				return column;
+				
+		//
+		// Only proceed if the mouse is in the mouse header region.
+		//
+		if ((y >= 0) && (y <= height)) {		
+			final Rectangle viewportArea = getViewportArea(gc);
+			int columnHeaderX = viewportArea.x + GridRenderer.ROW_OFFSET;			
+	
+			for (int columnIndex=firstColumnIndex; columnIndex<lastColumnIndex; columnIndex++) {						
+				final Column column = gridModel.getColumns().get(columnIndex);
+				
+				//
+				// Note: We bump the columnHeaderX before the check for a resize and after for a reposition.
+				//
+				switch (operation) {
+					case RESIZE:
+						columnHeaderX += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
+						
+						if ((x > (columnHeaderX - RESIZE_DEADZONE)) && (x < (columnHeaderX + RESIZE_DEADZONE))) {
+							return column;
+						}
+						break;
+						
+					case REPOSITION:
+						if ((x >= (columnHeaderX + RESIZE_DEADZONE)) && (x <= (columnHeaderX + column.getWidth() - RESIZE_DEADZONE))) {
+							return column;
+						}
+						
+						columnHeaderX += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
+						break;
+				}
 			}
-		}		
+		}
 		
 		return null;
 	}

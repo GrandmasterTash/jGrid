@@ -297,7 +297,6 @@ public class StyleRegistry<T> {
 			return pinnedStyle;
 		}
 
-
 		if (column != null) {
 			//
 			// See if there's a custom style first.

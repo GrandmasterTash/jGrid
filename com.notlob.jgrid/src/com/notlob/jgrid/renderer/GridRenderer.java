@@ -17,6 +17,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextLayout;
 
 import com.notlob.jgrid.Grid;
+import com.notlob.jgrid.input.GridMouseHandler;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
@@ -82,6 +83,8 @@ public class GridRenderer<T> implements PaintListener {
 
 	protected boolean errorLogged;
 	protected Image errorImage;
+	protected Image dropImage;
+	protected Image columnDragImage;
 
 	// Double-buffering image. Used as a key for the setData method.
 	private final static String DATA__DOUBLE_BUFFER_IMAGE = "double-buffer-image"; //$NON-NLS-1$
@@ -113,6 +116,7 @@ public class GridRenderer<T> implements PaintListener {
 		groupFieldBounds = new Rectangle(0, 0, 0, 0);
 		textLayout = new TextLayout(grid.getDisplay());
 		errorImage = ResourceManager.getInstance().getImage("cell_error.gif");
+		dropImage = ResourceManager.getInstance().getImage("inwards_arrows.png");
 	}
 
 	@Override
@@ -163,6 +167,11 @@ public class GridRenderer<T> implements PaintListener {
 				renderPass = RenderPass.FOREGROUND;
 				paintRows(gc);
 				paintSelection(gc);
+				
+				//
+				// Paint a drag image if we're dragging a column.
+				//
+				paintColumnDragImage(gc);
 
 			} else {
 				//
@@ -194,6 +203,50 @@ public class GridRenderer<T> implements PaintListener {
 			if (gc != null) {
 				gc.dispose();
 			}
+		}
+	}
+
+	/**
+	 * If there's a column being repositioned with the mouse, render a 'drag image' representing the column
+	 * header at the mouse location.
+	 */
+	@SuppressWarnings("unchecked")
+	protected void paintColumnDragImage(final GC gc) {
+		final Column column = grid.getMouseHandler().getRepositioningColumn();
+		
+		if (column == null && columnDragImage != null) {
+			//
+			// If we're not dragging then dispose any previous image.
+			//
+			columnDragImage.dispose();
+			columnDragImage = null;
+			
+		} else if (column != null) {
+			if (columnDragImage == null) {				
+				//
+				// Create a column drag image.
+				//
+				final CellStyle cellStyle = styleRegistry.getCellStyle(column, Row.COLUMN_HEADER_ROW);
+				final int height = getRowHeight(Row.COLUMN_HEADER_ROW);
+				columnDragImage = new Image(grid.getDisplay(), column.getWidth(), height);
+				final Rectangle dragImageBounds = new Rectangle(columnDragImage.getBounds().x, columnDragImage.getBounds().y, columnDragImage.getBounds().width - 1, columnDragImage.getBounds().height - 1);
+				
+				final GC imageGC = new GC(columnDragImage);
+				paintCellBackground(imageGC, dragImageBounds, cellStyle);
+				paintCellBorders(imageGC, dragImageBounds, cellStyle);
+				paintCellContent(imageGC, dragImageBounds, column, Row.COLUMN_HEADER_ROW, cellStyle);
+				imageGC.dispose();
+			}
+			
+			//
+			// Render the column drag image at the mouses location.
+			//
+			final Point mouseLocation = grid.toControl(new Point(
+					grid.getDisplay().getCursorLocation().x - (columnDragImage.getBounds().width / 2), 
+					grid.getDisplay().getCursorLocation().y));
+
+			gc.setAlpha(220);
+			gc.drawImage(columnDragImage, mouseLocation.x, mouseLocation.y);
 		}
 	}
 
@@ -709,7 +762,7 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		// Fill the row background (not the header row though).
 		//
-		if ((row.getElement() != Row.COLUMN_HEADER_ROW) && (renderPass == RenderPass.BACKGROUND)) {
+		if ((row != Row.COLUMN_HEADER_ROW) && (renderPass == RenderPass.BACKGROUND)) {
 			final CellStyle rowStyle = styleRegistry.getCellStyle(null, row);
 			gc.setBackground(getColour(alternate ? rowStyle.getBackgroundAlternate() : rowStyle.getBackground()));
 			gc.fillRectangle(rowBounds);
@@ -725,6 +778,33 @@ public class GridRenderer<T> implements PaintListener {
 			cellBounds.width = column.getWidth();
 			paintCell(gc, cellBounds, column, row, cellStyle);
 			cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
+		}
+
+		//
+		// Render a column-reposition indicator if we're dragging columns around.
+		//
+		if ((row == Row.COLUMN_HEADER_ROW) && (renderPass == RenderPass.FOREGROUND) && (grid.getMouseHandler().getTargetColumn() != null)) {
+			cellBounds.x = point.x;
+			
+			if (grid.getMouseHandler().getTargetColumn() == GridMouseHandler.LAST_COLUMN) {
+				//
+				// Edge-case, dragging to the end of the grid.
+				//
+				gc.drawImage(dropImage, rowBounds.x + rowBounds.width - (dropImage.getBounds().width / 2) + 1, 4);
+				
+			} else {			
+				//
+				// Otherwise, move across the viewport until we get to the drag target column.
+				//
+				for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
+					final Column column = gridModel.getColumns().get(columnIndex);
+					if (column == grid.getMouseHandler().getTargetColumn()){ 
+						gc.drawImage(dropImage, cellBounds.x - (dropImage.getBounds().width / 2) + 1, 4);					
+					}
+					cellBounds.width = column.getWidth();
+					cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
+				}
+			}
 		}
 	}
 

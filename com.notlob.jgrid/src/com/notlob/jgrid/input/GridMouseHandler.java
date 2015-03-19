@@ -18,11 +18,10 @@ import org.eclipse.swt.widgets.ToolTip;
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.listeners.IGridListener;
 import com.notlob.jgrid.model.Column;
+import com.notlob.jgrid.model.ColumnMouseOperation;
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.Viewport;
-
-// TODO: Expose more mouse events for cells.
 
 public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListener, MouseTrackListener/*, MouseWheelListener*/ {
 
@@ -38,7 +37,16 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	private boolean shift; // Tracked in mouseMove and mouseUp.
 	private boolean ctrl;
 	private boolean alt;
-	private Column resizing;
+	private Column resizing;	
+	private Column repositioning;
+	private Column repositioningDetect;
+	private Column targetColumn;	// Repositioning target.
+	
+	// Used for an edge-case when dragging a column to the end of the grid.
+	public final static Column LAST_COLUMN = new Column("LAST.COLUMN");
+	
+	// Distance in pixels the scroll bar is moved each time during a column drag.
+	private final static int DRAG_SCROLL_DISTANCE = 10;
 
 	// Track if the mouse is over a row/column.
 	private Row<T> row = null; // TODO: Rename hovered_....
@@ -65,6 +73,14 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 	public Column getGroupColumn() {
 		return groupColumn;
+	}
+	
+	public Column getRepositioningColumn() {
+		return repositioning;
+	}
+	
+	public Column getTargetColumn() {
+		return targetColumn;
 	}
 
 	public boolean isShift() {
@@ -143,6 +159,9 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		}
 
 		if (newRow != row || newColumn != column || newGroupColumn != groupColumn || newGroupValue != groupValue) {
+			//
+			// If any of the tracked things has changed, update and return true;
+			//
 			row = newRow;
 			column = newColumn;
 			groupColumn = newGroupColumn;
@@ -163,7 +182,10 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 	@Override
 	public void mouseHover(final MouseEvent e) {
-		if ((column != null) && (row != null) && (grid.getLabelProvider() != null)) {
+		//
+		// Show a tool-tip.
+		//
+		if ((repositioning == null) && (column != null) && (row != null) && (grid.getLabelProvider() != null)) {
 			final int x = e.x;
 			final int y = e.y + 16;
 
@@ -209,30 +231,120 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
 		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
 		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
+		targetColumn = null;		
 		
 		if (resizing != null) {
+			//
+			// Resize the column currently being resized.
+			//
 			final int columnX = viewport.getColumnViewportX(gc, resizing);
-			resizing.setWidth(Math.max(0, (e.x - columnX)));
+			resizing.setWidth(Math.max(1, (e.x - columnX)));
 			
 			//
 			// Cause the grid to repaint and recalculate the viewport.
 			//
 			gridModel.fireChangeEvent();
 
+		} else if (repositioningDetect != null) {
+			//
+			// See if the user hs initiated a drag.
+			//
+			if (mouseDown && (repositioning == null)) {
+				repositioning = repositioningDetect;
+			}			
+			
+			//
+			// If we're repositioning a column, see where the current target is.
+			//
+			final int columnIndex = viewport.getColumnIndexByX(e.x, gc);
+			
+			if (columnIndex == -1) {
+				return;
+			}
+			
+			final Column mouseColumn = gridModel.getColumns().get(columnIndex);
+			
+			if (mouseColumn == repositioning) {
+				return;
+			}
+			
+			final int mouseColumnX = viewport.getColumnViewportX(gc, mouseColumn);
+			if (e.x <= (mouseColumnX + (mouseColumn.getWidth() / 2))) {
+				targetColumn = mouseColumn;
+				
+			} else if (columnIndex < gridModel.getColumns().size() - 1) {				
+				targetColumn = gridModel.getColumns().get(columnIndex + 1);
+				
+			} else {
+				targetColumn = LAST_COLUMN;
+			}
+			
+			if (isScrollRightNeeded()) {
+				//
+				// Check to see if we need to scroll right.
+				//
+				grid.getDisplay().syncExec(new Runnable() {					
+					@Override
+					public void run() {
+						grid.getHorizontalBar().setSelection(Math.min(grid.getHorizontalBar().getMaximum(), grid.getHorizontalBar().getSelection() + DRAG_SCROLL_DISTANCE));				
+						gridModel.fireChangeEvent();
+						if (isScrollRightNeeded()) {
+							grid.getDisplay().timerExec(100, this);
+						}
+					}
+				});
+				
+			} else if (isScrollLeftNeeded()) {
+				//
+				// Check to see if we need to scroll left.
+				//
+				grid.getDisplay().syncExec(new Runnable() {					
+					@Override
+					public void run() {
+						grid.getHorizontalBar().setSelection(Math.max(grid.getHorizontalBar().getMinimum(), grid.getHorizontalBar().getSelection() - DRAG_SCROLL_DISTANCE));				
+						gridModel.fireChangeEvent();
+						if (isScrollLeftNeeded()) {
+							grid.getDisplay().timerExec(100, this);
+						}
+					}
+				});
+				
+			} else {
+				//
+				// Cause the drop-image to be rendered.
+				//
+				grid.redraw();
+			}
+			
 		} else if (trackCell(e.x, e.y)) {
 			//
-			// Repaint the grid to show the hovered row.
+			// Repaint the grid to show the new hovered row.
 			//
 			grid.redraw();
 		}
 		
-		if (viewport.getColumnToResize(gc, e.x, e.y) != null) {
+		if ((repositioning == null) && (viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.RESIZE) != null)) {
+			//
+			// Show the column resize mouse cursor.
+			//
 			if (grid.getCursor() != grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEE)) {
 				grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEE));
 			}
+			
 		} else if ((resizing == null) && (grid.getCursor() != grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW))) {
+			//
+			// Restore the default mouse cursor.
+			//
 			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 		}
+	}
+	
+	private boolean isScrollRightNeeded() {
+		return (viewport.getLastColumnIndex() < grid.getColumns().size()) && (targetColumn == grid.getColumns().get(viewport.getLastColumnIndex()));
+	}
+	
+	private boolean isScrollLeftNeeded() {
+		return (viewport.getFirstColumnIndex() > 0) && (targetColumn == grid.getColumns().get(viewport.getFirstColumnIndex()));
 	}
 
 	@Override
@@ -242,7 +354,14 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		//
 		// See if the mouse is near a column header boundary. If so, begin a resize drag.
 		//
-		resizing = viewport.getColumnToResize(gc, e.x, e.y);
+		resizing = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.RESIZE);
+		
+		//
+		// If we're not resizing, maybe we're dragging a column?
+		//
+		if (resizing == null) {
+			repositioningDetect = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.REPOSITION);
+		}
 	}
 
 	@Override
@@ -252,6 +371,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		}
 
 		mouseDown = false;
+		repositioningDetect = null;
 
 		//
 		// Get the event details.
@@ -261,13 +381,63 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
 		
 		if (resizing != null) {
+			//
+			// Complete the resize operation.
+			//
 			resizing = null;
 			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+			return;			
+		}
+		
+		if (repositioning != null) {						
+			//
+			// Reposition the column currently being dragged.
+			//
+			if (targetColumn != repositioning) {
+				if (targetColumn == LAST_COLUMN) {
+					//
+					// Edge-case, we're moving the column to the end of the grid.
+					//
+					gridModel.getColumns().remove(repositioning);
+					gridModel.getColumns().add(repositioning);
+					
+					//
+					// Cause the grid to repaint and recalculate the scrollbars - because the 
+					// v-scroll amount may need updating.
+					//
+					gridModel.fireChangeEvent();
+					
+				} else {
+					//
+					// Move the column now.
+					//
+					final int targetIndex = gridModel.getColumns().indexOf(targetColumn);				
+					if (targetIndex != -1) {
+						gridModel.getColumns().remove(repositioning);
+						gridModel.getColumns().add(gridModel.getColumns().indexOf(targetColumn), repositioning);
+						
+						//
+						// Cause the grid to repaint and recalculate the scrollbars - because the 
+						// v-scroll amount may need updating.
+						//
+						gridModel.fireChangeEvent();
+					}
+				}
+			}
+			
+			repositioning = null;
+			targetColumn = null;
 			return;
 		}
 		
+		//
+		// Keep the tracked cell up-to-date.
+		//
 		trackCell(e.x, e.y);
 
+		//
+		// Determine if there's been a mouse event we need to handle or we neeed to expose to listeners.
+		//
 		if (e.button == 1) { // LEFT
 			if (e.count == 1) {
 				if ((column != null) && (e.y < viewport.getViewportArea(gc).y)) {
@@ -316,7 +486,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				//
 				// Handle the selection.
 				//
-				if (row != null && (row != Row.COLUMN_HEADER_ROW) /*&& (row != Row.FILTER_HEADER_ROW)*/) {
+				if (row != null && (row != Row.COLUMN_HEADER_ROW)) {
 					//
 					// If it's the row-number cell, pretend ctrl is used for sticky selections.
 					//
