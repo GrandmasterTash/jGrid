@@ -438,7 +438,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		//
 		// Determine if there's been a mouse event we need to handle or we neeed to expose to listeners.
 		//
-		if (e.button == 1) { // LEFT
+		if (e.button == 1 || e.button == 3) { // LEFT or RIGHT
 			if (e.count == 1) {
 				if ((column != null) && (e.y < viewport.getViewportArea(gc).y)) {
 					if (row == Row.COLUMN_HEADER_ROW) {
@@ -489,11 +489,16 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				if (row != null && (row != Row.COLUMN_HEADER_ROW)) {
 					if (!(shift || ctrl)) {
 						//
-						// Single row/group replace.
+						// If the right mouse button is used, and the row being right-clicked is already selected, don't un-select it.
 						//
-						final List<Row<T>> rows = new ArrayList<>();
-						rows.addAll(gridModel.isParentRow(row) ? gridModel.getWholeGroup(row) : Collections.singletonList(row));
-						gridModel.getSelectionModel().setSelectedRows(rows);
+						if (!((e.button == 3) && (row.isSelected()))) {
+							//
+							// Single row/group replace.
+							//
+							final List<Row<T>> rows = new ArrayList<>();
+							rows.addAll(gridModel.isParentRow(row) ? gridModel.getWholeGroup(row) : Collections.singletonList(row));
+							gridModel.getSelectionModel().setSelectedRows(rows);
+						}
 
 					} else if (ctrl && !shift) {
 						//

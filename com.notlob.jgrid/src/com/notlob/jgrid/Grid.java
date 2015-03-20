@@ -48,7 +48,6 @@ public class Grid<T> extends Composite {
 	// TODO: Column selection mode.	
 	// TODO: Empty data message.
 	// TODO: Select next row/group if current is removed.
-	// TODO: Right-click to select before raising event.
 	// TODO: Expose cell bounds api for automated testing.
 	// TODO: Focus select style / un-focus select style.
 	// TODO: Column pinning.	
