@@ -37,14 +37,13 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class Grid<T> extends Composite {
 	
-	// Bug: Track grid references to ResourceManager and dispose if last grid disposed AND dispose on jvm shutdown.
-	// Bug: Row number selection is irratic.		
+	// Bug: Track grid references to ResourceManager and dispose if last grid disposed AND dispose on jvm shutdown.	
 	// Bug: There's a slight wobble when scrolling vertically.
 	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
 	// Bug: SelectionChanged fired if anchor moves left/right on same row
 	// BUG: Alternating group colour is on viewport not full group list.
 	// BUG: Dragging a column header width should NOT be fire general change events to grid listeners although it does need to trigger scrollbar updates.
-	// TODO: Allow ESC to cancel a resize or reposition DnD
+	// TODO: Allow ESC to cancel any mouse down click.
 	// TODO: Column visibility.
 	// TODO: Column selection mode.	
 	// TODO: Empty data message.

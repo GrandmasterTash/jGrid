@@ -470,7 +470,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 							// Refresh filters.
 							gridModel.getFilterModel().applyFilters();
-							//return; // Dont exit here - allow the group to be selected if expanding.
+							//return; // Don't exit here - allow the group to be selected if expanding.
 						}
 
 						if (alt && (groupColumn != null)) {
@@ -487,13 +487,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				// Handle the selection.
 				//
 				if (row != null && (row != Row.COLUMN_HEADER_ROW)) {
-					//
-					// If it's the row-number cell, pretend ctrl is used for sticky selections.
-					//
-					if (e.x < viewport.getViewportArea(gc).x) {
-						ctrl = true;
-					}
-
 					if (!(shift || ctrl)) {
 						//
 						// Single row/group replace.
