@@ -502,19 +502,35 @@ public class GridRenderer<T> implements PaintListener {
 				paintGroupCellContent(gc, column, row, groupNameStyle, valueStyle);
 			}
 		}
+		
+		gc.setClipping(oldClipping);
 
 		//
 		// Paint any footer border.
 		//
-		if ((row.getElement() != null) && (renderPass == RenderPass.FOREGROUND) && (styleRegistry.getGroupFooterBorder() != null)) {
-			groupBottomLeft.x = rowBounds.x;
-			groupBottomLeft.y = rowBounds.y + rowBounds.height - 1;
-			groupBottomRight.x = rowBounds.x + rowBounds.width;
-			groupBottomRight.y = groupBottomLeft.y;
-			paintBorderLine(gc, styleRegistry.getGroupFooterBorder(), groupBottomLeft, groupBottomRight);
-		}
-
-		gc.setClipping(oldClipping);
+		if ((row.getElement() != null) && (renderPass == RenderPass.FOREGROUND)) {
+			if (styleRegistry.getGroupFooterBorderTop() != null) {
+				//
+				// Paint a border along the top of the group row.
+				//
+				groupBottomLeft.x = rowBounds.x;
+				groupBottomLeft.y = rowBounds.y;
+				groupBottomRight.x = rowBounds.x + rowBounds.width;
+				groupBottomRight.y = groupBottomLeft.y;
+				paintBorderLine(gc, styleRegistry.getGroupFooterBorderTop(), groupBottomLeft, groupBottomRight);
+			}
+			
+			if (styleRegistry.getGroupFooterBorderBottom() != null) {
+				//
+				// Paint a border along the bottom of the group row.
+				//
+				groupBottomLeft.x = rowBounds.x;
+				groupBottomLeft.y = rowBounds.y + rowBounds.height;
+				groupBottomRight.x = rowBounds.x + rowBounds.width;
+				groupBottomRight.y = groupBottomLeft.y;
+				paintBorderLine(gc, styleRegistry.getGroupFooterBorderBottom(), groupBottomLeft, groupBottomRight);
+			}
+		}		
 	}
 
 	protected void paintGroupCellContent(final GC gc, final Column column, final Row<T> row, final CellStyle groupNameStyle, final CellStyle groupValueStyle) {

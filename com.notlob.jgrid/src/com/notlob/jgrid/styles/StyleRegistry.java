@@ -28,7 +28,8 @@ public class StyleRegistry<T> {
 	protected final CellStyle groupValueStyle;
 	protected final CellStyle noDataStyle;
 	protected final CellStyle pinnedStyle;
-	protected final BorderStyle groupFooterBorder;
+	protected final BorderStyle groupFooterBorderTop;
+	protected final BorderStyle groupFooterBorderBottom;
 
 	// Filter matches are highlight in these colours.
 	protected RGB filterMatchForeground;
@@ -60,8 +61,7 @@ public class StyleRegistry<T> {
 		columnStyles = new HashMap<>();
 		customStyles = new HashMap<>();
 		backgroundColour = new RGB(255, 255, 255);
-		groupFooterBorder = new BorderStyle(2, LineStyle.SOLID, new RGB(100, 100, 100));
-
+		
 		//
 		// Build a default cell style.
 		//
@@ -115,6 +115,9 @@ public class StyleRegistry<T> {
 		groupNameStyle = groupValueStyle.copy();
 		groupNameStyle.setForeground(new RGB(39, 65, 62));
 		groupNameStyle.setFontData(new FontData("Segoe UI", 8, SWT.NORMAL));
+		
+		groupFooterBorderTop = null;//new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206));
+		groupFooterBorderBottom = new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206));
 
 		//
 		// Selection cell styles
@@ -144,7 +147,7 @@ public class StyleRegistry<T> {
 		// Selection region style.
 		//
 		selectionRegionStyle = new RegionStyle();
-		selectionRegionStyle.setBorder(new BorderStyle(2, LineStyle.SOLID, new RGB(0, 0, 0)));
+		selectionRegionStyle.setBorder(new BorderStyle(1, LineStyle.SOLID, new RGB(0, 0, 0)));
 		selectionRegionStyle.setBackground(new RGB(100, 200, 250));
 		selectionRegionStyle.setBackgroundGradient1(new RGB(255, 213, 141));
 		selectionRegionStyle.setBackgroundGradient2(new RGB(255, 213, 141));
@@ -378,8 +381,12 @@ public class StyleRegistry<T> {
 		return backgroundColour;
 	}
 
-	public BorderStyle getGroupFooterBorder() {
-		return groupFooterBorder;
+	public BorderStyle getGroupFooterBorderTop() {
+		return groupFooterBorderTop;
+	}
+	
+	public BorderStyle getGroupFooterBorderBottom() {
+		return groupFooterBorderBottom;
 	}
 
 }
