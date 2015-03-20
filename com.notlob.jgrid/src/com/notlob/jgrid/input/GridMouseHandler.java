@@ -441,7 +441,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		if (e.button == 1 || e.button == 3) { // LEFT or RIGHT
 			if (e.count == 1) {
 				if ((column != null) && (e.y < viewport.getViewportArea(gc).y)) {
-					if (row == Row.COLUMN_HEADER_ROW) {
+					if (row == Row.COLUMN_HEADER_ROW && e.button == 1) {
 						//
 						// Column sorting.
 						//

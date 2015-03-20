@@ -200,7 +200,7 @@ public class GridModel<T> {
 		this.contentProvider = contentProvider;
 
 		//
-		// Add a collapsed group filter to the model.
+		// Add a collapsed group filter to the model. It provides the ability to collapse/expand groups.
 		//
 		this.filterModel.addFilters(Collections.singletonList((Filter<T>) new CollapsedGroupFilter<T>(contentProvider)));
 	}

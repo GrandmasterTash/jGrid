@@ -172,20 +172,26 @@ public class GridRenderer<T> implements PaintListener {
 				//
 				paintColumnDragImage(gc);
 
-			} else {
+			} 
+			
+			if (gridModel.getRows().isEmpty()) {
 				//
-				// Paint the 'no data' message.
+				// Paint the 'no data' message. Note the filter check has to compensate for the CollapseGroupFilter. Naff.
 				//
-				final String text = grid.getEmptyMessage() == null ? "No data" : grid.getEmptyMessage();
+				final String text = grid.getEmptyMessage() == null ? (grid.getFilters().size() > 1 ? getDefaultFiltersHiddenDataMessage() : getDefaultNoDataMessage()) : grid.getEmptyMessage();
 				if (!extentCache.containsKey(text)) {
 					extentCache.put(text, gc.textExtent(text));
 				}
 
 				final CellStyle cellStyle = styleRegistry.getNoDataStyle();
-				final Point point = extentCache.get(grid.getEmptyMessage());
+				final Point point = extentCache.get(text);
 
 				if (point != null) {
+					gc.setAlpha(cellStyle.getForegroundOpacity());
+					gc.setFont(getFont(cellStyle.getFontData()));
+					gc.setForeground(getColour(cellStyle.getForeground()));
 					align(point.x, point.y, grid.getClientArea(), cellStyle.getTextAlignment(), cellStyle);
+					
 					gc.drawText(text, content.x, content.y, SWT.DRAW_TRANSPARENT);
 				}
 			}
@@ -203,6 +209,14 @@ public class GridRenderer<T> implements PaintListener {
 				gc.dispose();
 			}
 		}
+	}
+
+	protected String getDefaultFiltersHiddenDataMessage() {
+		return "No data matches your filter criteria.";
+	}
+
+	protected String getDefaultNoDataMessage() {
+		return "There is no data to display.";
 	}
 
 	/**

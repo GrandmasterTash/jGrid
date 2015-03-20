@@ -38,15 +38,14 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class Grid<T> extends Composite {
 	
+	// TODO: Column visibility.
 	// Bug: There's a slight wobble when scrolling vertically.
 	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
 	// Bug: SelectionChanged fired if anchor moves left/right on same row
 	// BUG: Alternating group colour is on viewport not full group list.
 	// BUG: Dragging a column header width should NOT be fire general change events to grid listeners although it does need to trigger scrollbar updates.
-	// TODO: Allow ESC to cancel any mouse down click.
-	// TODO: Column visibility.
+	// TODO: Allow ESC to cancel any mouse down click.	
 	// TODO: Column selection mode.	
-	// TODO: Empty data message.
 	// TODO: Select next row/group if current is removed.
 	// TODO: Expose cell bounds api for automated testing.
 	// TODO: Focus select style / un-focus select style.
@@ -428,6 +427,7 @@ public class Grid<T> extends Composite {
 	public void setEmptyMessage(final String emptyMessage) {
 		checkWidget();
 		this.emptyMessage = emptyMessage;
+		redraw();
 	}
 
 	public boolean isShowRowNumbers() {
