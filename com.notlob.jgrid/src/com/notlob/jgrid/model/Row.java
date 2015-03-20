@@ -28,13 +28,13 @@ public class Row<T> {
 		height = -1;
 	}
 
-	int getHeight(final GC gc, final CellStyle cellStyle) {
+	int getHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
 		if (height == -1) {
 			if (gc == null) {
 				return 0;
 			}
 
-			gc.setFont(ResourceManager.getInstance().getFont(cellStyle.getFontData()));
+			gc.setFont(resourceManager.getFont(cellStyle.getFontData()));
 			height = cellStyle.getPaddingTop() + cellStyle.getPaddingBottom() + gc.getFontMetrics().getHeight();
 		}
 

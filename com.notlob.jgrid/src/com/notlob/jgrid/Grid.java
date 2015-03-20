@@ -34,10 +34,10 @@ import com.notlob.jgrid.providers.IGridContentProvider;
 import com.notlob.jgrid.providers.IGridLabelProvider;
 import com.notlob.jgrid.renderer.GridRenderer;
 import com.notlob.jgrid.styles.StyleRegistry;
+import com.notlob.jgrid.util.ResourceManager;
 
 public class Grid<T> extends Composite {
 	
-	// Bug: Track grid references to ResourceManager and dispose if last grid disposed AND dispose on jvm shutdown.	
 	// Bug: There's a slight wobble when scrolling vertically.
 	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
 	// Bug: SelectionChanged fired if anchor moves left/right on same row
@@ -54,14 +54,13 @@ public class Grid<T> extends Composite {
 	// TODO: In-line editing (probably in a viewer).	
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
+	// TODO: Javadoc.
 
 	// Models.
 	private final GridModel<T> gridModel;
 	private IGridLabelProvider<T> labelProvider;
 	private IGridContentProvider<T> contentProvider;
 	private GridRenderer<T> gridRenderer;
-
-	// Helpers.
 	private final Viewport<T> viewport;
 
 	// Things we listen to.
@@ -84,6 +83,9 @@ public class Grid<T> extends Composite {
 	// Used for dimension calculations.
 	private final GC gc;
 	private final Point computedArea;
+	
+	// Used to dispose graphical UI resources managed by this grid.
+	private final ResourceManager resourceManager;
 
 	private final ToolTip toolTip;
 	private String emptyMessage;
@@ -95,6 +97,7 @@ public class Grid<T> extends Composite {
 	
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
+		resourceManager = new ResourceManager(parent.getDisplay());
 		gc = new GC(this);
 		computedArea = new Point(-1, -1);
 		gridModel = new GridModel<T>(this);
@@ -142,6 +145,7 @@ public class Grid<T> extends Composite {
 
 		// Dispose of UI handles.
 		gc.dispose();
+		resourceManager.dispose();
 		super.dispose();
 	}
 	
@@ -151,6 +155,10 @@ public class Grid<T> extends Composite {
 	public GridModel<T> getGridModel() {
 		checkWidget();
 		return gridModel;
+	}
+	
+	public ResourceManager getResourceManager() {
+		return resourceManager;
 	}
 
 	public void setHighlightHoveredRow(final boolean highlightHoveredRow) {
@@ -295,7 +303,7 @@ public class Grid<T> extends Composite {
 	
 	public int getRowHeight(final Row<T> row) {
 		checkWidget();
-		return gridModel.getRowHeight(gc, row);
+		return gridModel.getRowHeight(resourceManager, gc, row);
 	}
 
 	public void applyFilters() {
@@ -375,7 +383,7 @@ public class Grid<T> extends Composite {
 		final Rectangle viewportArea = viewport.getViewportArea(gc);
 		viewport.calculateVisibleCellRange(gc);
 
-		final int nextRowHeight = (viewport.getLastRowIndex() >= 0 && (viewport.getLastRowIndex() + 1) < gridModel.getRows().size()) ? gridModel.getRowHeight(gc, gridModel.getRows().get(viewport.getLastRowIndex())) : 0;
+		final int nextRowHeight = (viewport.getLastRowIndex() >= 0 && (viewport.getLastRowIndex() + 1) < gridModel.getRows().size()) ? getRowHeight(gridModel.getRows().get(viewport.getLastRowIndex())) : 0;
 		final int nextColumnWidth = (viewport.getLastColumnIndex() >= 0 && (viewport.getLastColumnIndex() + 1) < gridModel.getColumns().size()) ? gridModel.getColumns().get(viewport.getLastColumnIndex()).getWidth() : 0;
 
 		updateScrollbar(getVerticalBar(), viewportArea.height, computedArea.y, nextRowHeight);
@@ -405,7 +413,7 @@ public class Grid<T> extends Composite {
 			}
 
 			for (final Row<T> row : gridModel.getRows()) {
-				computedArea.y += gridModel.getRowHeight(gc, row);
+				computedArea.y += getRowHeight(row);
 			}
 		}
 

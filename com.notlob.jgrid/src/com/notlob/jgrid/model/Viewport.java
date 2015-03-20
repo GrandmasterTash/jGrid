@@ -7,7 +7,6 @@ import org.eclipse.swt.graphics.Rectangle;
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.renderer.GridRenderer;
 import com.notlob.jgrid.styles.CellStyle;
-import com.notlob.jgrid.util.ResourceManager;
 
 /**
  * Tracks what's visible in the Grid.
@@ -73,7 +72,7 @@ public class Viewport<T> {
 				setFirstRowIndex(rowIndex);
 			}
 
-			y += gridModel.getRowHeight(gc, row);
+			y += grid.getRowHeight(row);
 
 			if ((y > (originY + viewportArea.height)) && (getLastRowIndex() == -1)) {
 				setLastRowIndex(rowIndex);
@@ -133,7 +132,7 @@ public class Viewport<T> {
 		// Shift the viewport down to make room for column header row(s).
 		//
 		for (final Row<T> row : gridModel.getColumnHeaderRows()) {
-			viewportArea.y += (gridModel.getRowHeight(gc, row) + gridModel.getStyleRegistry().getCellSpacingVertical());
+			viewportArea.y += (grid.getRowHeight(row) + gridModel.getStyleRegistry().getCellSpacingVertical());
 			viewportArea.height -= viewportArea.y;
 		}
 
@@ -142,7 +141,7 @@ public class Viewport<T> {
 		//
 		if (gridModel.isShowRowNumbers()) {
 			final CellStyle cellStyle = gridModel.getStyleRegistry().getRowNumberStyle();
-			gc.setFont(ResourceManager.getInstance().getFont(cellStyle.getFontData()));
+			gc.setFont(grid.getResourceManager().getFont(cellStyle.getFontData()));
 
 			final Point extent = gc.textExtent(String.valueOf(gridModel.getRows().size()));
 			extent.x += cellStyle.getPaddingLeft() + cellStyle.getPaddingRight();
@@ -285,7 +284,7 @@ public class Viewport<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	public Column getColumnForMouseOperation(final GC gc, final int x, final int y, final ColumnMouseOperation operation) {		
-		final int height = gridModel.getRowHeight(gc, Row.COLUMN_HEADER_ROW);
+		final int height = grid.getRowHeight(Row.COLUMN_HEADER_ROW);
 				
 		//
 		// Only proceed if the mouse is in the mouse header region.
@@ -335,7 +334,7 @@ public class Viewport<T> {
 			// A column header row has been clicked.
 			//
 			for (final Row<T> row : gridModel.getColumnHeaderRows()) {
-				currentY += gridModel.getRowHeight(gc, row);
+				currentY += grid.getRowHeight(row);
 
 				if (y <= currentY) {
 					return -1;
@@ -349,7 +348,7 @@ public class Viewport<T> {
 			for (int rowIndex=getFirstRowIndex(); rowIndex<getLastVisibleRowIndex(); rowIndex++) {
 				if (rowIndex < gridModel.getRows().size()) {
 					final Row<T> row = gridModel.getRows().get(rowIndex);
-					currentY += gridModel.getRowHeight(gc, row);
+					currentY += grid.getRowHeight(row);
 
 					if (y <= currentY) {
 						return rowIndex;
@@ -375,7 +374,7 @@ public class Viewport<T> {
 				return currentY;
 			}
 
-			currentY += (gridModel.getRowHeight(gc, currentRow) + gridModel.getStyleRegistry().getCellSpacingVertical());
+			currentY += (grid.getRowHeight(currentRow) + gridModel.getStyleRegistry().getCellSpacingVertical());
 		}
 
 		return -1;
@@ -389,7 +388,7 @@ public class Viewport<T> {
 				return currentY;
 			}
 
-			currentY += gridModel.getRowHeight(gc, current);
+			currentY += grid.getRowHeight(current);
 		}
 
 		return -1;
@@ -438,7 +437,7 @@ public class Viewport<T> {
 				final Row<T> scrollToRow = gridModel.getRows().get(rowIndex + 1);
 
 				if (vDelta < 0) {
-					grid.getVerticalBar().setSelection(getRowY(gc, scrollToRow) - gridModel.getRowHeight(gc, scrollToRow));
+					grid.getVerticalBar().setSelection(getRowY(gc, scrollToRow) - grid.getRowHeight(scrollToRow));
 				} else {
 					grid.getVerticalBar().setSelection((getRowY(gc, scrollToRow) - viewportArea.height));
 				}

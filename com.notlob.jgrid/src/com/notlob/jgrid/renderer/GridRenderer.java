@@ -30,7 +30,6 @@ import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.ContentStyle;
 import com.notlob.jgrid.styles.RegionStyle;
 import com.notlob.jgrid.styles.StyleRegistry;
-import com.notlob.jgrid.util.ResourceManager;
 
 public class GridRenderer<T> implements PaintListener {
 
@@ -115,8 +114,8 @@ public class GridRenderer<T> implements PaintListener {
 		groupBottomRight = new Point(0, 0);
 		groupFieldBounds = new Rectangle(0, 0, 0, 0);
 		textLayout = new TextLayout(grid.getDisplay());
-		errorImage = ResourceManager.getInstance().getImage("cell_error.gif");
-		dropImage = ResourceManager.getInstance().getImage("inwards_arrows.png");
+		errorImage = getImage("cell_error.gif");
+		dropImage = getImage("inwards_arrows.png");
 	}
 
 	@Override
@@ -486,7 +485,7 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		// Paint the expand/collapse icon.
 		//
-		final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? ResourceManager.getInstance().getImage("plus.png") : ResourceManager.getInstance().getImage("minus.png");
+		final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? getImage("plus.png") : getImage("minus.png");
 		gc.drawImage(expandImage, rowBounds.x + groupValueStyle.getPaddingLeft(), rowBounds.y + groupValueStyle.getPaddingTop() + PADDING__EXPAND_COLLAPSE_IMAGE);
 
 		//
@@ -564,7 +563,7 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		// Sort icon.
 		//
-		final Image sortImage = ResourceManager.getInstance().getImage((column.getSortDirection() == SortDirection.ASC ? "sort_ascending.png" : "sort_descending.png"));
+		final Image sortImage = getImage((column.getSortDirection() == SortDirection.ASC ? "sort_ascending.png" : "sort_descending.png"));
 		if (column.getSortDirection() != SortDirection.NONE) {
 			gc.drawImage(sortImage, fieldLocation.x, fieldLocation.y);
 		}
@@ -656,7 +655,7 @@ public class GridRenderer<T> implements PaintListener {
 		final CellStyle groupNameStyle = styleRegistry.getGroupNameStyle();
 		final CellStyle groupValueStyle = styleRegistry.getGroupValueStyle();
 
-		final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? ResourceManager.getInstance().getImage("plus.png") : ResourceManager.getInstance().getImage("minus.png");
+		final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? getImage("plus.png") : getImage("minus.png");
 		int fieldLocationX = PADDING__EXPAND_COLLAPSE_IMAGE + groupValueStyle.getPaddingLeft() + expandImage.getBounds().width + viewport.getViewportArea(gc).x + groupValueStyle.getPaddingLeft();
 
 		for (final Column column : gridModel.getGroupByColumns()) {
@@ -681,7 +680,7 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			// Sort icon.
 			//
-			final Image sortImage = ResourceManager.getInstance().getImage("sort_ascending.png");
+			final Image sortImage = getImage("sort_ascending.png");
 			fieldLocationX += sortImage.getBounds().width + SPACING__GROUP_FIELD;
 
 			//
@@ -759,7 +758,7 @@ public class GridRenderer<T> implements PaintListener {
 		// Get the y for the row from the viewport.
 		//
 		final int rowY = viewport.getRowViewportY(gc, row);
-		final Image image = grid.getContentProvider().isCollapsed(row.getElement()) ? ResourceManager.getInstance().getImage("plus.png") : ResourceManager.getInstance().getImage("minus.png");
+		final Image image = grid.getContentProvider().isCollapsed(row.getElement()) ? getImage("plus.png") : getImage("minus.png");
 		final CellStyle groupValueStyle = styleRegistry.getGroupValueStyle();
 		final Rectangle bounds = new Rectangle(viewport.getViewportArea(gc).x + groupValueStyle.getPaddingLeft() - PADDING__EXPAND_COLLAPSE_IMAGE, rowY + groupValueStyle.getPaddingTop(), image.getBounds().width + (PADDING__EXPAND_COLLAPSE_IMAGE * 2), image.getBounds().height + (PADDING__EXPAND_COLLAPSE_IMAGE * 2));
 		return bounds;
@@ -1061,10 +1060,10 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			if (column.getSortDirection() != SortDirection.NONE) {
 				if (column.getSortDirection() == SortDirection.ASC){
-					return ResourceManager.getInstance().getImage("sort_ascending.png");
+					return getImage("sort_ascending.png");
 
 				} else if (column.getSortDirection() == SortDirection.DESC){
-					return ResourceManager.getInstance().getImage("sort_descending.png");
+					return getImage("sort_descending.png");
 				}
 			}
 
@@ -1189,11 +1188,15 @@ public class GridRenderer<T> implements PaintListener {
 	}
 
 	protected Font getFont(final FontData fontData) {
-		return ResourceManager.getInstance().getFont(fontData);
+		return grid.getResourceManager().getFont(fontData);
 	}
 
 	protected Color getColour(final RGB rgb) {
-		return ResourceManager.getInstance().getColour(rgb);
+		return grid.getResourceManager().getColour(rgb);
+	}
+	
+	protected Image getImage(final String imagePath) {
+		return grid.getResourceManager().getImage(imagePath);
 	}
 
 	protected Point getTopLeft(final Rectangle rectangle) {

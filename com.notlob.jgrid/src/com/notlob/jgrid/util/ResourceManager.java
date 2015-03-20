@@ -14,7 +14,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
 /**
- * Singleton to manage SWT UI resources that need disposing when the app terminates.
+ * Used to manage SWT UI resources that need disposing when the grid is disposed.
  *
  * @author Stef
  *
@@ -26,6 +26,13 @@ public class ResourceManager {
 	private final Map<String, Color> colours;
 	private final Map<String, Image> images;
 
+	public ResourceManager(final Display display) {
+		this.display = display;
+		fonts = new HashMap<>();
+		colours = new HashMap<>();
+		images = new HashMap<>();
+	}
+	
 	public Font getFont(final FontData fontData) {
 		if (!fonts.containsKey(fontData)) {
 			fonts.put(fontData, new Font(display, fontData));
@@ -69,10 +76,6 @@ public class ResourceManager {
 		return images.get(imagePath);
 	}
 
-	public void setDisplay(final Display display) {
-		this.display = display;
-	}
-
 	public void dispose() {
 		display = null;
 
@@ -91,19 +94,5 @@ public class ResourceManager {
 		fonts.clear();
 		colours.clear();
 		images.clear();
-	}
-
-	private ResourceManager() {
-		fonts = new HashMap<>();
-		colours = new HashMap<>();
-		images = new HashMap<>();
-	}
-
-	private static class SingletonHolder {
-		private static final ResourceManager INSTANCE = new ResourceManager();
-	}
-
-	public static ResourceManager getInstance() {
-		return SingletonHolder.INSTANCE;
 	}
 }

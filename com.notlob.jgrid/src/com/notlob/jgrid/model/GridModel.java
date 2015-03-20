@@ -17,6 +17,7 @@ import com.notlob.jgrid.providers.IGridContentProvider;
 import com.notlob.jgrid.providers.IGridLabelProvider;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.StyleRegistry;
+import com.notlob.jgrid.util.ResourceManager;
 
 /**
  *
@@ -521,9 +522,9 @@ public class GridModel<T> {
 		return columnHeaderRows.contains(row);
 	}
 
-	public int getRowHeight(final GC gc, final Row<T> row) {
+	public int getRowHeight(final ResourceManager resourceManager, final GC gc, final Row<T> row) {
 		final CellStyle cellStyle = styleRegistry.getCellStyle(row);
-		return row.getHeight(gc, cellStyle);
+		return row.getHeight(resourceManager, gc, cellStyle);
 	}
 
 	/**

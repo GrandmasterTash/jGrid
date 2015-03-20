@@ -123,7 +123,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			//
 			if (y >= 0 ) {
 				newRow = null;
-				final int headerHeight = gridModel.getRowHeight(gc, Row.COLUMN_HEADER_ROW);
+				final int headerHeight = grid.getRowHeight(Row.COLUMN_HEADER_ROW);
 
 				if (y < headerHeight) {
 					newRow = Row.COLUMN_HEADER_ROW;
