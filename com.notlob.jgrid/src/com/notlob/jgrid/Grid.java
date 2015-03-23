@@ -38,12 +38,16 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class Grid<T> extends Composite {
 	
+	// TODO: UpdateElements should sort and filter.
+	// TODO: show/hiding a row should not fire a course grid-changed event, it should update the scrollbar and redraw efficiently.
 	// TODO: Column visibility.
+	// Bug: Column sorting seems to ignore most clicks on the header.
 	// Bug: There's a slight wobble when scrolling vertically.
 	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
 	// Bug: SelectionChanged fired if anchor moves left/right on same row
 	// BUG: Alternating group colour is on viewport not full group list.
 	// BUG: Dragging a column header width should NOT be fire general change events to grid listeners although it does need to trigger scrollbar updates.
+	// TODO: Option to only show group sort icon if ALT held down.
 	// TODO: Allow ESC to cancel any mouse down click.	
 	// TODO: Column selection mode.	
 	// TODO: Select next row/group if current is removed.
@@ -99,7 +103,7 @@ public class Grid<T> extends Composite {
 		resourceManager = new ResourceManager(parent.getDisplay());
 		gc = new GC(this);
 		computedArea = new Point(-1, -1);
-		gridModel = new GridModel<T>(this);
+		gridModel = new GridModel<T>(this, resourceManager, gc);
 		modelListener = new GridModelListener();
 		gridModel.addListener(modelListener);
 		viewport = new Viewport<T>(this);
@@ -246,16 +250,19 @@ public class Grid<T> extends Composite {
 	}
 
 	public void addElements(final Collection<T> elements) {
+		System.out.println("addElements: " + elements.size());
 		checkWidget();
 		gridModel.addElements(elements);
 	}
 
 	public void removeElements(final Collection<T> elements) {
+		System.out.println("removeElements: " + elements.size());
 		checkWidget();
 		gridModel.removeElements(elements);
 	}
 
 	public void updateElements(final Collection<T> elements) {
+		System.out.println("updateElements: " + elements.size());
 		checkWidget();
 		gridModel.updateElements(elements);
 	}
@@ -302,7 +309,7 @@ public class Grid<T> extends Composite {
 	
 	public int getRowHeight(final Row<T> row) {
 		checkWidget();
-		return gridModel.getRowHeight(resourceManager, gc, row);
+		return gridModel.getRowHeight(row);
 	}
 
 	public void applyFilters() {
@@ -519,6 +526,15 @@ public class Grid<T> extends Composite {
 			for (final IGridListener<T> listener : listeners) {
 				listener.selectionChanged(gridModel.getSelectionModel().getSelectedElements());
 			}
-		}		
+		}
+		
+		@Override
+		public void heightChanged(int delta) {
+			getVerticalBar().setMaximum(getVerticalBar().getMaximum() + delta);
+
+			// TODO: Ensure we're not still past the maximum.
+			
+			redraw();
+		}
 	}
 }

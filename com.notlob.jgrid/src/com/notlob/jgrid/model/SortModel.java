@@ -88,6 +88,14 @@ public class SortModel<T> {
 		// Now sort the data.
 		//
 		Collections.sort(gridModel.getRows(), rowComparator);
+		
+		//
+		// Re-index the rows.
+		//
+		int rowIndex = 0;
+		for (Row<T> row : gridModel.getRows()) {
+			row.setRowIndex(rowIndex++);
+		}
 
 		if (notify) {
 			gridModel.fireChangeEvent();

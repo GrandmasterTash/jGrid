@@ -15,6 +15,7 @@ public class Row<T> {
 	private boolean selected;
 	private boolean pinned;
 	private int height;
+	private int rowIndex = -1; // Allows updateElements to be implemented without an indexOf.
 	private final T element;
 
 	// If this row has matched a filter which highlights results, store the matches here.
@@ -43,6 +44,14 @@ public class Row<T> {
 
 	public void setHeight(final int height) {
 		this.height = height;
+	}
+	
+	public int getRowIndex() {
+		return rowIndex;
+	}
+	
+	public void setRowIndex(int rowIndex) {
+		this.rowIndex = rowIndex;
 	}
 
 	public T getElement() {

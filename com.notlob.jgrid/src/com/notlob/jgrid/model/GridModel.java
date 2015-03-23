@@ -68,13 +68,20 @@ public class GridModel<T> {
 	// Providers to get / format data, images, tool-tips, etc.
 	private IGridContentProvider<T> contentProvider;
 	private IGridLabelProvider<T> labelProvider;
+	
+	// Used in row height calculations.
+	private final ResourceManager resourceManager;
+	private final GC gc;
 
 	public interface IModelListener {
 		void modelChanged();
 		void selectionChanged();
+		void heightChanged(int delta);
 	}
 
-	public GridModel(final Grid<T> grid) {
+	public GridModel(final Grid<T> grid, final ResourceManager resourceManager, final GC gc) {
+		this.resourceManager = resourceManager;
+		this.gc = gc; 
 		rows = new ArrayList<>();
 		rowsByElement = new LinkedHashMap<>();
 		hiddenRows = new ArrayList<>();
@@ -382,19 +389,74 @@ public class GridModel<T> {
 		fireChangeEvent();
 	}
 
+	// TODO: TEST ON GROUP GRIDS
+	// TODO: TEST WITH FILTERS
 	public void updateElements(final Collection<T> elements) {
-// TODO: To Ensure the row maintains it's position,	we might need it to cache it's visible index - to be fast.
-// TODO: Consider groups need to compare with other groups and children with children.
-//		for (Object element : elements) {
-//			final Row row = rowsByElement.get(element);
-//			final int expectedIndex = sortModel.getSortedRowIndex(row);
-//			final int actualIndex =
-//
-//		}
+		int heightDelta = 0;
+		
+		for (Object element : elements) {
+			final Row<T> row = rowsByElement.get(element);			
+			//
+			// Should the row be shown/hidden?
+			//
+			final boolean visible = filterModel.match(row);
+			
+			if (visible && row.isVisible()) {
+				//
+				// Should the row move?
+				//
+				final int expectedIndex = Math.abs(sortModel.getSortedRowIndex(row));
+				final int actualIndex = row.getRowIndex();
+				
+				System.out.println(String.format("Row update resulted in move - Expected [%s] Actual [%s]", expectedIndex, actualIndex));
+				
+				if (expectedIndex != actualIndex) {
+					
+// TODO: Alter Show/Hide Row so they only remove from the previous list if the row WAS in that state.
+// TODO: THEN get this method to use show/hide row.
+// TODO: All children should be removed and then re-inserted as well.
+					
+					//
+					// Move the row to the correct position.
+					//										
+					rows.remove(row);
+					
+					// TODO: Remove this and figure out what need to happen properly.
+					final int newEexpectedIndex = sortModel.getSortedRowIndex(row);					
+					rows.add(newEexpectedIndex, row);
+					row.setRowIndex(newEexpectedIndex);
+				}
+				
+			} else if (visible && !row.isVisible()) {
+				System.out.println("Showing hidden row.");
+				
+				//
+				// Reveal the row.
+				//
+				showRow(row);
+				heightDelta += getRowHeight(row);
+				
+			} else if (!visible && row.isVisible()) {
+				System.out.println("Hiding visible row.");
+				
+				//
+				// Hide the row.
+				//
+				hideRow(row);				
+				heightDelta -= getRowHeight(row);
+			}
+		}
 
-		// TODO: Re-apply it's filters (will have to clear existing matches first).
-
-		fireChangeEvent();
+		//
+		// If the height of the rows has changed, adjust the grid's scroll-bars.
+		//
+		if (heightDelta != 0) {
+			fireHeightChangeEvent(heightDelta);
+			
+		} else {
+			// TODO: Replace this with a rowMoved event that just triggers a redraw not a full recalc of scrollbars and viewprt..
+			fireChangeEvent();
+		}
 	}
 
 	public void clearElements() {
@@ -407,6 +469,7 @@ public class GridModel<T> {
 		// Clear rows.
 		//
 		rows.clear();
+		hiddenRows.clear();
 		rowsByElement.clear();
 
 		fireChangeEvent();
@@ -417,10 +480,13 @@ public class GridModel<T> {
 
 		if (insertIndex >= 0) {
 			rows.add(insertIndex, row);
+			row.setRowIndex(insertIndex);
+			
 		} else {
 			rows.add(row);
+			row.setRowIndex(rows.size()-1);
 		}
-
+		
 		row.setVisible(true);
 		hiddenRows.remove(row);
 	}
@@ -430,6 +496,7 @@ public class GridModel<T> {
 		selectionModel.removeRow(row);
 		hiddenRows.add(row);
 		row.setVisible(false);
+		row.setRowIndex(-1);
 	}
 
 	public void groupBy(final List<Column> columns) {
@@ -495,19 +562,18 @@ public class GridModel<T> {
 			listener.modelChanged();
 		}
 	}
+	
+	public void fireHeightChangeEvent(final int delta) {
+		for (final IModelListener listener : listeners) {
+			listener.heightChanged(delta);
+		}
+	}
 
 	void fireSelectionChangedEvent() {
 		for (final IModelListener listener : listeners) {
 			listener.selectionChanged();
 		}
 	}
-
-//	// TODO: Remove this, and ensure nothing outside of the grid access this class.
-//	void checkWidget() {
-//		if (Display.getCurrent() == null) {
-//			throw new SWTException(SWT.ERROR_THREAD_INVALID_ACCESS);
-//		}
-//	}
 
 	public boolean isShowRowNumbers() {
 		return showRowNumbers;
@@ -522,7 +588,7 @@ public class GridModel<T> {
 		return columnHeaderRows.contains(row);
 	}
 
-	public int getRowHeight(final ResourceManager resourceManager, final GC gc, final Row<T> row) {
+	public int getRowHeight(final Row<T> row) {
 		final CellStyle cellStyle = styleRegistry.getCellStyle(row);
 		return row.getHeight(resourceManager, gc, cellStyle);
 	}
@@ -669,20 +735,6 @@ public class GridModel<T> {
 
 		return sb.toString();
 	}
-
-//	public List<Row<T>> getRowsForElements(final Set<T> elements) {
-//		checkWidget();
-//
-//		final List<Row<T>> rows = new ArrayList<>();
-//		for (final Object element : elements) {
-//			rows.add(rowsByElement.get(element));
-//		}
-//		return rows;
-//	}
-//
-//	public Row<T> getRowForElement(final T element) {
-//		return rowsByElement.get(element);
-//	}
 
 	public void pinRows(final List<Row<T>> rows) {
 		for (final Row<T> row : rows) {
