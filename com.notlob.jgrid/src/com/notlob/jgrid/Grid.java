@@ -38,7 +38,10 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class Grid<T> extends Composite {
 	
+	// TODO: if disposed, stop accepting changes (specifically to elements).
 	// TODO: UpdateElements should sort and filter.
+	// TODO: Fire rowCountChanged events.
+	// TODO: Resizing / positioning a column should raise an event.
 	// TODO: show/hiding a row should not fire a course grid-changed event, it should update the scrollbar and redraw efficiently.
 	// TODO: Column visibility.
 	// Bug: Column sorting seems to ignore most clicks on the header.
@@ -250,26 +253,37 @@ public class Grid<T> extends Composite {
 	}
 
 	public void addElements(final Collection<T> elements) {
-		System.out.println("addElements: " + elements.size());
 		checkWidget();
 		gridModel.addElements(elements);
 	}
 
 	public void removeElements(final Collection<T> elements) {
-		System.out.println("removeElements: " + elements.size());
 		checkWidget();
 		gridModel.removeElements(elements);
 	}
 
 	public void updateElements(final Collection<T> elements) {
-		System.out.println("updateElements: " + elements.size());
 		checkWidget();
 		gridModel.updateElements(elements);
+	}
+	
+	/**
+	 * A list of the elements in position order - please note, calling this method repeatedly is not performant, use a combination
+	 * of getRowCount and getElementAtPosition instead.
+	 */
+	public List<T> getElements() {
+		checkWidget();
+		return gridModel.getElements();
 	}
 
 	public void clearElements() {
 		checkWidget();
 		gridModel.clearElements();
+	}
+	
+	public T getElementAtPosition(final int rowIndex) {
+		checkWidget();
+		return gridModel.getRows().get(rowIndex).getElement();
 	}
 
 	public Collection<T> getSelection() {

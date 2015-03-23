@@ -11,6 +11,10 @@ public class GridAdapter<T> implements IGridListener<T> {
 	@Override
 	public void gridChanged() {
 	}
+	
+	@Override
+	public void rowCountChanged() {
+	}
 
 	@Override
 	public void selectionChanged(final Collection<T> selectedElements) {

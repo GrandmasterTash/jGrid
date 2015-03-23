@@ -127,11 +127,11 @@ public class GridModel<T> {
 	/**
 	 * Returns all of the visible elements in the grid. Not a performant method.
 	 */
-	public List<T> getElements() {
+	public List<T> getElements() {		
 		//
 		// To ensure the elements are in visible sequence, do this.
 		//
-		final List<T> elements = new ArrayList<>();
+		final List<T> elements = new ArrayList<>(rows.size());
 		for (final Row<T> row : rows) {
 			elements.add(row.getElement());
 		}

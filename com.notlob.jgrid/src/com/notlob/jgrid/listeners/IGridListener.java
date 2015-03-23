@@ -27,5 +27,7 @@ public interface IGridListener<T> {
 	void groupExpanded(final T element);
 
 	void groupCollapsed(final T element);
+	
+	void rowCountChanged();
 
 }
