@@ -207,6 +207,15 @@ public class GridModel<T> {
 		this.contentProvider = contentProvider;
 
 		//
+		// The mandatory filter needs the contentprovider.
+		//
+		clearFilters();
+	}
+	
+	public void clearFilters() {
+		filterModel.clear();
+		
+		//
 		// Add a collapsed group filter to the model. It provides the ability to collapse/expand groups.
 		//
 		this.filterModel.addFilters(Collections.singletonList((Filter<T>) new CollapsedGroupFilter<T>(contentProvider)));

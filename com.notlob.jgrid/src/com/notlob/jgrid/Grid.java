@@ -221,6 +221,11 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		return gridModel.getColumns();
 	}
+	
+	public List<Column> getAllColumns() {
+		checkWidget();
+		return gridModel.getAllColumns();
+	}
 
 	public Column getColumn(final int columnIndex) {
 		checkWidget();
@@ -285,10 +290,44 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		return gridModel.getRows().get(rowIndex).getElement();
 	}
+	
+	public void clearSorts() {
+		checkWidget();
+		gridModel.getSortModel().clear();
+	}
+	
+	public void clearFilters() {
+		checkWidget();
+		gridModel.getFilterModel().clear();
+	}
 
 	public Collection<T> getSelection() {
 		checkWidget();
 		return gridModel.getSelectionModel().getSelectedElements();
+	}
+	
+	public void setSelection(final Collection<T> selection) {
+		checkWidget();
+		
+		//
+		// Find the rows for each element.
+		//
+		final List<Row<T>> rowsToSelect = new ArrayList<>();
+		
+		for (T element : selection) {
+			final Row<T> row = gridModel.getRow(element);
+			
+			if (row == null) {
+				System.err.println("Cannot find row for element to select " + element);
+			} else {
+				rowsToSelect.add(row);
+			}
+		}
+		
+		//
+		// Select the rows now.
+		//
+		gridModel.getSelectionModel().setSelectedRows(rowsToSelect);
 	}
 
 	public Column getAnchorColumn() {
