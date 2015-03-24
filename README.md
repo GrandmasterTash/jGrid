@@ -14,9 +14,12 @@ See the Examples.java class to set-up and run the sample demo.
 
 ![Alt Examples Screenshot](https://github.com/GrandmasterTash/jGrid/blob/master/com.notlob.jgrid.examples/screenshot.jpg)
 
-To use the grid you need to give specify 4 things: -
+To use the grid you need to specify 4 things: -
 
 1. IGridContentProvider
 2. IGridLabelProvider
 3. Columns
 4. Elements (data to show in a row).
+
+Finally, in addition to the standard control listeners, you can add an IGridListener to recieve grid-based events.
+
