@@ -398,8 +398,26 @@ public class GridModel<T> {
 		for (final T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
 			heightDelta -= getRowHeight(row);
-			rows.remove(row);
-			hiddenRows.remove(row);
+			
+			final boolean parent = isParentRow(row);
+			final boolean group = isGroupRow(row);
+			
+			if (rows.remove(row)) {
+				if (parent || !group) {
+					rowCountVisibleParents--;
+				} else {
+					rowCountVisibleChildren--;
+				}
+			} 
+			
+			if (hiddenRows.remove(row)) {
+				if (parent || !group) {
+					rowCountHiddenParents--;
+				} else {
+					rowCountHiddenChildren--;
+				}
+			}
+			
 			rowsByElement.remove(element);
 
 			if (row.isSelected()) {
