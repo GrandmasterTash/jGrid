@@ -236,6 +236,16 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		return gridModel.getColumnById(columnId);
 	}
+	
+	public void pinColumn(final Column column) {
+		checkWidget();
+		System.out.println("Pin not yet implemented");
+	}
+	
+	public void unpinColumn(final Column column) {
+		checkWidget();
+		System.out.println("Unpin not yet implemented");
+	}
 
 	public void groupBy(final List<Column> columns) {
 		checkWidget();
@@ -291,6 +301,16 @@ public class Grid<T> extends Composite {
 		return gridModel.getRows().get(rowIndex).getElement();
 	}
 	
+	public void sort(final Column column, final boolean toggle, final boolean append) {
+		checkWidget();
+		gridModel.getSortModel().sort(column, toggle, append, true);
+	}
+	
+	public void sort() {
+		checkWidget();
+		gridModel.getSortModel().refresh();
+	}
+	
 	public void clearSorts() {
 		checkWidget();
 		gridModel.getSortModel().clear();
@@ -301,6 +321,11 @@ public class Grid<T> extends Composite {
 		gridModel.getFilterModel().clear();
 	}
 
+	public void selectAll() {
+		checkWidget();
+		gridModel.getSelectionModel().selectAll();
+	}
+	
 	public Collection<T> getSelection() {
 		checkWidget();
 		return gridModel.getSelectionModel().getSelectedElements();

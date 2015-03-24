@@ -102,7 +102,7 @@ public class SortModel<T> {
 		}
 	}
 
-	void refresh() {
+	public void refresh() {
 		Collections.sort(gridModel.getRows(), rowComparator);
 	}
 
