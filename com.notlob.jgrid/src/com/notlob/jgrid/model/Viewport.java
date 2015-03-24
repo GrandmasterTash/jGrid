@@ -346,6 +346,10 @@ public class Viewport<T> {
 			// A data row (or row number) has been clicked.
 			//
 			for (int rowIndex=getFirstRowIndex(); rowIndex<getLastVisibleRowIndex(); rowIndex++) {
+				if (rowIndex == -1) {
+					return -1;
+				}
+				
 				if (rowIndex < gridModel.getRows().size()) {
 					final Row<T> row = gridModel.getRows().get(rowIndex);
 					currentY += grid.getRowHeight(row);

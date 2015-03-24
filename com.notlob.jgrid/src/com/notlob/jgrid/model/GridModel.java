@@ -72,11 +72,18 @@ public class GridModel<T> {
 	// Used in row height calculations.
 	private final ResourceManager resourceManager;
 	private final GC gc;
+	
+	// Row counts broken-down by visibility and element type (parent/child). 
+	private int rowCountVisibleParents = 0;
+	private int rowCountVisibleChildren = 0;
+	private int rowCountHiddenParents = 0;
+	private int rowCountHiddenChildren = 0;
 
 	public interface IModelListener {
 		void modelChanged();
 		void selectionChanged();
 		void heightChanged(int delta);
+		void rowCountChanged();
 	}
 
 	public GridModel(final Grid<T> grid, final ResourceManager resourceManager, final GC gc) {
@@ -147,30 +154,41 @@ public class GridModel<T> {
 	 * The number of VISIBLE rows.
 	 */
 	public int getDetailedRowCount(final boolean visible, final RowCountScope scope) {
-		final Collection<Row<T>> rowsToCount = visible ? rows : hiddenRows;
-
 		switch (scope) {
-			case ALL:
-				return rowsToCount.size();
-
-			case CHILDREN:
-				int childCount = 0;
-				for (final Row<T> row : rowsToCount) {
-					if (!isParentRow(row)) {
-						childCount++;
-					}
-				}
-				return childCount;
-
-			case PARENTS:
-				int parentCount = 0;
-				for (final Row<T> row : rowsToCount) {
-					if (isParentRow(row) || !isGroupRow(row)) {
-						parentCount++;
-					}
-				}
-				return parentCount;
+		case ALL:
+			return visible ? rows.size() : hiddenRows.size();
+			
+		case CHILDREN:
+			return visible ? rowCountVisibleChildren : rowCountHiddenChildren;
+			
+		case PARENTS:
+			return visible ? rowCountVisibleParents : rowCountHiddenParents;
 		}
+		
+// TODO: Use this if you want a slower version....
+//		final Collection<Row<T>> rowsToCount = visible ? rows : hiddenRows;
+//		switch (scope) {
+//			case ALL:
+//				return rowsToCount.size();
+//
+//			case CHILDREN:
+//				int childCount = 0;
+//				for (final Row<T> row : rowsToCount) {
+//					if (!isParentRow(row)) {
+//						childCount++;
+//					}
+//				}
+//				return childCount;
+//
+//			case PARENTS:
+//				int parentCount = 0;
+//				for (final Row<T> row : rowsToCount) {
+//					if (isParentRow(row) || !isGroupRow(row)) {
+//						parentCount++;
+//					}
+//				}
+//				return parentCount;
+//		}
 
 		return -1;
 	}
@@ -268,6 +286,10 @@ public class GridModel<T> {
 
 		fireChangeEvent();
 	}
+	
+	public void clearColumns() {
+		removeColumns(allColumns);
+	}
 
 	private void removeColumn(final Column column) {
 		sortModel.removeColumn(column);
@@ -283,8 +305,8 @@ public class GridModel<T> {
 
 		rebuildVisibleColumns();
 
-		if (this.columns.isEmpty()) {
-			columnHeaderRows.remove(0);
+		if (this.columns.isEmpty() && !columnHeaderRows.isEmpty()) {
+			columnHeaderRows.clear();
 		}
 
 		fireChangeEvent();
@@ -325,41 +347,34 @@ public class GridModel<T> {
 	}
 
 	public void addElements(final Collection<T> elements) {
+		int heightDelta = 0;
+		
 		for (final T element : elements) {
-			//
-			// If this element has a parent that's not here yet ignore it - the parent will add all it's children later. Otherwise, groups grids will get
-			// populated with rows that initially (until a re-sort) don't know they should be styled as a group and the rows can be spread through-out the grid
-			// as children appear way before their parents.
-			//
-//			if (rowsByElement.containsKey(element) || (isChildElement(element) && !rowsByElement.containsKey(getParentElement(element)))) {
-//				continue;
-//			}
-
 			//
 			// Add a row for the element.
 			//
 			final Row<T> row = new Row<T>(element);
 			row.setHeight(labelProvider.getDefaultRowHeight(element));
-			addRow(row);
-
-			//
-			// Add any children now.
-			//
-//			if (isParentElement(element)) {
-//				final Object[] children = contentProvider.getChildren(row.getElement());
-//				for (Object child : children) {
-//					final Row childRow = new Row(child);
-//					childRow.setHeight(labelProvider.getDefaultRowHeight(child));
-//					addRow(childRow);
-//				}
-//			}
+			
+			if (addRow(row)) {
+				heightDelta += getRowHeight(row);
+			}
 		}
 
-		fireChangeEvent();
+		if (heightDelta != 0) {
+			fireHeightChangeEvent(heightDelta);
+		}
+		
+		fireRowCountChangedEvent();
 	}
 
-	private void addRow(final Row<T> row) {
+	private boolean addRow(final Row<T> row) {
 
+		//
+		// Cache the row by it's domain element.
+		//
+		rowsByElement.put(row.getElement(), row);
+		
 		//
 		// Check the filter model.
 		//
@@ -368,20 +383,21 @@ public class GridModel<T> {
 			// Make the row visible.
 			//
 			showRow(row);
+			return true;
 
 		} else {
 			hideRow(row);
 		}
 
-		//
-		// Cache the row by it's domain element.
-		//
-		rowsByElement.put(row.getElement(), row);
+		return false;
 	}
 
 	public void removeElements(final Collection<T> elements) {
+		int heightDelta = 0;
+		
 		for (final T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
+			heightDelta -= getRowHeight(row);
 			rows.remove(row);
 			hiddenRows.remove(row);
 			rowsByElement.remove(element);
@@ -395,7 +411,11 @@ public class GridModel<T> {
 			}
 		}
 
-		fireChangeEvent();
+		if (heightDelta != 0) {
+			fireHeightChangeEvent(heightDelta);
+		}
+		
+		fireRowCountChangedEvent();
 	}
 
 	// TODO: TEST ON GROUP GRIDS
@@ -417,7 +437,7 @@ public class GridModel<T> {
 				final int expectedIndex = Math.abs(sortModel.getSortedRowIndex(row));
 				final int actualIndex = row.getRowIndex();
 				
-				System.out.println(String.format("Row update resulted in move - Expected [%s] Actual [%s]", expectedIndex, actualIndex));
+				//System.out.println(String.format("Row update resulted in move - Expected [%s] Actual [%s]", expectedIndex, actualIndex));
 				
 				if (expectedIndex != actualIndex) {
 					
@@ -461,6 +481,7 @@ public class GridModel<T> {
 		//
 		if (heightDelta != 0) {
 			fireHeightChangeEvent(heightDelta);
+			fireRowCountChangedEvent();
 			
 		} else {
 			// TODO: Replace this with a rowMoved event that just triggers a redraw not a full recalc of scrollbars and viewprt..
@@ -497,15 +518,47 @@ public class GridModel<T> {
 		}
 		
 		row.setVisible(true);
-		hiddenRows.remove(row);
+		
+		final boolean parent = isParentRow(row);
+		final boolean group = isGroupRow(row);
+		
+		if (hiddenRows.remove(row)) {
+			if (parent || !group) {
+				rowCountHiddenParents--;
+			} else {
+				rowCountHiddenChildren--;
+			}
+		}
+		
+		if (parent || !group) {
+			rowCountVisibleParents++;
+		} else {
+			rowCountVisibleChildren++;
+		}
 	}
 
 	public void hideRow(final Row<T> row) {
-		rows.remove(row);
+		final boolean parent = isParentRow(row);
+		final boolean group = isGroupRow(row);
+		
+		if (rows.remove(row)) {
+			if (parent || !group) {
+				rowCountVisibleParents--;
+			} else {
+				rowCountVisibleChildren--;
+			}
+		}
+		
 		selectionModel.removeRow(row);
 		hiddenRows.add(row);
 		row.setVisible(false);
 		row.setRowIndex(-1);
+		
+		if (parent || !group) {
+			rowCountHiddenParents++;
+		} else {
+			rowCountHiddenChildren++;
+		}
 	}
 
 	public void groupBy(final List<Column> columns) {
@@ -566,15 +619,30 @@ public class GridModel<T> {
 		listeners.remove(listener);
 	}
 
+	/**
+	 * Causes the grid to rebuild the viewport and scrollbars, redraw, then notify clients.
+	 */
 	public void fireChangeEvent() {
 		for (final IModelListener listener : listeners) {
 			listener.modelChanged();
 		}
 	}
 	
+	/**
+	 * Causes the grid to resize the vertical scroll bar and redraw.
+	 */
 	public void fireHeightChangeEvent(final int delta) {
 		for (final IModelListener listener : listeners) {
 			listener.heightChanged(delta);
+		}
+	}
+	
+	/**
+	 * Causes the grid to notify clients the rows, or filtered row counts *may* have changed.
+	 */
+	public void fireRowCountChangedEvent() {
+		for (final IModelListener listener : listeners) {
+			listener.rowCountChanged();
 		}
 	}
 
@@ -668,7 +736,7 @@ public class GridModel<T> {
 		final List<Row<T>> group = new ArrayList<>();
 
 		final T parentElement = contentProvider.getParent(row.getElement());
-		final T[] childElements = contentProvider.getChildren(row.getElement());
+		final List<T> childElements = contentProvider.getChildren(row.getElement());
 		if (parentElement != null) {
 			//
 			// If this row has a parent. Include all the parent's children/grand-children.
@@ -707,7 +775,7 @@ public class GridModel<T> {
 	 */
 	private List<Row<T>> getChildren(final Row<T> row) {
 		final List<Row<T>> children = new ArrayList<>();
-		final T[] childElements = contentProvider.getChildren(row.getElement());
+		final List<T> childElements = contentProvider.getChildren(row.getElement());
 
 		if (childElements != null) {
 			for (final T childElement : childElements) {

@@ -151,7 +151,10 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			}
 		}
 
-		if (columnIndex != -1) {
+		if ((columnIndex == -1) && (x < viewport.getViewportArea(gc).x)) {
+			newColumn = Column.ROW_NUMBER_COLUMN;
+			
+		} else if (columnIndex != -1) {
 			newColumn = gridModel.getColumns().get(columnIndex);
 
 		} else {
@@ -185,7 +188,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		//
 		// Show a tool-tip.
 		//
-		if ((repositioning == null) && (column != null) && (row != null) && (grid.getLabelProvider() != null)) {
+		if ((repositioning == null) && (column != null) && (column != Column.ROW_NUMBER_COLUMN) && (row != null) && (grid.getLabelProvider() != null)) {
 			final int x = e.x;
 			final int y = e.y + 16;
 
@@ -440,7 +443,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		//
 		if (e.button == 1 || e.button == 3) { // LEFT or RIGHT
 			if (e.count == 1) {
-				if ((column != null) && (e.y < viewport.getViewportArea(gc).y)) {
+				if ((column != null) && (column != Column.ROW_NUMBER_COLUMN) && (e.y < viewport.getViewportArea(gc).y)) {
 					if (row == Row.COLUMN_HEADER_ROW && e.button == 1) {
 						//
 						// Column sorting.
@@ -536,7 +539,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 								gridModel.getSelectionModel().setAnchorColumn(gridModel.getGroupByColumns().get(0));
 							}
 	
-						} else {
+						} else if (column != Column.ROW_NUMBER_COLUMN) {
 							gridModel.getSelectionModel().setAnchorColumn(column);
 						}
 					}
@@ -598,7 +601,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		//
 		// Notify listeners.
 		//
-		if (row != null && column != null) {
+		if (row != null && column != null && (column != Column.ROW_NUMBER_COLUMN)) {
 			for (final IGridListener<T> listener : listeners) {
 				if (e.button == 1) {
 					if (e.count == 1) {

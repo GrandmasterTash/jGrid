@@ -39,9 +39,8 @@ import com.notlob.jgrid.util.ResourceManager;
 public class Grid<T> extends Composite {
 	
 	// TODO: if disposed, stop accepting changes (specifically to elements).
-	// TODO: UpdateElements should sort and filter.
 	// TODO: Fire rowCountChanged events.
-	// TODO: Resizing / positioning a column should raise an event.
+	// TODO: Resizing / positioning / sorting a column should raise an event.
 	// TODO: show/hiding a row should not fire a course grid-changed event, it should update the scrollbar and redraw efficiently.
 	// TODO: Column visibility.
 	// Bug: Column sorting seems to ignore most clicks on the header.
@@ -52,7 +51,7 @@ public class Grid<T> extends Composite {
 	// BUG: Dragging a column header width should NOT be fire general change events to grid listeners although it does need to trigger scrollbar updates.
 	// TODO: Option to only show group sort icon if ALT held down.
 	// TODO: Allow ESC to cancel any mouse down click.	
-	// TODO: Column selection mode.	
+	// TODO: Column selection mode.
 	// TODO: Select next row/group if current is removed.
 	// TODO: Expose cell bounds api for automated testing.
 	// TODO: Focus select style / un-focus select style.
@@ -60,6 +59,7 @@ public class Grid<T> extends Composite {
 	// TODO: In-line editing (probably in a viewer).	
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Ensure searches expand collapsed groups if children meet criteria.
+	// TODO: Keep selecting in viewport.
 	// TODO: Javadoc.
 
 	// Models.
@@ -89,6 +89,10 @@ public class Grid<T> extends Composite {
 	// Used for dimension calculations.
 	private final GC gc;
 	private final Point computedArea;
+	
+	// A reference count which, if greater than zero means the grid will stop redrawing, recalculating scrollbars/viewport,
+	// and stop firing rowCount-change notifications to any listeners.
+	private int suppressedEvents = 0;
 	
 	// Used to dispose graphical UI resources managed by this grid.
 	private final ResourceManager resourceManager;
@@ -166,7 +170,34 @@ public class Grid<T> extends Composite {
 	public ResourceManager getResourceManager() {
 		return resourceManager;
 	}
-
+	
+	public void enableEvents(final boolean enable) {
+		checkWidget();
+		
+		if (enable) {
+			suppressedEvents--;
+			
+		} else {
+			suppressedEvents++;
+		}
+		
+		if (suppressedEvents < 0) {
+			throw new IllegalArgumentException("Suppressed event count already " + suppressedEvents);
+			
+		} else if (suppressedEvents == 0) {
+			//
+			// If we're no-longer suppressing events then trigger a redraw.
+			//
+			gridModel.fireChangeEvent();
+			gridModel.fireRowCountChangedEvent();
+		}		
+	}
+	
+	public boolean isEventsSuppressed() {
+		checkWidget();
+		return (suppressedEvents > 0);
+	}
+	
 	public void setHighlightHoveredRow(final boolean highlightHoveredRow) {
 		checkWidget();
 		this.highlightHoveredRow = highlightHoveredRow;
@@ -212,6 +243,11 @@ public class Grid<T> extends Composite {
 		return gridModel.getStyleRegistry();
 	}
 
+	public void clearColumns() {
+		checkWidget();
+		gridModel.clearColumns();
+	}
+	
 	public void addColumns(final List<Column> columns) {
 		checkWidget();
 		gridModel.addColumns(columns);
@@ -289,6 +325,15 @@ public class Grid<T> extends Composite {
 	public List<T> getElements() {
 		checkWidget();
 		return gridModel.getElements();
+	}
+	
+	public int getRowIndex(final T element) {
+		checkWidget();
+		final Row<T> row = gridModel.getRow(element);
+		if (row != null) {
+			return row.getRowIndex();
+		}
+		return -1;
 	}
 
 	public void clearElements() {
@@ -459,6 +504,16 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		return contentProvider;
 	}
+	
+	public Column getTrackedColumn() {
+		checkWidget();
+		return mouseHandler.getColumn();
+	}
+	
+	public Row<T> getTrackedRow() {
+		checkWidget();
+		return mouseHandler.getRow();
+	}
 
 	private void updateScrollbars() {
 		viewport.invalidate();
@@ -588,6 +643,10 @@ public class Grid<T> extends Composite {
 	private class GridModelListener implements GridModel.IModelListener {
 		@Override
 		public void modelChanged() {
+			if (isEventsSuppressed()) {
+				return;
+			}
+			
 			invalidateComputedArea();
 			updateScrollbars();
 			redraw();
@@ -608,11 +667,35 @@ public class Grid<T> extends Composite {
 		
 		@Override
 		public void heightChanged(int delta) {
-			getVerticalBar().setMaximum(getVerticalBar().getMaximum() + delta);
-
-			// TODO: Ensure we're not still past the maximum.
+			if (isEventsSuppressed()) {
+				return;
+			}
 			
-			redraw();
+			if (getVerticalBar().isVisible()) {
+				getVerticalBar().setMaximum(getVerticalBar().getMaximum() + delta);
+
+				// TODO: Ensure we're not still past the maximum.
+				
+			} else {
+				//
+				// If there's no scrollbar rendered yet, we must do a full recalc to see if it's needed.
+				//
+				invalidateComputedArea();
+				updateScrollbars();
+			}
+			
+			redraw();			
+		}
+		
+		@Override
+		public void rowCountChanged() {
+			if (isEventsSuppressed()) {
+				return;
+			}
+			
+			for (final IGridListener<T> listener : listeners) {
+				listener.rowCountChanged();
+			}
 		}
 	}
 }
