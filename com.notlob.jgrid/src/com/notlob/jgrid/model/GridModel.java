@@ -73,11 +73,11 @@ public class GridModel<T> {
 	private final ResourceManager resourceManager;
 	private final GC gc;
 	
-	// Row counts broken-down by visibility and element type (parent/child). 
-	private int rowCountVisibleParents = 0;
-	private int rowCountVisibleChildren = 0;
-	private int rowCountHiddenParents = 0;
-	private int rowCountHiddenChildren = 0;
+//	// Row counts broken-down by visibility and element type (parent/child). 
+//	private int rowCountVisibleParents = 0;
+//	private int rowCountVisibleChildren = 0;
+//	private int rowCountHiddenParents = 0;
+//	private int rowCountHiddenChildren = 0;
 
 	public interface IModelListener {
 		void modelChanged();
@@ -154,41 +154,41 @@ public class GridModel<T> {
 	 * The number of VISIBLE rows.
 	 */
 	public int getDetailedRowCount(final boolean visible, final RowCountScope scope) {
-		switch (scope) {
-		case ALL:
-			return visible ? rows.size() : hiddenRows.size();
-			
-		case CHILDREN:
-			return visible ? rowCountVisibleChildren : rowCountHiddenChildren;
-			
-		case PARENTS:
-			return visible ? rowCountVisibleParents : rowCountHiddenParents;
-		}
+//		switch (scope) {
+//		case ALL:
+//			return visible ? rows.size() : hiddenRows.size();
+//			
+//		case CHILDREN:
+//			return visible ? rowCountVisibleChildren : rowCountHiddenChildren;
+//			
+//		case PARENTS:
+//			return visible ? rowCountVisibleParents : rowCountHiddenParents;
+//		}
 		
 // TODO: Use this if you want a slower version....
-//		final Collection<Row<T>> rowsToCount = visible ? rows : hiddenRows;
-//		switch (scope) {
-//			case ALL:
-//				return rowsToCount.size();
-//
-//			case CHILDREN:
-//				int childCount = 0;
-//				for (final Row<T> row : rowsToCount) {
-//					if (!isParentRow(row)) {
-//						childCount++;
-//					}
-//				}
-//				return childCount;
-//
-//			case PARENTS:
-//				int parentCount = 0;
-//				for (final Row<T> row : rowsToCount) {
-//					if (isParentRow(row) || !isGroupRow(row)) {
-//						parentCount++;
-//					}
-//				}
-//				return parentCount;
-//		}
+		final Collection<Row<T>> rowsToCount = visible ? rows : hiddenRows;
+		switch (scope) {
+			case ALL:
+				return rowsToCount.size();
+
+			case CHILDREN:
+				int childCount = 0;
+				for (final Row<T> row : rowsToCount) {
+					if (!isParentRow(row)) {
+						childCount++;
+					}
+				}
+				return childCount;
+
+			case PARENTS:
+				int parentCount = 0;
+				for (final Row<T> row : rowsToCount) {
+					if (isParentRow(row) || !isGroupRow(row)) {
+						parentCount++;
+					}
+				}
+				return parentCount;
+		}
 
 		return -1;
 	}
@@ -399,23 +399,23 @@ public class GridModel<T> {
 			final Row<T> row = rowsByElement.get(element);
 			heightDelta -= getRowHeight(row);
 			
-			final boolean parent = isParentRow(row);
-			final boolean group = isGroupRow(row);
+//			final boolean parent = isParentRow(row);
+//			final boolean group = isGroupRow(row);
 			
 			if (rows.remove(row)) {
-				if (parent || !group) {
-					rowCountVisibleParents--;
-				} else {
-					rowCountVisibleChildren--;
-				}
+//				if (parent || !group) {
+//					rowCountVisibleParents--;
+//				} else {
+//					rowCountVisibleChildren--;
+//				}
 			} 
 			
 			if (hiddenRows.remove(row)) {
-				if (parent || !group) {
-					rowCountHiddenParents--;
-				} else {
-					rowCountHiddenChildren--;
-				}
+//				if (parent || !group) {
+//					rowCountHiddenParents--;
+//				} else {
+//					rowCountHiddenChildren--;
+//				}
 			}
 			
 			rowsByElement.remove(element);
@@ -537,34 +537,34 @@ public class GridModel<T> {
 		
 		row.setVisible(true);
 		
-		final boolean parent = isParentRow(row);
-		final boolean group = isGroupRow(row);
+//		final boolean parent = isParentRow(row);
+//		final boolean group = isGroupRow(row);
 		
 		if (hiddenRows.remove(row)) {
-			if (parent || !group) {
-				rowCountHiddenParents--;
-			} else {
-				rowCountHiddenChildren--;
-			}
+//			if (parent || !group) {
+//				rowCountHiddenParents--;
+//			} else {
+//				rowCountHiddenChildren--;
+//			}
 		}
 		
-		if (parent || !group) {
-			rowCountVisibleParents++;
-		} else {
-			rowCountVisibleChildren++;
-		}
+//		if (parent || !group) {
+//			rowCountVisibleParents++;
+//		} else {
+//			rowCountVisibleChildren++;
+//		}
 	}
 
 	public void hideRow(final Row<T> row) {
-		final boolean parent = isParentRow(row);
-		final boolean group = isGroupRow(row);
+//		final boolean parent = isParentRow(row);
+//		final boolean group = isGroupRow(row);
 		
 		if (rows.remove(row)) {
-			if (parent || !group) {
-				rowCountVisibleParents--;
-			} else {
-				rowCountVisibleChildren--;
-			}
+//			if (parent || !group) {
+//				rowCountVisibleParents--;
+//			} else {
+//				rowCountVisibleChildren--;
+//			}
 		}
 		
 		selectionModel.removeRow(row);
@@ -572,11 +572,11 @@ public class GridModel<T> {
 		row.setVisible(false);
 		row.setRowIndex(-1);
 		
-		if (parent || !group) {
-			rowCountHiddenParents++;
-		} else {
-			rowCountHiddenChildren++;
-		}
+//		if (parent || !group) {
+//			rowCountHiddenParents++;
+//		} else {
+//			rowCountHiddenChildren++;
+//		}
 	}
 
 	public void groupBy(final List<Column> columns) {

@@ -39,9 +39,7 @@ import com.notlob.jgrid.util.ResourceManager;
 public class Grid<T> extends Composite {
 	
 	// TODO: if disposed, stop accepting changes (specifically to elements).
-	// TODO: Fire rowCountChanged events.
 	// TODO: Resizing / positioning / sorting a column should raise an event.
-	// TODO: show/hiding a row should not fire a course grid-changed event, it should update the scrollbar and redraw efficiently.
 	// TODO: Column visibility.
 	// Bug: Column sorting seems to ignore most clicks on the header.
 	// Bug: There's a slight wobble when scrolling vertically.
@@ -52,14 +50,14 @@ public class Grid<T> extends Composite {
 	// TODO: Option to only show group sort icon if ALT held down.
 	// TODO: Allow ESC to cancel any mouse down click.	
 	// TODO: Column selection mode.
-	// TODO: Select next row/group if current is removed.
+	// TODO: Select next row/group if current is removed (and fire event to unselect).
 	// TODO: Expose cell bounds api for automated testing.
+	// TODO: Mouse cursor in CellStyle.
+	// TODO: Ensure searches expand collapsed groups if children meet criteria.
 	// TODO: Focus select style / un-focus select style.
 	// TODO: Column pinning.	
 	// TODO: In-line editing (probably in a viewer).	
-	// TODO: Mouse cursor in CellStyle.
-	// TODO: Ensure searches expand collapsed groups if children meet criteria.
-	// TODO: Keep selecting in viewport.
+	// TODO: Keep selection in viewport.
 	// TODO: Javadoc.
 
 	// Models.
