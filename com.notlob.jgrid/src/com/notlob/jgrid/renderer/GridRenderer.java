@@ -122,6 +122,14 @@ public class GridRenderer<T> implements PaintListener {
 	public void paintControl(final PaintEvent e) {
 		GC gc = null;
 		try {
+			if (grid.getLabelProvider() == null) {
+				throw new IllegalArgumentException("There's no IGridLabelProvider on the grid.");
+			}
+			
+			if (grid.getContentProvider() == null) {
+				throw new IllegalArgumentException("There's no IGridContentProvider on the grid.");
+			}
+			
 			//
 			// Double-buffer the paint event.
 			//
@@ -201,8 +209,12 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			e.gc.drawImage(image, 0, 0);
 
-		} catch (final Exception ex) {
-			ex.printStackTrace();
+		} catch (final Throwable t) {
+			if (!errorLogged) {
+				System.err.println(String.format("Failed to paint control: %s", t.getMessage()));
+				t.printStackTrace(System.err);
+				errorLogged = true;
+			}
 
 		} finally {
 			if (gc != null) {
@@ -779,60 +791,69 @@ public class GridRenderer<T> implements PaintListener {
 	}
 
 	protected void paintRow(final GC gc, final Point point, final Row<T> row) {
-		rowBounds.x = point.x + ROW_OFFSET; // Shift 1 to avoid blatting the row number border line.
-		rowBounds.y = point.y + ROW_OFFSET;
-		rowBounds.width = viewport.getVisibleRowWidth(gc);// (viewport.getViewportArea(gc).width);
-		rowBounds.height = getRowHeight(row);
-
-		cellBounds.x = point.x;
-		cellBounds.y = point.y;
-		cellBounds.height = getRowHeight(row);
-
-		//
-		// Fill the row background (not the header row though).
-		//
-		if ((row != Row.COLUMN_HEADER_ROW) && (renderPass == RenderPass.BACKGROUND)) {
-			final CellStyle rowStyle = styleRegistry.getCellStyle(null, row);
-			gc.setBackground(getColour(alternate ? rowStyle.getBackgroundAlternate() : rowStyle.getBackground()));
-			gc.fillRectangle(rowBounds);
-		}
-
-		//
-		// Now paint every cell in the row.
-		//
-		for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
-			final Column column = gridModel.getColumns().get(columnIndex);
-			final CellStyle cellStyle = styleRegistry.getCellStyle(column, row);
-
-			cellBounds.width = column.getWidth();
-			paintCell(gc, cellBounds, column, row, cellStyle);
-			cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
-		}
-
-		//
-		// Render a column-reposition indicator if we're dragging columns around.
-		//
-		if ((row == Row.COLUMN_HEADER_ROW) && (renderPass == RenderPass.FOREGROUND) && (grid.getMouseHandler().getTargetColumn() != null)) {
+		try {
+			rowBounds.x = point.x + ROW_OFFSET; // Shift 1 to avoid blatting the row number border line.
+			rowBounds.y = point.y + ROW_OFFSET;
+			rowBounds.width = viewport.getVisibleRowWidth(gc);// (viewport.getViewportArea(gc).width);
+			rowBounds.height = getRowHeight(row);
+	
 			cellBounds.x = point.x;
-			
-			if (grid.getMouseHandler().getTargetColumn() == GridMouseHandler.LAST_COLUMN) {
-				//
-				// Edge-case, dragging to the end of the grid.
-				//
-				gc.drawImage(dropImage, rowBounds.x + rowBounds.width - (dropImage.getBounds().width / 2) + 1, 4);
+			cellBounds.y = point.y;
+			cellBounds.height = getRowHeight(row);
+	
+			//
+			// Fill the row background (not the header row though).
+			//
+			if ((row != Row.COLUMN_HEADER_ROW) && (renderPass == RenderPass.BACKGROUND)) {
+				final CellStyle rowStyle = styleRegistry.getCellStyle(null, row);
+				gc.setBackground(getColour(alternate ? rowStyle.getBackgroundAlternate() : rowStyle.getBackground()));
+				gc.fillRectangle(rowBounds);
+			}
+	
+			//
+			// Now paint every cell in the row.
+			//
+			for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
+				final Column column = gridModel.getColumns().get(columnIndex);
+				final CellStyle cellStyle = styleRegistry.getCellStyle(column, row);
+	
+				cellBounds.width = column.getWidth();
+				paintCell(gc, cellBounds, column, row, cellStyle);
+				cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
+			}
+	
+			//
+			// Render a column-reposition indicator if we're dragging columns around.
+			//
+			if ((row == Row.COLUMN_HEADER_ROW) && (renderPass == RenderPass.FOREGROUND) && (grid.getMouseHandler().getTargetColumn() != null)) {
+				cellBounds.x = point.x;
 				
-			} else {			
-				//
-				// Otherwise, move across the viewport until we get to the drag target column.
-				//
-				for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
-					final Column column = gridModel.getColumns().get(columnIndex);
-					if (column == grid.getMouseHandler().getTargetColumn()){ 
-						gc.drawImage(dropImage, cellBounds.x - (dropImage.getBounds().width / 2) + 1, 4);					
+				if (grid.getMouseHandler().getTargetColumn() == GridMouseHandler.LAST_COLUMN) {
+					//
+					// Edge-case, dragging to the end of the grid.
+					//
+					gc.drawImage(dropImage, rowBounds.x + rowBounds.width - (dropImage.getBounds().width / 2) + 1, 4);
+					
+				} else {
+					//
+					// Otherwise, move across the viewport until we get to the drag target column.
+					//
+					for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
+						final Column column = gridModel.getColumns().get(columnIndex);
+						if (column == grid.getMouseHandler().getTargetColumn()){ 
+							gc.drawImage(dropImage, cellBounds.x - (dropImage.getBounds().width / 2) + 1, 4);					
+						}
+						cellBounds.width = column.getWidth();
+						cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
 					}
-					cellBounds.width = column.getWidth();
-					cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
 				}
+			}
+			
+		} catch (Throwable t) {
+			if (!errorLogged) {
+				System.err.println(String.format("Failed to paint row: %s", t.getMessage()));
+				t.printStackTrace(System.err);
+				errorLogged = true;
 			}
 		}
 	}

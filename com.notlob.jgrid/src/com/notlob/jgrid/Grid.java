@@ -38,6 +38,10 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class Grid<T> extends Composite {
 	
+	// TODO: DnD Feedback
+	// TODO: Implement scrollIfNeeded and hook into the same code as column drag/drop.
+	// TODO: Fancy tool-tips.
+	
 	// TODO: if disposed, stop accepting changes (specifically to elements).
 	// TODO: Resizing / positioning / sorting a column should raise an event.
 	// TODO: Column visibility.
@@ -87,10 +91,6 @@ public class Grid<T> extends Composite {
 	// Used for dimension calculations.
 	private final GC gc;
 	private final Point computedArea;
-	
-	// A reference count which, if greater than zero means the grid will stop redrawing, recalculating scrollbars/viewport,
-	// and stop firing rowCount-change notifications to any listeners.
-	private int suppressedEvents = 0;
 	
 	// Used to dispose graphical UI resources managed by this grid.
 	private final ResourceManager resourceManager;
@@ -171,29 +171,12 @@ public class Grid<T> extends Composite {
 	
 	public void enableEvents(final boolean enable) {
 		checkWidget();
-		
-		if (enable) {
-			suppressedEvents--;
-			
-		} else {
-			suppressedEvents++;
-		}
-		
-		if (suppressedEvents < 0) {
-			throw new IllegalArgumentException("Suppressed event count already " + suppressedEvents);
-			
-		} else if (suppressedEvents == 0) {
-			//
-			// If we're no-longer suppressing events then trigger a redraw.
-			//
-			gridModel.fireChangeEvent();
-			gridModel.fireRowCountChangedEvent();
-		}		
+		gridModel.enableEvents(enable);
 	}
 	
 	public boolean isEventsSuppressed() {
 		checkWidget();
-		return (suppressedEvents > 0);
+		return gridModel.isEventsSuppressed();
 	}
 	
 	public void setHighlightHoveredRow(final boolean highlightHoveredRow) {
@@ -376,26 +359,7 @@ public class Grid<T> extends Composite {
 	
 	public void setSelection(final Collection<T> selection) {
 		checkWidget();
-		
-		//
-		// Find the rows for each element.
-		//
-		final List<Row<T>> rowsToSelect = new ArrayList<>();
-		
-		for (T element : selection) {
-			final Row<T> row = gridModel.getRow(element);
-			
-			if (row == null) {
-				System.err.println("Cannot find row for element to select " + element);
-			} else {
-				rowsToSelect.add(row);
-			}
-		}
-		
-		//
-		// Select the rows now.
-		//
-		gridModel.getSelectionModel().setSelectedRows(rowsToSelect);
+		gridModel.getSelectionModel().setSelectedElements(selection);
 	}
 
 	public Column getAnchorColumn() {
@@ -512,6 +476,76 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		return mouseHandler.getRow();
 	}
+	
+	public boolean isCtrlHeld() {
+		checkWidget();
+		return mouseHandler.isCtrlHeld();
+	}
+	
+	public boolean isShiftHeld() {
+		checkWidget();
+		return mouseHandler.isShiftHeld();
+	}
+	
+	public boolean isAltHeld() {
+		checkWidget();
+		return mouseHandler.isAltHeld();
+	}
+	
+	/**
+	 * Gets the row at the control location, can include the column header row.
+	 */
+	@SuppressWarnings("unchecked")
+	public Row<T> getRowAtXY(final int x, final int y) {
+		checkWidget();
+		
+		Row<T> row = null;
+		
+		final int rowIndex = viewport.getRowIndexByY(y, gc);
+		if (rowIndex == -1) {
+			//
+			// See if it's the column header or filter row.
+			//
+			if (y >= 0 ) {
+				row = null;
+				final int headerHeight = getRowHeight(Row.COLUMN_HEADER_ROW);
+
+				if (y < headerHeight) {
+					row = Row.COLUMN_HEADER_ROW;
+				}
+			}
+
+		} else {
+			row = gridModel.getRows().get(rowIndex);			
+		}
+		
+		return row;
+	}
+	
+	/**
+	 * Gets the column at the control location, can include the row numbers column.
+	 */
+	public Column getColumnAtXY(final int x, final int y) {
+		checkWidget();
+		
+		Column column = null;
+		
+		final int columnIndex = viewport.getColumnIndexByX(x, gc);
+		
+		if ((columnIndex == -1) && (x < viewport.getViewportArea(gc).x)) {
+			column = Column.ROW_NUMBER_COLUMN;
+			
+		} else if (columnIndex != -1) {
+			column = gridModel.getColumns().get(columnIndex);
+		}
+			
+		return column;
+	}
+	
+	public void scrollIfNeeded(final int x, final int y) {
+		checkWidget();
+		// TODO:
+	}
 
 	private void updateScrollbars() {
 		viewport.invalidate();
@@ -599,6 +633,12 @@ public class Grid<T> extends Composite {
 		this.listeners.remove(listener);
 	}
 
+	public void reveal(final T element) {
+		checkWidget();
+		final Column column = gridModel.getColumns().get(0);
+		viewport.reveal(gc, column, gridModel.getRow(element));
+	}
+	
 	public void reveal(final Column column, final T element) {
 		checkWidget();
 		viewport.reveal(gc, column, gridModel.getRow(element));

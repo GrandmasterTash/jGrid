@@ -73,11 +73,9 @@ public class GridModel<T> {
 	private final ResourceManager resourceManager;
 	private final GC gc;
 	
-//	// Row counts broken-down by visibility and element type (parent/child). 
-//	private int rowCountVisibleParents = 0;
-//	private int rowCountVisibleChildren = 0;
-//	private int rowCountHiddenParents = 0;
-//	private int rowCountHiddenChildren = 0;
+	// A reference count which, if greater than zero means the grid will stop redrawing, recalculating scrollbars/viewport,
+	// and stop firing rowCount-change notifications to any listeners.
+	private int suppressedEvents = 0;
 
 	public interface IModelListener {
 		void modelChanged();
@@ -101,6 +99,35 @@ public class GridModel<T> {
 		selectionModel = new SelectionModel<T>(this);
 		sortModel = new SortModel<T>(this);
 		filterModel = new FilterModel<T>(this);
+	}
+	
+	public void enableEvents(final boolean enable) {
+		if (enable) {
+			suppressedEvents--;
+			
+		} else {
+			suppressedEvents++;
+		}
+		
+		if (suppressedEvents < 0) {
+			throw new IllegalArgumentException("Suppressed event count already " + suppressedEvents);
+			
+		} else if (suppressedEvents == 0) {
+			//
+			// Re-index the rows.
+			//
+			reindex();
+			
+			//
+			// If we're no-longer suppressing events then trigger a redraw.
+			//
+			fireChangeEvent();
+			fireRowCountChangedEvent();
+		}		
+	}
+	
+	public boolean isEventsSuppressed() {
+		return (suppressedEvents > 0);
 	}
 
 	public StyleRegistry<T> getStyleRegistry() {
@@ -151,21 +178,10 @@ public class GridModel<T> {
 	}
 
 	/**
-	 * The number of VISIBLE rows.
+	 * The number of visible or hidden rows.
 	 */
 	public int getDetailedRowCount(final boolean visible, final RowCountScope scope) {
-//		switch (scope) {
-//		case ALL:
-//			return visible ? rows.size() : hiddenRows.size();
-//			
-//		case CHILDREN:
-//			return visible ? rowCountVisibleChildren : rowCountHiddenChildren;
-//			
-//		case PARENTS:
-//			return visible ? rowCountVisibleParents : rowCountHiddenParents;
-//		}
-		
-// TODO: Use this if you want a slower version....
+
 		final Collection<Row<T>> rowsToCount = visible ? rows : hiddenRows;
 		switch (scope) {
 			case ALL:
@@ -183,7 +199,7 @@ public class GridModel<T> {
 			case PARENTS:
 				int parentCount = 0;
 				for (final Row<T> row : rowsToCount) {
-					if (isParentRow(row) || !isGroupRow(row)) {
+					if (isParentRow(row)) {
 						parentCount++;
 					}
 				}
@@ -360,6 +376,11 @@ public class GridModel<T> {
 				heightDelta += getRowHeight(row);
 			}
 		}
+		
+		//
+		// Reseed the row-indexes if there's been any move or show/hiding.
+		//
+		reindex();
 
 		if (heightDelta != 0) {
 			fireHeightChangeEvent(heightDelta);
@@ -397,27 +418,9 @@ public class GridModel<T> {
 		
 		for (final T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
-			heightDelta -= getRowHeight(row);
-			
-//			final boolean parent = isParentRow(row);
-//			final boolean group = isGroupRow(row);
-			
-			if (rows.remove(row)) {
-//				if (parent || !group) {
-//					rowCountVisibleParents--;
-//				} else {
-//					rowCountVisibleChildren--;
-//				}
-			} 
-			
-			if (hiddenRows.remove(row)) {
-//				if (parent || !group) {
-//					rowCountHiddenParents--;
-//				} else {
-//					rowCountHiddenChildren--;
-//				}
-			}
-			
+			heightDelta -= getRowHeight(row);			
+			rows.remove(row);
+			hiddenRows.remove(row);
 			rowsByElement.remove(element);
 
 			if (row.isSelected()) {
@@ -428,6 +431,11 @@ public class GridModel<T> {
 				columnHeaderRows.remove(row);
 			}
 		}
+		
+		//
+		// Reseed the row-indexes if there's been any move or show/hiding.
+		//
+		reindex();
 
 		if (heightDelta != 0) {
 			fireHeightChangeEvent(heightDelta);
@@ -436,63 +444,70 @@ public class GridModel<T> {
 		fireRowCountChangedEvent();
 	}
 
-	// TODO: TEST ON GROUP GRIDS
-	// TODO: TEST WITH FILTERS
 	public void updateElements(final Collection<T> elements) {
 		int heightDelta = 0;
 		
 		for (Object element : elements) {
-			final Row<T> row = rowsByElement.get(element);			
-			//
-			// Should the row be shown/hidden?
-			//
-			final boolean visible = filterModel.match(row);
+			final Row<T> row = rowsByElement.get(element);
 			
-			if (visible && row.isVisible()) {
+			if (row == null) {
+				System.out.println("updateElemets called for element without a row " + element);
+			} else {
 				//
-				// Should the row move?
+				// Should the row be shown/hidden?
 				//
-				final int expectedIndex = Math.abs(sortModel.getSortedRowIndex(row));
-				final int actualIndex = row.getRowIndex();
+				final boolean visible = filterModel.match(row);
 				
-				//System.out.println(String.format("Row update resulted in move - Expected [%s] Actual [%s]", expectedIndex, actualIndex));
-				
-				if (expectedIndex != actualIndex) {
+				if (visible && row.isVisible()) {
+					//
+					// Should the row move?
+					//
+					final int expectedIndex = Math.abs(sortModel.getSortedRowIndex(row));
+					final int actualIndex = row.getRowIndex();
 					
-// TODO: Alter Show/Hide Row so they only remove from the previous list if the row WAS in that state.
-// TODO: THEN get this method to use show/hide row.
-// TODO: All children should be removed and then re-inserted as well.
+					//System.out.println(String.format("Row update resulted in move - Expected [%s] Actual [%s]", expectedIndex, actualIndex));
+					
+					if (expectedIndex != actualIndex) {
+						
+	// TODO: THEN get this method to use show/hide row.
+	// TODO: All children should be removed and then re-inserted as well.
+						
+						//
+						// Move the row to the correct position.
+						//										
+						rows.remove(row);
+						
+						// TODO: Remove this and figure out what need to happen properly.
+						final int newEexpectedIndex = sortModel.getSortedRowIndex(row);					
+						rows.add(newEexpectedIndex, row);
+						row.setRowIndex(newEexpectedIndex);
+					}
+					
+				} else if (visible && !row.isVisible()) {
+					//System.out.println("Showing hidden row.");
 					
 					//
-					// Move the row to the correct position.
-					//										
-					rows.remove(row);
+					// Reveal the row.
+					//
+					showRow(row);
+					heightDelta += getRowHeight(row);
 					
-					// TODO: Remove this and figure out what need to happen properly.
-					final int newEexpectedIndex = sortModel.getSortedRowIndex(row);					
-					rows.add(newEexpectedIndex, row);
-					row.setRowIndex(newEexpectedIndex);
+				} else if (!visible && row.isVisible()) {
+					//System.out.println("Hiding visible row.");
+					
+					//
+					// Hide the row.
+					//
+					hideRow(row);				
+					heightDelta -= getRowHeight(row);
 				}
-				
-			} else if (visible && !row.isVisible()) {
-				System.out.println("Showing hidden row.");
-				
-				//
-				// Reveal the row.
-				//
-				showRow(row);
-				heightDelta += getRowHeight(row);
-				
-			} else if (!visible && row.isVisible()) {
-				System.out.println("Hiding visible row.");
-				
-				//
-				// Hide the row.
-				//
-				hideRow(row);				
-				heightDelta -= getRowHeight(row);
 			}
 		}
+		
+		//
+		// Reseed the row-indexes if there's been any move or show/hiding.
+		//
+		reindex();
 
 		//
 		// If the height of the rows has changed, adjust the grid's scroll-bars.
@@ -504,6 +519,15 @@ public class GridModel<T> {
 		} else {
 			// TODO: Replace this with a rowMoved event that just triggers a redraw not a full recalc of scrollbars and viewprt..
 			fireChangeEvent();
+		}
+	}
+	
+	public void reindex() {
+		if (!isEventsSuppressed()) {
+			int rowIndex = 0;
+			for (Row<T> row : rows) {
+				row.setRowIndex(rowIndex++);
+			}
 		}
 	}
 
@@ -536,47 +560,15 @@ public class GridModel<T> {
 		}
 		
 		row.setVisible(true);
-		
-//		final boolean parent = isParentRow(row);
-//		final boolean group = isGroupRow(row);
-		
-		if (hiddenRows.remove(row)) {
-//			if (parent || !group) {
-//				rowCountHiddenParents--;
-//			} else {
-//				rowCountHiddenChildren--;
-//			}
-		}
-		
-//		if (parent || !group) {
-//			rowCountVisibleParents++;
-//		} else {
-//			rowCountVisibleChildren++;
-//		}
+		hiddenRows.remove(row);
 	}
 
 	public void hideRow(final Row<T> row) {
-//		final boolean parent = isParentRow(row);
-//		final boolean group = isGroupRow(row);
-		
-		if (rows.remove(row)) {
-//			if (parent || !group) {
-//				rowCountVisibleParents--;
-//			} else {
-//				rowCountVisibleChildren--;
-//			}
-		}
-		
+		rows.remove(row);
 		selectionModel.removeRow(row);
 		hiddenRows.add(row);
 		row.setVisible(false);
 		row.setRowIndex(-1);
-		
-//		if (parent || !group) {
-//			rowCountHiddenParents++;
-//		} else {
-//			rowCountHiddenChildren++;
-//		}
 	}
 
 	public void groupBy(final List<Column> columns) {
@@ -590,13 +582,6 @@ public class GridModel<T> {
 		}
 
 		rebuildVisibleColumns();
-
-//		//
-//		// Sort by the value (in-future we can toggle these from the group widgets).
-//		//
-//		column.setSortDirection(SortDirection.ASC);
-//		sortModel.sort(column, false, true);
-
 		fireChangeEvent();
 	}
 

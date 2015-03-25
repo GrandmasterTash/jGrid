@@ -92,10 +92,7 @@ public class SortModel<T> {
 		//
 		// Re-index the rows.
 		//
-		int rowIndex = 0;
-		for (Row<T> row : gridModel.getRows()) {
-			row.setRowIndex(rowIndex++);
-		}
+		gridModel.reindex();
 
 		if (notify) {
 			gridModel.fireChangeEvent();

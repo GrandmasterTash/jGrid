@@ -83,15 +83,15 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		return targetColumn;
 	}
 
-	public boolean isShift() {
+	public boolean isShiftHeld() {
 		return shift;
 	}
 
-	public boolean isCtrl() {
+	public boolean isCtrlHeld() {
 		return ctrl;
 	}
 
-	public boolean isAlt() {
+	public boolean isAltHeld() {
 		return alt;
 	}
 
@@ -104,35 +104,17 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	 *
 	 * Returns true if the cell or row changes.
 	 */
-	@SuppressWarnings("unchecked")
 	private boolean trackCell(final int x, final int y) {
-		Row<T> newRow = null;
-		Column newColumn = null;
 		Column newGroupColumn = null;
 		Column newGroupValue = null;
 
 		//
 		// Get the row and column indexes from the viewport.
 		//
-		final int rowIndex = viewport.getRowIndexByY(y, gc);
-		final int columnIndex = viewport.getColumnIndexByX(x, gc);
+		final Column newColumn = grid.getColumnAtXY(x, y);
+		final Row<T> newRow = grid.getRowAtXY(x, y);
 
-		if (rowIndex == -1) {
-			//
-			// See if it's the column header or filter row.
-			//
-			if (y >= 0 ) {
-				newRow = null;
-				final int headerHeight = grid.getRowHeight(Row.COLUMN_HEADER_ROW);
-
-				if (y < headerHeight) {
-					newRow = Row.COLUMN_HEADER_ROW;
-				}
-			}
-
-		} else {
-			newRow = gridModel.getRows().get(rowIndex);
-
+		if ((newRow != null) && (newRow != Row.COLUMN_HEADER_ROW)) {
 			//
 			// If this is a group row.
 			//
@@ -149,16 +131,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 					newGroupValue = grid.getGridRenderer().getGroupColumnForX(gc, newRow, x, false);
 				}
 			}
-		}
-
-		if ((columnIndex == -1) && (x < viewport.getViewportArea(gc).x)) {
-			newColumn = Column.ROW_NUMBER_COLUMN;
-			
-		} else if (columnIndex != -1) {
-			newColumn = gridModel.getColumns().get(columnIndex);
-
-		} else {
-			newColumn = null;
 		}
 
 		if (newRow != row || newColumn != column || newGroupColumn != groupColumn || newGroupValue != groupValue) {

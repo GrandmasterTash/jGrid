@@ -119,6 +119,11 @@ public class FilterModel<T> {
 		for (final Row<T> row : rowsToHide) {
 			gridModel.hideRow(row);
 		}
+		
+		//
+		// Reseed the row indexes.
+		//
+		gridModel.reindex();
 
 		gridModel.fireChangeEvent();
 	}

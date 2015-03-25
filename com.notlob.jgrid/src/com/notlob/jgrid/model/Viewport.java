@@ -403,7 +403,7 @@ public class Viewport<T> {
 	 */
 	public void reveal(final GC gc, final Column column, final Row<T> row) {
 
-		final int rowIndex = gridModel.getRows().indexOf(row);
+		final int rowIndex = row.getRowIndex();
 		final int columnIndex = gridModel.getColumns().indexOf(column);
 
 		//
@@ -438,7 +438,10 @@ public class Viewport<T> {
 				grid.getVerticalBar().setSelection(grid.getVerticalBar().getMaximum());
 
 			} else {
-				final Row<T> scrollToRow = gridModel.getRows().get(rowIndex + 1);
+				//
+				// Cap the index incase rows are being removed.
+				//
+				final Row<T> scrollToRow = gridModel.getRows().get(Math.min((rowIndex + 1), (gridModel.getRows().size() - 1)));
 
 				if (vDelta < 0) {
 					grid.getVerticalBar().setSelection(getRowY(gc, scrollToRow) - grid.getRowHeight(scrollToRow));

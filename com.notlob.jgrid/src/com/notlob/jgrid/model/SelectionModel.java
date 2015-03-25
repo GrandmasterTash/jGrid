@@ -1,6 +1,7 @@
 package com.notlob.jgrid.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +45,6 @@ public class SelectionModel<T> {
 		this.anchorColumn = anchorColumn;
 
 		if (anchorColumn != null) {
-
 			if (anchorElement != null) {
 				//
 				// Track the last anchor column by type of element - used in keyboard navigation.
@@ -104,6 +104,25 @@ public class SelectionModel<T> {
 		if (notify) {
 			gridModel.fireSelectionChangedEvent();
 		}
+	}
+	
+	public void setSelectedElements(final Collection<T> elementsToSelect) {
+		//
+		// Find the rows for each element.
+		//
+		final List<Row<T>> rowsToSelect = new ArrayList<>();
+		
+		for (T element : elementsToSelect) {
+			final Row<T> row = gridModel.getRow(element);
+			
+			if (row == null) {
+				System.err.println("Cannot find row for element to select " + element);
+			} else {
+				rowsToSelect.add(row);
+			}
+		}
+		
+		setSelectedRows(rowsToSelect);
 	}
 
 	/**
@@ -181,6 +200,7 @@ public class SelectionModel<T> {
 
 		if (anchorElement == row.getElement()) {
 			anchorElement = null;
+			anchorColumn = null;
 		}
 	}
 
