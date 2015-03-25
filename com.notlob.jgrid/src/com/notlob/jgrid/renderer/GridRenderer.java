@@ -173,13 +173,12 @@ public class GridRenderer<T> implements PaintListener {
 				//
 				renderPass = RenderPass.FOREGROUND;
 				paintRows(gc);
-				paintSelection(gc);
+				paintSelection(gc);				
 				
 				//
 				// Paint a drag image if we're dragging a column.
 				//
 				paintColumnDragImage(gc);
-
 			} 
 			
 			if (gridModel.getRows().isEmpty()) {

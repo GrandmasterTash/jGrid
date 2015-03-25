@@ -30,6 +30,7 @@ public class StyleRegistry<T> {
 	protected final CellStyle pinnedStyle;
 	protected final BorderStyle groupFooterBorderTop;
 	protected final BorderStyle groupFooterBorderBottom;
+	protected final BorderStyle dragDropBorder;
 
 	// Filter matches are highlight in these colours.
 	protected RGB filterMatchForeground;
@@ -118,6 +119,7 @@ public class StyleRegistry<T> {
 		
 		groupFooterBorderTop = null;//new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206));
 		groupFooterBorderBottom = new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206));
+		dragDropBorder = new BorderStyle(3, LineStyle.SOLID, new RGB(38, 160, 218));
 
 		//
 		// Selection cell styles
@@ -387,6 +389,10 @@ public class StyleRegistry<T> {
 	
 	public BorderStyle getGroupFooterBorderBottom() {
 		return groupFooterBorderBottom;
+	}
+	
+	public BorderStyle getDragDropBorder() {
+		return dragDropBorder;
 	}
 
 }
