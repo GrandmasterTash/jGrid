@@ -38,10 +38,6 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class Grid<T> extends Composite {
 	
-	// TODO: DnD Feedback
-	// TODO: Implement scrollIfNeeded and hook into the same code as column drag/drop.
-	// TODO: Fancy tool-tips.
-	
 	// TODO: if disposed, stop accepting changes (specifically to elements).
 	// TODO: Resizing / positioning / sorting a column should raise an event.
 	// TODO: Column visibility.
@@ -542,9 +538,44 @@ public class Grid<T> extends Composite {
 		return column;
 	}
 	
-	public void scrollIfNeeded(final int x, final int y) {
+	public boolean scrollRowIfNeeded(final int x, final int y) {
 		checkWidget();
-		// TODO:
+		
+		int vDelta = 0;
+		final Row<T> row = getRowAtXY(x, y);
+		final int rowIndex = gridModel.getRows().indexOf(row);
+				
+		if ((rowIndex > 0) && (rowIndex <= viewport.getFirstRowIndex())) {
+			//
+			// Do we need to scroll up?
+			//
+			vDelta = getRowHeight(gridModel.getRows().get(rowIndex - 1)) * -1;
+			
+		} else if ((rowIndex < gridModel.getRows().size()-1) && (rowIndex >= viewport.getLastRowIndex())) {
+			//
+			// Do we need to scroll down?
+			//
+			vDelta = getRowHeight(gridModel.getRows().get(rowIndex + 1));
+		}
+		
+		//System.out.println(String.format("scrollIfNeeded: firstRowIndex [%s] lastRowIndex [%s] hoveredRowIndex [%s] vDelta [%s]", viewport.getFirstRowIndex(), viewport.getLastRowIndex(), gridModel.getRows().indexOf(row), vDelta));
+		
+		final int VERTICAL_SCROLL = vDelta;
+		
+		if (vDelta != 0) {
+			//
+			// Have the scrollbar moved.
+			//
+			getDisplay().timerExec(100, new Runnable() {					
+				@Override
+				public void run() {
+					getVerticalBar().setSelection(Math.max(getVerticalBar().getMinimum(), getVerticalBar().getSelection() + VERTICAL_SCROLL));				
+					gridModel.fireChangeEvent();
+				}
+			});
+		}
+				
+		return (vDelta != 0);
 	}
 
 	private void updateScrollbars() {

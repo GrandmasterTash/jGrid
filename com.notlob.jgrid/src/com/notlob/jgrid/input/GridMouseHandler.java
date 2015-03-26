@@ -314,6 +314,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		}
 	}
 	
+	// TODO: Move this into the grid so the scroll column and scroll row logic is together.
 	private boolean isScrollRightNeeded() {
 		return (viewport.getLastColumnIndex() < grid.getColumns().size()) && (targetColumn == grid.getColumns().get(viewport.getLastColumnIndex()));
 	}
