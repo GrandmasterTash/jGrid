@@ -32,6 +32,7 @@ import com.notlob.jgrid.model.Viewport;
 import com.notlob.jgrid.model.filtering.Filter;
 import com.notlob.jgrid.providers.IGridContentProvider;
 import com.notlob.jgrid.providers.IGridLabelProvider;
+import com.notlob.jgrid.providers.IGridToolTipProvider;
 import com.notlob.jgrid.renderer.GridRenderer;
 import com.notlob.jgrid.styles.StyleRegistry;
 import com.notlob.jgrid.util.ResourceManager;
@@ -91,6 +92,7 @@ public class Grid<T> extends Composite {
 	// Used to dispose graphical UI resources managed by this grid.
 	private final ResourceManager resourceManager;
 
+	private IGridToolTipProvider<T> toolTipProvider;
 	private final ToolTip toolTip;
 	private String emptyMessage;
 
@@ -435,6 +437,15 @@ public class Grid<T> extends Composite {
 		return viewport;
 	}
 
+	public IGridToolTipProvider<T> getToolTipProvider() {
+		return toolTipProvider;
+	}
+	
+	public void setToolTipProvider(IGridToolTipProvider<T> toolTipProvider) {
+		checkWidget();
+		this.toolTipProvider = toolTipProvider;
+	}
+	
 	public IGridLabelProvider<T> getLabelProvider() {
 		return labelProvider;
 	}

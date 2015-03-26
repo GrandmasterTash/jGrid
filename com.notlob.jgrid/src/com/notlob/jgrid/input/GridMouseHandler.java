@@ -165,26 +165,38 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			final int y = e.y + 16;
 
 			if (row == Row.COLUMN_HEADER_ROW) {
-				final String toolTip = grid.getLabelProvider().getHeaderToolTip(column);
-				showToolTip(x, y, column.getCaption(), (toolTip != null && !toolTip.isEmpty()) ? toolTip : "");
+				if (grid.getToolTipProvider() != null) {
+					grid.getToolTipProvider().showToolTip(x, y, column, row);
+				} else {
+					final String toolTip = grid.getLabelProvider().getHeaderToolTip(column);
+					showToolTip(x, y, column.getCaption(), (toolTip != null && !toolTip.isEmpty()) ? toolTip : "");
+				}
 
 			} else if (gridModel.isParentRow(row)) {
 				if (groupColumn != null) {
 					//
 					// A group row's header tool-tip.
 					//
-					final String toolTip = grid.getLabelProvider().getHeaderToolTip(groupColumn);
-					if (toolTip != null && !toolTip.isEmpty()) {
-						showToolTip(x, y, groupColumn.getCaption(), toolTip);
+					if (grid.getToolTipProvider() != null) {
+						grid.getToolTipProvider().showToolTip(x, y, groupColumn, row);
+					} else {
+						final String toolTip = grid.getLabelProvider().getHeaderToolTip(groupColumn);
+						if (toolTip != null && !toolTip.isEmpty()) {
+							showToolTip(x, y, groupColumn.getCaption(), toolTip);
+						}
 					}
 
 				} else if (groupValue != null) {
 					//
 					// A group row's value tool-tip.
 					//
-					final String toolTip = grid.getLabelProvider().getToolTip(groupValue, row.getElement());
-					if (toolTip != null && !toolTip.isEmpty()) {
-						showToolTip(x, y, groupValue.getCaption(), toolTip);
+					if (grid.getToolTipProvider() != null) {
+						grid.getToolTipProvider().showToolTip(x, y, groupValue, row);
+					} else {
+						final String toolTip = grid.getLabelProvider().getToolTip(groupValue, row.getElement());
+						if (toolTip != null && !toolTip.isEmpty()) {
+							showToolTip(x, y, groupValue.getCaption(), toolTip);
+						}
 					}
 				}
 
@@ -192,9 +204,13 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				//
 				// Normal row's tool-tip.
 				//
-				final String toolTip = grid.getLabelProvider().getToolTip(column, row.getElement());
-				if (toolTip != null && !toolTip.isEmpty()) {
-					showToolTip(x, y, column.getCaption(), toolTip);
+				if (grid.getToolTipProvider() != null) {
+					grid.getToolTipProvider().showToolTip(x, y, column, row);
+				} else {
+					final String toolTip = grid.getLabelProvider().getToolTip(column, row.getElement());
+					if (toolTip != null && !toolTip.isEmpty()) {
+						showToolTip(x, y, column.getCaption(), toolTip);
+					}
 				}
 			}
 		}
@@ -202,7 +218,12 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 	@Override
 	public void mouseMove(final MouseEvent e) {
-		toolTip.setVisible(false);
+		if (grid.getToolTipProvider() != null) {
+			grid.getToolTipProvider().hide();
+		} else {
+			toolTip.setVisible(false);
+		}		
+		
 		shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
 		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
 		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
