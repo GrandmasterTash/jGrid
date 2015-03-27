@@ -16,6 +16,7 @@ public class Column {
 	private SortDirection sortDirection;
 	private int sortSequence;
 	private boolean visible;
+	private boolean pinned;
 	private AlignmentStyle textAlignment;
 	private AlignmentStyle imageAlignment;
 
@@ -31,6 +32,7 @@ public class Column {
 		this.sortDirection = SortDirection.NONE;
 		this.comparator = new DefaultComparator();
 		this.visible = true;
+		this.pinned = false;
 	}
 
 	@Override
@@ -41,6 +43,7 @@ public class Column {
 		sb.append(String.format(" Caption [%s]", caption));
 		sb.append(String.format(" Width [%s]", width));
 		sb.append(String.format(" [%s]", visible ? "visible" : "hidden"));
+		sb.append(String.format(" [%s]", pinned ? "pinned" : "not pinned"));
 		sb.append(String.format(" Sort [%s, %s]", sortDirection, sortSequence));
 		sb.append(String.format(" Text-Align [%s] Image-Align [%s]", textAlignment, imageAlignment));
 
@@ -99,6 +102,14 @@ public class Column {
 		this.visible = visible;
 	}
 
+	public boolean isPinned() {
+		return pinned;
+	}
+	
+	public void setPinned(final boolean pinned) {
+		this.pinned = pinned;
+	}
+	
 	public AlignmentStyle getTextAlignment() {
 		return textAlignment;
 	}
