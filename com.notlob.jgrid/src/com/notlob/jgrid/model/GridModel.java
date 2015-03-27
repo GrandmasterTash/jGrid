@@ -63,7 +63,7 @@ public class GridModel<T> {
 	private boolean showRowNumbers = false;
 
 	// These external listeners are notified whenever something changes.
-	private final List<IModelListener> listeners;
+	private final List<IModelListener<T>> listeners;
 
 	// Providers to get / format data, images, tool-tips, etc.
 	private IGridContentProvider<T> contentProvider;
@@ -77,11 +77,14 @@ public class GridModel<T> {
 	// and stop firing rowCount-change notifications to any listeners.
 	private int suppressedEvents = 0;
 
-	public interface IModelListener {
+	public interface IModelListener<T> {
 		void modelChanged();
 		void selectionChanged();
-		void heightChanged(int delta);
+		void heightChanged(final int delta);
 		void rowCountChanged();
+		void elementsAdded(final Collection<T> elements);
+		void elementsUpdated(final Collection<T> elements);
+		void elementsRemoved(final Collection<T> elements);
 	}
 
 	public GridModel(final Grid<T> grid, final ResourceManager resourceManager, final GC gc) {
@@ -386,6 +389,7 @@ public class GridModel<T> {
 			fireHeightChangeEvent(heightDelta);
 		}
 		
+		fireElementsAddedEvent(elements);		
 		fireRowCountChangedEvent();
 	}
 
@@ -441,6 +445,7 @@ public class GridModel<T> {
 			fireHeightChangeEvent(heightDelta);
 		}
 		
+		fireElementsRemovedEvent(elements);
 		fireRowCountChangedEvent();
 	}
 
@@ -514,10 +519,12 @@ public class GridModel<T> {
 		//
 		if (heightDelta != 0) {
 			fireHeightChangeEvent(heightDelta);
+			fireElementsUpdatedEvent(elements);
 			fireRowCountChangedEvent();
 			
 		} else {
 			// TODO: Replace this with a rowMoved event that just triggers a redraw not a full recalc of scrollbars and viewprt..
+			fireElementsUpdatedEvent(elements);
 			fireChangeEvent();
 		}
 	}
@@ -614,11 +621,11 @@ public class GridModel<T> {
 		fireChangeEvent();
 	}
 
-	public void addListener(final IModelListener listener) {
+	public void addListener(final IModelListener<T> listener) {
 		listeners.add(listener);
 	}
 
-	public void removeListener(final IModelListener listener) {
+	public void removeListener(final IModelListener<T> listener) {
 		listeners.remove(listener);
 	}
 
@@ -626,7 +633,7 @@ public class GridModel<T> {
 	 * Causes the grid to rebuild the viewport and scrollbars, redraw, then notify clients.
 	 */
 	public void fireChangeEvent() {
-		for (final IModelListener listener : listeners) {
+		for (final IModelListener<T> listener : listeners) {
 			listener.modelChanged();
 		}
 	}
@@ -635,7 +642,7 @@ public class GridModel<T> {
 	 * Causes the grid to resize the vertical scroll bar and redraw.
 	 */
 	public void fireHeightChangeEvent(final int delta) {
-		for (final IModelListener listener : listeners) {
+		for (final IModelListener<T> listener : listeners) {
 			listener.heightChanged(delta);
 		}
 	}
@@ -644,13 +651,32 @@ public class GridModel<T> {
 	 * Causes the grid to notify clients the rows, or filtered row counts *may* have changed.
 	 */
 	public void fireRowCountChangedEvent() {
-		for (final IModelListener listener : listeners) {
+		for (final IModelListener<T> listener : listeners) {
 			listener.rowCountChanged();
 		}
 	}
+	
+	public void fireElementsAddedEvent(final Collection<T> elements) {
+		for (final IModelListener<T> listener : listeners) {
+			listener.elementsAdded(elements);
+		}
+	}
+	
+	public void fireElementsUpdatedEvent(final Collection<T> elements) {
+		for (final IModelListener<T> listener : listeners) {
+			listener.elementsUpdated(elements);
+		}
+	}
+	
+	public void fireElementsRemovedEvent(final Collection<T> elements) {
+		for (final IModelListener<T> listener : listeners) {
+			listener.elementsRemoved(elements);
+		}
+	}
+	
 
 	void fireSelectionChangedEvent() {
-		for (final IModelListener listener : listeners) {
+		for (final IModelListener<T> listener : listeners) {
 			listener.selectionChanged();
 		}
 	}

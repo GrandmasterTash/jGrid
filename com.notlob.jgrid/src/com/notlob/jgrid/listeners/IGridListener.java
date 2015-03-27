@@ -28,6 +28,12 @@ public interface IGridListener<T> {
 
 	void groupCollapsed(final T element);
 	
+	void elementsAdded(final Collection<T> elements);
+	
+	void elementsUpdated(final Collection<T> elements);
+	
+	void elementsRemoved(final Collection<T> elements);
+	
 	void rowCountChanged();
 
 }

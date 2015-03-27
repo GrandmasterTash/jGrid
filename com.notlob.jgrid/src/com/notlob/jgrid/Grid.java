@@ -59,6 +59,7 @@ public class Grid<T> extends Composite {
 	// TODO: Column pinning.	
 	// TODO: In-line editing (probably in a viewer).	
 	// TODO: Keep selection in viewport.
+	// TODO: Border perimeter thingy.
 	// TODO: Javadoc.
 
 	// Models.
@@ -499,6 +500,25 @@ public class Grid<T> extends Composite {
 		return mouseHandler.isAltHeld();
 	}
 	
+	public Rectangle getCellBounds(final Column column, final T element) {
+		checkWidget();
+				
+		final Row<T> row = gridModel.getRow(element);
+		final boolean isGroupColumn = getGroupByColumns().contains(column);
+		
+		if ((row != null) && (column != null)) {
+			final int columnX = isGroupColumn ? gridRenderer.getGroupColumnX(gc, column, row) : viewport.getColumnViewportX(gc, column);
+			final int rowY = viewport.getRowViewportY(gc, row);			
+			final int rowHeight = getRowHeight(row);
+			
+			if (columnX != -1 && rowY != -1) {
+				return new Rectangle(columnX, rowY, column.getWidth(), rowHeight);	
+			}
+		}		
+		
+		return null;
+	}
+	
 	/**
 	 * Gets the row at the control location, can include the column header row.
 	 */
@@ -720,7 +740,7 @@ public class Grid<T> extends Composite {
 		}
 	}
 	
-	private class GridModelListener implements GridModel.IModelListener {
+	private class GridModelListener implements GridModel.IModelListener<T> {
 		@Override
 		public void modelChanged() {
 			if (isEventsSuppressed()) {
@@ -775,6 +795,27 @@ public class Grid<T> extends Composite {
 			
 			for (final IGridListener<T> listener : listeners) {
 				listener.rowCountChanged();
+			}
+		}
+
+		@Override
+		public void elementsAdded(Collection<T> elements) {
+			for (final IGridListener<T> listener : listeners) {
+				listener.elementsAdded(elements);
+			}
+		}
+
+		@Override
+		public void elementsUpdated(Collection<T> elements) {
+			for (final IGridListener<T> listener : listeners) {
+				listener.elementsUpdated(elements);
+			}
+		}
+
+		@Override
+		public void elementsRemoved(Collection<T> elements) {
+			for (final IGridListener<T> listener : listeners) {
+				listener.elementsRemoved(elements);
 			}
 		}
 	}

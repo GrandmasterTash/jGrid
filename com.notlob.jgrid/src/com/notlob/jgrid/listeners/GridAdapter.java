@@ -52,4 +52,16 @@ public class GridAdapter<T> implements IGridListener<T> {
 	public void groupCollapsed(final T element) {
 	}
 
+	@Override
+	public void elementsAdded(Collection<T> elements) {
+	}
+
+	@Override
+	public void elementsUpdated(Collection<T> elements) {
+	}
+
+	@Override
+	public void elementsRemoved(Collection<T> elements) {
+	}
+
 }

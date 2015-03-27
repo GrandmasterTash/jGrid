@@ -557,6 +557,12 @@ public class GridRenderer<T> implements PaintListener {
 		}		
 	}
 
+	
+	// TODO: These three methods need a single place where the widths/iterations are done: -
+	//    paintGroupCellContent
+	//    getGroupColumnX
+	//    getGroupColumnForX
+	
 	protected void paintGroupCellContent(final GC gc, final Column column, final Row<T> row, final CellStyle groupNameStyle, final CellStyle groupValueStyle) {
 		final String name = column.getCaption();
 		final String providedValue = grid.getLabelProvider().getText(column, row.getElement());
@@ -674,6 +680,85 @@ public class GridRenderer<T> implements PaintListener {
 			paintBorderLine(gc, styleRegistry.getAnchorStyle().getBorderInnerLeft(), getTopLeft(groupFieldBounds), getBottomLeft(groupFieldBounds));
 			paintBorderLine(gc, styleRegistry.getAnchorStyle().getBorderInnerRight(), getTopRight(groupFieldBounds), getBottomRight(groupFieldBounds));
 		}
+	}
+	
+	public int getGroupColumnX(final GC gc, final Column findColumn, final Row<T> row) {
+		final CellStyle groupNameStyle = styleRegistry.getGroupNameStyle();
+		final CellStyle groupValueStyle = styleRegistry.getGroupValueStyle();
+
+		final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? getImage("plus.png") : getImage("minus.png");
+		int fieldLocationX = PADDING__EXPAND_COLLAPSE_IMAGE + groupValueStyle.getPaddingLeft() + expandImage.getBounds().width + viewport.getViewportArea(gc).x + groupValueStyle.getPaddingLeft();
+
+		for (final Column column : gridModel.getGroupByColumns()) {
+			if (column == findColumn) {
+				return fieldLocationX;
+			}
+			
+			final CellStyle valueStyle = styleRegistry.getCellStyle(column, row);
+			final String name = column.getCaption();
+			final String providedValue = grid.getLabelProvider().getText(column, row.getElement());
+			final String value = providedValue == null || providedValue.isEmpty() ? "(blank)" : providedValue;
+			
+			//
+			// Cache the caption and the value extents.
+			//
+			if (!extentCache.containsKey(value)) {
+				extentCache.put(value, gc.textExtent(value));
+			}
+
+			if (!extentCache.containsKey(name)) {
+				extentCache.put(name, gc.textExtent(name));
+			}
+			
+			//
+			// Sort icon.
+			//
+			final Image sortImage = getImage("sort_ascending.png");
+			fieldLocationX += sortImage.getBounds().width + SPACING__GROUP_FIELD;
+
+			//
+			// Field Name.
+			//
+			gc.setFont(getFont(groupNameStyle.getFontData()));
+			final Point nameExtent = extentCache.get(name);
+			fieldLocationX += nameExtent.x + SPACING__GROUP_FIELD;
+
+			//
+			// Field value image.
+			//
+			if ((valueStyle.getContentStyle() == ContentStyle.IMAGE_THEN_TEXT) || (valueStyle.getContentStyle() == ContentStyle.IMAGE)) {
+				final Image image = grid.getLabelProvider().getImage(column, row.getElement());
+				if (image != null) {
+					fieldLocationX += image.getBounds().width + PADDING__GROUP_FIELD;
+				}
+			}
+
+			//
+			// Field Value.
+			//
+			switch (valueStyle.getContentStyle()) {
+				case IMAGE_THEN_TEXT:
+				case TEXT:
+				case TEXT_THEN_IMAGE:
+					gc.setFont(getFont(valueStyle.getFontData()));
+					final Point valueExtent = extentCache.get(value);
+					fieldLocationX += (valueExtent.x + PADDING__GROUP_FIELD);
+				default:
+					// No-op
+			}
+			
+			//
+			// Field value image.
+			//
+			if (valueStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE) {
+				final Image image = grid.getLabelProvider().getImage(column, row.getElement());
+				if (image != null) {
+					fieldLocationX += image.getBounds().width + PADDING__GROUP_FIELD;
+				}
+			}
+		}
+		
+		return -1;
 	}
 
 	public Column getGroupColumnForX(final GC gc, final Row<T> row, final int x, final boolean header) {
