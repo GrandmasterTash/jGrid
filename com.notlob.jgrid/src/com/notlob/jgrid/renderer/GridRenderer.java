@@ -78,7 +78,8 @@ public class GridRenderer<T> implements PaintListener {
 	// Are we painting an alternate background row?
 	protected boolean alternate;
 
-	protected final Map<String, Point> extentCache;
+	// Cache the width of any text rendered by the font data.
+	protected final Map<FontData, Map<String, Point>> extentCache;
 
 	protected boolean errorLogged;
 	protected Image errorImage;
@@ -91,6 +92,8 @@ public class GridRenderer<T> implements PaintListener {
 	private final static int PADDING__EXPAND_COLLAPSE_IMAGE = 2;
 	private final static int SPACING__GROUP_FIELD = 4;
 	private final static int PADDING__GROUP_FIELD = 8;
+	
+	private final static String EXTENT_SEPARATOR = "|";
 
 	public GridRenderer(final Grid<T> grid) {
 		this.grid = grid;
@@ -186,21 +189,14 @@ public class GridRenderer<T> implements PaintListener {
 				// Paint the 'no data' message. Note the filter check has to compensate for the CollapseGroupFilter. Naff.
 				//
 				final String text = grid.getEmptyMessage() == null ? (grid.getFilters().size() > 1 ? getDefaultFiltersHiddenDataMessage() : getDefaultNoDataMessage()) : grid.getEmptyMessage();
-				if (!extentCache.containsKey(text)) {
-					extentCache.put(text, gc.textExtent(text));
-				}
-
 				final CellStyle cellStyle = styleRegistry.getNoDataStyle();
-				final Point point = extentCache.get(text);
+				final Point point = getTextExtent(text, gc, cellStyle.getFontData());
 
-				if (point != null) {
-					gc.setAlpha(cellStyle.getForegroundOpacity());
-					gc.setFont(getFont(cellStyle.getFontData()));
-					gc.setForeground(getColour(cellStyle.getForeground()));
-					align(point.x, point.y, grid.getClientArea(), cellStyle.getTextAlignment(), cellStyle);
-					
-					gc.drawText(text, content.x, content.y, SWT.DRAW_TRANSPARENT);
-				}
+				gc.setAlpha(cellStyle.getForegroundOpacity());
+				gc.setFont(getFont(cellStyle.getFontData()));
+				gc.setForeground(getColour(cellStyle.getForeground()));
+				align(point.x, point.y, grid.getClientArea(), cellStyle.getTextAlignment(), cellStyle);				
+				gc.drawText(text, content.x, content.y, SWT.DRAW_TRANSPARENT);
 			}
 
 			//
@@ -569,17 +565,6 @@ public class GridRenderer<T> implements PaintListener {
 		final String value = providedValue == null || providedValue.isEmpty() ? "(blank)" : providedValue;
 
 		//
-		// Cache the caption and the value extents.
-		//
-		if (!extentCache.containsKey(value)) {
-			extentCache.put(value, gc.textExtent(value));
-		}
-
-		if (!extentCache.containsKey(name)) {
-			extentCache.put(name, gc.textExtent(name));
-		}
-
-		//
 		// Highlight the field name if its field has the anchor.
 		//
 		// TODO: Use the selection header background?
@@ -605,7 +590,7 @@ public class GridRenderer<T> implements PaintListener {
 		//
 		gc.setFont(getFont(groupNameStyle.getFontData()));
 		gc.drawText(name, fieldLocation.x, fieldLocation.y, (!hasAnchor || !grid.isHighlightAnchorInHeaders()));
-		fieldLocation.x += extentCache.get(name).x + SPACING__GROUP_FIELD;
+		fieldLocation.x += getTextExtent(name, gc, groupNameStyle.getFontData()).x + SPACING__GROUP_FIELD;
 
 		final boolean filterMatch = hasStyleableFilterMatch(row, column);
 		if (filterMatch) {
@@ -647,7 +632,7 @@ public class GridRenderer<T> implements PaintListener {
 			case IMAGE_THEN_TEXT:
 			case TEXT:
 			case TEXT_THEN_IMAGE:
-				final Point valueExtent = extentCache.get(value);
+				final Point valueExtent = getTextExtent(value, gc, groupValueStyle.getFontData());
 				gc.setFont(getFont(groupValueStyle.getFontData()));
 				gc.drawText(value, fieldLocation.x, fieldLocation.y, true);
 				fieldLocation.x += (valueExtent.x + PADDING__GROUP_FIELD);
@@ -698,18 +683,7 @@ public class GridRenderer<T> implements PaintListener {
 			final String name = column.getCaption();
 			final String providedValue = grid.getLabelProvider().getText(column, row.getElement());
 			final String value = providedValue == null || providedValue.isEmpty() ? "(blank)" : providedValue;
-			
-			//
-			// Cache the caption and the value extents.
-			//
-			if (!extentCache.containsKey(value)) {
-				extentCache.put(value, gc.textExtent(value));
-			}
-
-			if (!extentCache.containsKey(name)) {
-				extentCache.put(name, gc.textExtent(name));
-			}
-			
+						
 			//
 			// Sort icon.
 			//
@@ -720,7 +694,7 @@ public class GridRenderer<T> implements PaintListener {
 			// Field Name.
 			//
 			gc.setFont(getFont(groupNameStyle.getFontData()));
-			final Point nameExtent = extentCache.get(name);
+			final Point nameExtent = getTextExtent(name, gc, groupNameStyle.getFontData());
 			fieldLocationX += nameExtent.x + SPACING__GROUP_FIELD;
 
 			//
@@ -741,7 +715,7 @@ public class GridRenderer<T> implements PaintListener {
 				case TEXT:
 				case TEXT_THEN_IMAGE:
 					gc.setFont(getFont(valueStyle.getFontData()));
-					final Point valueExtent = extentCache.get(value);
+					final Point valueExtent = getTextExtent(value, gc, valueStyle.getFontData());
 					fieldLocationX += (valueExtent.x + PADDING__GROUP_FIELD);
 				default:
 					// No-op
@@ -775,18 +749,6 @@ public class GridRenderer<T> implements PaintListener {
 			final String value = providedValue == null || providedValue.isEmpty() ? "(blank)" : providedValue;
 			final int fieldLeftX = fieldLocationX;
 			
-
-			//
-			// Cache the caption and the value extents.
-			//
-			if (!extentCache.containsKey(value)) {
-				extentCache.put(value, gc.textExtent(value));
-			}
-
-			if (!extentCache.containsKey(name)) {
-				extentCache.put(name, gc.textExtent(name));
-			}
-			
 			//
 			// Sort icon.
 			//
@@ -797,7 +759,7 @@ public class GridRenderer<T> implements PaintListener {
 			// Field Name.
 			//
 			gc.setFont(getFont(groupNameStyle.getFontData()));
-			final Point nameExtent = extentCache.get(name);
+			final Point nameExtent = getTextExtent(name, gc, groupNameStyle.getFontData());
 
 			if (header && (x >= fieldLeftX) && (x < (fieldLocationX + nameExtent.x))) {
 				return column;
@@ -827,7 +789,7 @@ public class GridRenderer<T> implements PaintListener {
 				case TEXT:
 				case TEXT_THEN_IMAGE:
 					gc.setFont(getFont(valueStyle.getFontData()));
-					final Point valueExtent = extentCache.get(value);
+					final Point valueExtent = getTextExtent(value, gc, valueStyle.getFontData());
 
 					if (!header && (x >= fieldLocationX) && (x < (fieldLocationX + valueExtent.x))) {
 						return column;
@@ -1064,13 +1026,6 @@ public class GridRenderer<T> implements PaintListener {
 			final String text = getCellText(column, row);
 
 			//
-			// Calculate the size of the text, don't allow it to exceed the cell bounds.
-			//
-			if (!extentCache.containsKey(text)) {
-				extentCache.put(text, gc.textExtent(text));
-			}
-
-			//
 			// Ensure any image in the header row that follows text, doesn't have text running through it.
 			//
 			int widthCap = 0;
@@ -1083,7 +1038,7 @@ public class GridRenderer<T> implements PaintListener {
 				}
 			}
 
-			final Point point = extentCache.get(text);
+			final Point point = getTextExtent(text, gc, cellStyle.getFontData());
 			final int width = Math.min(point.x, (innerBounds.width - widthCap));
 			final int height = Math.min(point.y, innerBounds.height);
 			final AlignmentStyle textAlignment = (cellStyle.getTextAlignment() == null) ? column.getTextAlignment() : cellStyle.getTextAlignment();
@@ -1412,5 +1367,24 @@ public class GridRenderer<T> implements PaintListener {
 		default:
 			System.out.println("No alignment set!");
 		}
+	}
+	
+	public Point getTextExtent(final String text, final GC gc, final FontData fontData) {
+		Map<String, Point> extentsByString = extentCache.get(fontData);
+		
+		if (extentsByString == null) {
+			extentsByString = new HashMap<String, Point>();
+			extentCache.put(fontData, extentsByString);			
+		}
+		
+		Point extent = extentsByString.get(text);
+		
+		if (extent == null) {
+			gc.setFont(getFont(fontData));
+			extent = gc.textExtent(text);
+			extentsByString.put(text, extent);
+		}
+		
+		return extent;
 	}
 }

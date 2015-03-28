@@ -141,13 +141,9 @@ public class Viewport<T> {
 		//
 		if (gridModel.isShowRowNumbers()) {
 			final CellStyle cellStyle = gridModel.getStyleRegistry().getRowNumberStyle();
-			gc.setFont(grid.getResourceManager().getFont(cellStyle.getFontData()));
-
-			final Point extent = gc.textExtent(String.valueOf(gridModel.getRows().size()));
-			extent.x += cellStyle.getPaddingLeft() + cellStyle.getPaddingRight();
-
-			viewportArea.x += extent.x;
-			viewportArea.width -= extent.x;
+			final Point extent = grid.getTextExtent(String.valueOf(gridModel.getRows().size()), gc, cellStyle.getFontData());
+			viewportArea.x += (extent.x + cellStyle.getPaddingLeft() + cellStyle.getPaddingRight());
+			viewportArea.width -= (extent.x + cellStyle.getPaddingLeft() + cellStyle.getPaddingRight());
 		}
 
 		return viewportArea;

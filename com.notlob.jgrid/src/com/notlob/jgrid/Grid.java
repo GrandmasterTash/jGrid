@@ -12,6 +12,7 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -43,7 +44,6 @@ public class Grid<T> extends Composite {
 	// TODO: Resizing / positioning / sorting a column should raise an event.
 	// TODO: Column visibility.
 	// Bug: Column sorting seems to ignore most clicks on the header.
-	// Bug: There's a slight wobble when scrolling vertically.
 	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
 	// Bug: SelectionChanged fired if anchor moves left/right on same row
 	// BUG: Alternating group colour is on viewport not full group list.
@@ -498,6 +498,11 @@ public class Grid<T> extends Composite {
 	public boolean isAltHeld() {
 		checkWidget();
 		return mouseHandler.isAltHeld();
+	}
+	
+	public Point getTextExtent(final String text, final GC gc, final FontData fontData) {
+		checkWidget();
+		return gridRenderer.getTextExtent(text, gc, fontData);
 	}
 	
 	public Rectangle getCellBounds(final Column column, final T element) {
