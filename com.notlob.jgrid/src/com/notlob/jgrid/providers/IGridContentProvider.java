@@ -16,6 +16,7 @@ public interface IGridContentProvider<T> {
 
 	Object getValue(final Column column, final T element);
 
+	// TODO: (Stef) Consider using object hashcodes for the default ordering then we could drop this method?
 	String getElementId(final T element);
 
 }

@@ -12,9 +12,24 @@ import com.notlob.jgrid.model.Row;
  * @author Stef
  */
 public abstract class Filter<T> {
-
-//	// TODO: Consider ditching this and moving into an abstract specialisation.
-//	protected final boolean includeWholeGroup;
+	
+	private boolean showWholeGroup;
+	
+	public Filter() {
+		this(true);
+	}
+			
+	public Filter(final boolean showWholeGroup) {
+		this.showWholeGroup = showWholeGroup;
+	}
+	
+	public void setShowWholeGroup(final boolean showWholeGroup) {
+		this.showWholeGroup = showWholeGroup;
+	}
+	
+	public boolean isShowWholeGroup() {
+		return showWholeGroup;
+	}
 
 	//
 	// Return a result with match = true if the filter matches the row's element otherwise null or match = false.
@@ -27,16 +42,9 @@ public abstract class Filter<T> {
 	//
 	public abstract String toReadableString(final boolean includeStyleTokens);
 
-	public Filter() {
-//		this(true);
+	@Override
+	public String toString() {
+		return toReadableString(false);
 	}
-
-//	public Filter(final boolean includeWholeGroup) {
-//		this.includeWholeGroup = includeWholeGroup;
-//	}
-//
-//	public boolean isIncludeWholeGroup() {
-//		return includeWholeGroup;
-//	}
 
 }

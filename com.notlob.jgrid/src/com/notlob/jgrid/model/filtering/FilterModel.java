@@ -75,7 +75,24 @@ public class FilterModel<T> {
 		//
 		boolean allFiltersMatch = true;
 		for (final Filter<T> filter : filters) {
-			final boolean matches = filter.matches(row);
+			boolean matches = false;
+			
+			if (filter.isShowWholeGroup() && gridModel.isGroupRow(row)) {
+				//
+				// If anything in the group match then this row should be shown.
+				//
+				for (Row<T> relative : gridModel.getWholeGroup(row)) {
+					if (filter.matches(relative)) {
+						matches = true;
+					}
+				}
+				
+			} else {
+				//
+				// Just check the individual row.
+				//
+				matches = filter.matches(row);
+			}
 
 			if (!matches && doesFilterHide(filter)) {
 				allFiltersMatch = false;
@@ -124,7 +141,28 @@ public class FilterModel<T> {
 		// Reseed the row indexes.
 		//
 		gridModel.reindex();
+		gridModel.fireRowCountChangedEvent();
+		gridModel.fireChangeEvent();
+	}
+	
+	/**
+	 * Reevaluate with the specific row should be shown or now.
+	 */
+	public void applyFilters(final Row<T> row) {
+		final boolean wasVisible = row.isVisible();
+		final boolean nowVisible = match(row);
+		
+		if (wasVisible && !nowVisible) {
+			gridModel.hideRow(row);
+			
+		} else if (!wasVisible && nowVisible) {
+			gridModel.showRow(row);			
+		}
 
+		//
+		// Reseed the row indexes.
+		//
+		gridModel.reindex();
 		gridModel.fireChangeEvent();
 	}
 

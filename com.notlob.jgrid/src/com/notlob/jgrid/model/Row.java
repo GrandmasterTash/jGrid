@@ -1,7 +1,7 @@
 package com.notlob.jgrid.model;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 
 import org.eclipse.swt.graphics.GC;
 
@@ -85,7 +85,7 @@ public class Row<T> {
 
 	public void addFilterMatch(final IHighlightingFilter filter) {
 		if (this.filterMatches == null) {
-			this.filterMatches = new ArrayList<>();
+			this.filterMatches = new LinkedHashSet<>();
 		}
 
 		filterMatches.add(filter);

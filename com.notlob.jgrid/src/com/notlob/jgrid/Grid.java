@@ -43,6 +43,7 @@ public class Grid<T> extends Composite {
 	// TODO: if disposed, stop accepting changes (specifically to elements).
 	// TODO: Resizing / positioning / sorting a column should raise an event.
 	// TODO: Column visibility.
+	// TODO: Partially filtered groups.
 	// Bug: Column sorting seems to ignore most clicks on the header.
 	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
 	// Bug: SelectionChanged fired if anchor moves left/right on same row
@@ -52,15 +53,13 @@ public class Grid<T> extends Composite {
 	// TODO: Allow ESC to cancel any mouse down click.	
 	// TODO: Column selection mode.
 	// TODO: Select next row/group if current is removed (and fire event to unselect).
-	// TODO: Expose cell bounds api for automated testing.
 	// TODO: Mouse cursor in CellStyle.
-	// TODO: Ensure searches expand collapsed groups if children meet criteria.
 	// TODO: Focus select style / un-focus select style.
-	// TODO: Column pinning.	
-	// TODO: In-line editing (probably in a viewer).	
+	// TODO: Column pinning.
 	// TODO: Keep selection in viewport.
 	// TODO: Border perimeter thingy.
 	// TODO: Javadoc.
+	// TODO: Option to STOP hiding anchor with focus loss?
 
 	// Models.
 	private final GridModel<T> gridModel;
@@ -80,7 +79,7 @@ public class Grid<T> extends Composite {
 	private final GridKeyboardHandler<T> keyboardHandler;
 
 	// The grid monitors the internal model for certain events.
-	private GridModel.IModelListener modelListener;
+	private GridModel.IModelListener<T> modelListener;
 	
 	// TODO: try..catch around all calls to listeners...
 	// Things that listen to the grid.
@@ -709,6 +708,8 @@ public class Grid<T> extends Composite {
 	public void reveal(final Column column, final T element) {
 		checkWidget();
 		viewport.reveal(gc, column, gridModel.getRow(element));
+		viewport.invalidate();
+		redraw();
 	}
 
 	private class ScrollListener extends SelectionAdapter {

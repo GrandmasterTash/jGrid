@@ -13,6 +13,7 @@ public class CollapsedGroupFilter<T> extends Filter<T> {
 	private final IGridContentProvider<T> contentProvider;
 
 	public CollapsedGroupFilter(final IGridContentProvider<T> contentProvider) {
+		super(false);
 		this.contentProvider = contentProvider;
 	}
 

@@ -377,6 +377,10 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
 		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
 		
+		if (!grid.isFocusControl()) {
+			grid.setFocus();
+		}
+		
 		if (resizing != null) {
 			//
 			// Complete the resize operation.
@@ -591,6 +595,11 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				}
 			}
 		}
+		
+		//
+		// Paint the grid.
+		//
+		grid.redraw();
 
 		//
 		// Notify listeners.

@@ -12,6 +12,6 @@ import com.notlob.jgrid.model.Column;
  */
 public interface IHighlightingFilter {
 
-	Column getColumn();
+	boolean isColumnHighlighted(final Column column);
 
 }

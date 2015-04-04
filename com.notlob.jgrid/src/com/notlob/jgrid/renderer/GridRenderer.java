@@ -33,8 +33,6 @@ import com.notlob.jgrid.styles.StyleRegistry;
 
 public class GridRenderer<T> implements PaintListener {
 
-	// TODO: Try..Finally for setClipping.
-
 	protected final Grid<T> grid;
 	protected final GridModel<T> gridModel;
 	protected final Viewport<T> viewport;
@@ -1089,7 +1087,7 @@ public class GridRenderer<T> implements PaintListener {
 	protected boolean hasStyleableFilterMatch(final Row<T> row, final Column column) {
 		if (row != null && row.hasFilterMatches()) {
 			for (final IHighlightingFilter filterMatch : row.getFilterMatches()) {
-				if (filterMatch.getColumn() == column) {
+				if (filterMatch.isColumnHighlighted(column)) {
 					return true;
 				}
 			}
@@ -1101,11 +1099,8 @@ public class GridRenderer<T> implements PaintListener {
 	 * Gets the text for the cell from the label provider if required.
 	 */
 	protected String getCellText(final Column column, final Row<T> row) {
-		// TODO: Use a static harcoded column to detect this (like we do for the column header row).
-		// No row or column means we're painting the row number cell.
-		if (row == null || column == null) {
-			// TODO: Static column for row numbers.
-			return String.valueOf(rowIndex);
+		if (row == null || column == Column.ROW_NUMBER_COLUMN) {
+			return String.valueOf(rowIndex + 1);
 
 		} else if (row == Row.COLUMN_HEADER_ROW) {
 			return column.getCaption();
