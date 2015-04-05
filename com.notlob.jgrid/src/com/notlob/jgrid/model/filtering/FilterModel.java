@@ -26,11 +26,13 @@ public class FilterModel<T> {
 	public void addFilters(final Collection<Filter<T>> filters) {
 		this.filters.addAll(filters);
 		applyFilters();
+		gridModel.fireFiltersChangedEvent();
 	}
 
 	public void removeFilters(final Collection<Filter<T>> filters) {
 		this.filters.removeAll(filters);
 		applyFilters();
+		gridModel.fireFiltersChangedEvent();
 	}
 
 	public Collection<Filter<T>> getFilters() {

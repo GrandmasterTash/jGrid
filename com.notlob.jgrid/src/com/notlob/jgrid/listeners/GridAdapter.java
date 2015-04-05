@@ -9,14 +9,6 @@ import com.notlob.jgrid.model.Column;
 public class GridAdapter<T> implements IGridListener<T> {
 
 	@Override
-	public void gridChanged() {
-	}
-	
-	@Override
-	public void rowCountChanged() {
-	}
-
-	@Override
 	public void selectionChanged(final Collection<T> selectedElements) {
 	}
 
@@ -45,14 +37,6 @@ public class GridAdapter<T> implements IGridListener<T> {
 	}
 
 	@Override
-	public void groupExpanded(final T element) {
-	}
-
-	@Override
-	public void groupCollapsed(final T element) {
-	}
-
-	@Override
 	public void elementsAdded(Collection<T> elements) {
 	}
 
@@ -64,4 +48,11 @@ public class GridAdapter<T> implements IGridListener<T> {
 	public void elementsRemoved(Collection<T> elements) {
 	}
 
+	@Override
+	public void rowCountChanged() {
+	}
+	
+	@Override
+	public void filtersChanged() {
+	}
 }

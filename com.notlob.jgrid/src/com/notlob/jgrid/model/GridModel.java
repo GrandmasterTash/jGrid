@@ -77,11 +77,13 @@ public class GridModel<T> {
 	// and stop firing rowCount-change notifications to any listeners.
 	private int suppressedEvents = 0;
 
+	// An internal listener so the grid can broker events to public listeners or react to internal changes.
 	public interface IModelListener<T> {
 		void modelChanged();
 		void selectionChanged();
 		void heightChanged(final int delta);
 		void rowCountChanged();
+		void filtersChanged();
 		void elementsAdded(final Collection<T> elements);
 		void elementsUpdated(final Collection<T> elements);
 		void elementsRemoved(final Collection<T> elements);
@@ -331,20 +333,20 @@ public class GridModel<T> {
 		fireChangeEvent();
 	}
 
-	private void updateColumn(final Column column) {
-		if (allColumns.indexOf(column) == -1) {
-			throw new IllegalArgumentException("The specified column cannot be updated until it's been added.");
-		}
-	}
-
-	public void updateColumns(final List<Column> columns) {
-		for (final Column column : columns) {
-			updateColumn(column);
-		}
-
-		rebuildVisibleColumns();
-		fireChangeEvent();
-	}
+//	private void updateColumn(final Column column) {
+//		if (allColumns.indexOf(column) == -1) {
+//			throw new IllegalArgumentException("The specified column cannot be updated until it's been added.");
+//		}
+//	}
+//
+//	public void refreshColumns(/*final List<Column> columns*/) {
+////		for (final Column column : columns) {
+////			updateColumn(column);
+////		}
+//
+//		rebuildVisibleColumns();
+//		fireChangeEvent();
+//	}
 
 	private void rebuildVisibleColumns() {
 		columns.clear();
@@ -674,10 +676,15 @@ public class GridModel<T> {
 		}
 	}
 	
-
 	void fireSelectionChangedEvent() {
 		for (final IModelListener<T> listener : listeners) {
 			listener.selectionChanged();
+		}
+	}
+	
+	public void fireFiltersChangedEvent() {
+		for (final IModelListener<T> listener : listeners) {
+			listener.filtersChanged();
 		}
 	}
 

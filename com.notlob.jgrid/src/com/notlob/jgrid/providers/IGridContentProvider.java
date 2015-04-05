@@ -6,17 +6,16 @@ import com.notlob.jgrid.model.Column;
 
 public interface IGridContentProvider<T> {
 
+	String getElementId(final T element);
+	
+	Object getValue(final Column column, final T element);
+
 	T getParent(final T element);
 
 	List<T> getChildren(final T element);
 
-	// NOTE: It is more efficient to leave in the domain model - otherwise the expand/collapse filter would have to constantly look-up the parent element's row in a hashmap.
-	// This way the domain model can use the direct parent reference.
 	boolean isCollapsed(final T element);
 
-	Object getValue(final Column column, final T element);
-
-	// TODO: (Stef) Consider using object hashcodes for the default ordering then we could drop this method?
-	String getElementId(final T element);
+	void setCollapsed(final T element, final boolean collapsed);
 
 }

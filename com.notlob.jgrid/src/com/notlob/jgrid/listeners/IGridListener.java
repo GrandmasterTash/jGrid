@@ -8,8 +8,6 @@ import com.notlob.jgrid.model.Column;
 
 public interface IGridListener<T> {
 
-	void gridChanged();
-
 	void selectionChanged(final Collection<T> selectedElements);
 
 	void click(final Column column, final T element, final Point location, final int modifier);
@@ -23,10 +21,6 @@ public interface IGridListener<T> {
 	void headerDoubleClick(final Column column, final Point location, final int modifier);
 
 	void headerRightClick(final Column column, final Point location, final int modifier);
-
-	void groupExpanded(final T element);
-
-	void groupCollapsed(final T element);
 	
 	void elementsAdded(final Collection<T> elements);
 	
@@ -35,5 +29,6 @@ public interface IGridListener<T> {
 	void elementsRemoved(final Collection<T> elements);
 	
 	void rowCountChanged();
-
+	
+	void filtersChanged();
 }

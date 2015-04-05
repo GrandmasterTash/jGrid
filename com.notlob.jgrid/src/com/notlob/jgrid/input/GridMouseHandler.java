@@ -474,17 +474,13 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						// Expand/collapse toggle.
 						//
 						final Rectangle bounds = grid.getGridRenderer().getExpandImageBounds(gc, row);
-						if (bounds.contains(e.x,  e.y)) {
-							for (final IGridListener<T> listener : listeners) {
-								if (grid.getContentProvider().isCollapsed(row.getElement())) {
-									listener.groupExpanded(row.getElement());
-								} else {
-									listener.groupCollapsed(row.getElement());
-								}
+						if (bounds.contains(e.x,  e.y)) {							
+							if (grid.getContentProvider().isCollapsed(row.getElement())) {
+								grid.expandGroups(Collections.singletonList(row.getElement()));
+							} else {
+								grid.collapseGroups(Collections.singletonList(row.getElement()));
 							}
-
-							// Refresh filters.
-							gridModel.getFilterModel().applyFilters();
+							
 							//return; // Don't exit here - allow the group to be selected if expanding.
 						}
 

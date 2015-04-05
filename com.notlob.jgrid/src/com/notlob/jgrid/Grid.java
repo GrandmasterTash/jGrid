@@ -40,16 +40,14 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class Grid<T> extends Composite {
 	
-	// TODO: if disposed, stop accepting changes (specifically to elements).
 	// TODO: Resizing / positioning / sorting a column should raise an event.
-	// TODO: Column visibility.
+	// TODO: Column pinning.
 	// TODO: Partially filtered groups.
 	// BUG: Dragging a column header width should NOT be fire general change events to grid listeners although it does need to trigger scrollbar updates.
 	// TODO: Option to only show group sort icon if ALT held down.
 	// TODO: Select next row/group if current is removed (and fire event to unselect).
 	// TODO: Mouse cursor in CellStyle.
-	// TODO: Focus select style / un-focus select style.
-	// TODO: Column pinning.
+	// TODO: Focus select style / un-focus select style.	
 	// TODO: Keep selection in viewport.
 	// TODO: Border perimeter thingy.
 	// TODO: Javadoc.
@@ -262,6 +260,11 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		return gridModel.getColumnById(columnId);
 	}
+	
+//	public void refreshColumns() {
+//		checkWidget();
+//		gridModel.refreshColumns();
+//	}
 	
 	public void pinColumn(final Column column) {
 		checkWidget();
@@ -488,6 +491,50 @@ public class Grid<T> extends Composite {
 	public IGridContentProvider<T> getContentProvider() {
 		checkWidget();
 		return contentProvider;
+	}
+	
+	public void collapseGroups(final Collection<T> elements) {
+		checkWidget();
+		
+		for (T element : elements) {
+			contentProvider.setCollapsed(element, true);
+		}
+		
+		applyFilters();
+	}
+	
+	public void expandGroups(final Collection<T> elements) {
+		checkWidget();
+		
+		for (T element : elements) {
+			contentProvider.setCollapsed(element, false);
+		}
+		
+		applyFilters();
+	}
+	
+	public void expandAllGroups() {
+		checkWidget();
+		
+		for (Row<T> row : gridModel.getRows()) {
+			if (gridModel.isParentElement(row.getElement())) {
+				contentProvider.setCollapsed(row.getElement(), false);
+			}
+		}
+		
+		applyFilters();
+	}
+	
+	public void collapseAllGroups() {
+		checkWidget();
+		
+		for (Row<T> row : gridModel.getRows()) {
+			if (gridModel.isParentElement(row.getElement())) {
+				contentProvider.setCollapsed(row.getElement(), true);
+			}
+		}
+		
+		applyFilters();
 	}
 	
 	public Column getTrackedColumn() {
@@ -763,6 +810,9 @@ public class Grid<T> extends Composite {
 	}
 	
 	private class GridModelListener implements GridModel.IModelListener<T> {
+		/**
+		 * A structural or data change that requires a full invalidate then redraw.
+		 */		
 		@Override
 		public void modelChanged() {
 			if (isEventsSuppressed()) {
@@ -772,10 +822,6 @@ public class Grid<T> extends Composite {
 			invalidateComputedArea();
 			updateScrollbars();
 			redraw();
-
-			for (final IGridListener<T> listener : listeners) {
-				listener.gridChanged();
-			}
 		}
 
 		@Override
@@ -839,6 +885,13 @@ public class Grid<T> extends Composite {
 			for (final IGridListener<T> listener : listeners) {
 				listener.elementsRemoved(elements);
 			}
+		}
+		
+		@Override
+		public void filtersChanged() {
+			for (final IGridListener<T> listener : listeners) {
+				listener.filtersChanged();
+			}			
 		}
 	}
 }
