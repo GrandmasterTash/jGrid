@@ -55,4 +55,16 @@ public class GridAdapter<T> implements IGridListener<T> {
 	@Override
 	public void filtersChanged() {
 	}
+	
+	@Override
+	public void columnMoved(Column column) {
+	}
+	
+	@Override
+	public void columnResized(Column column) {
+	}
+	
+	@Override
+	public void columnSorted(Column column) {
+	}
 }

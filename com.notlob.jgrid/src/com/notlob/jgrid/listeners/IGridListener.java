@@ -31,4 +31,10 @@ public interface IGridListener<T> {
 	void rowCountChanged();
 	
 	void filtersChanged();
+	
+	void columnResized(final Column column);
+	
+	void columnMoved(final Column column);
+	
+	void columnSorted(final Column column);
 }

@@ -87,6 +87,9 @@ public class GridModel<T> {
 		void elementsAdded(final Collection<T> elements);
 		void elementsUpdated(final Collection<T> elements);
 		void elementsRemoved(final Collection<T> elements);
+		void columnResized(final Column column);		
+		void columnMoved(final Column column);		
+		void columnSorted(final Column column);
 	}
 
 	public GridModel(final Grid<T> grid, final ResourceManager resourceManager, final GC gc) {
@@ -687,6 +690,24 @@ public class GridModel<T> {
 			listener.filtersChanged();
 		}
 	}
+	
+	public void fireColumnMovedEvent(Column column) {
+		for (final IModelListener<T> listener : listeners) {
+			listener.columnMoved(column);
+		}
+	}
+	
+	public void fireColumnResizedEvent(Column column) {
+		for (final IModelListener<T> listener : listeners) {
+			listener.columnResized(column);
+		}
+	}
+	
+	public void fireColumnSortedEvent(Column column) {
+		for (final IModelListener<T> listener : listeners) {
+			listener.columnSorted(column);
+		}
+	}
 
 	public boolean isShowRowNumbers() {
 		return showRowNumbers;
@@ -857,5 +878,4 @@ public class GridModel<T> {
 
 		fireChangeEvent();
 	}
-
 }

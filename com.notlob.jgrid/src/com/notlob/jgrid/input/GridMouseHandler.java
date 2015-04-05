@@ -239,7 +239,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			//
 			// Cause the grid to repaint and recalculate the viewport.
 			//
-			gridModel.fireChangeEvent();
+			gridModel.fireChangeEvent();			
 
 		} else if (repositioningDetect != null) {
 			//
@@ -399,6 +399,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			//
 			// Complete the resize operation.
 			//
+			gridModel.fireColumnResizedEvent(resizing);
 			resizing = null;
 			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 			return;			
@@ -438,6 +439,8 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						gridModel.fireChangeEvent();
 					}
 				}
+				
+				gridModel.fireColumnMovedEvent(repositioning);
 			}
 			
 			repositioning = null;

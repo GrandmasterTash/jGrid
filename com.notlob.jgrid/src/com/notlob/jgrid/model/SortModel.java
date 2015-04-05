@@ -96,6 +96,7 @@ public class SortModel<T> {
 
 		if (notify) {
 			gridModel.fireChangeEvent();
+			gridModel.fireColumnSortedEvent(column);
 		}
 	}
 

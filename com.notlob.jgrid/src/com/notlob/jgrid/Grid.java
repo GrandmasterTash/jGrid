@@ -893,5 +893,26 @@ public class Grid<T> extends Composite {
 				listener.filtersChanged();
 			}			
 		}
+		
+		@Override
+		public void columnMoved(Column column) {
+			for (final IGridListener<T> listener : listeners) {
+				listener.columnMoved(column);
+			}			
+		}
+		
+		@Override
+		public void columnResized(Column column) {
+			for (final IGridListener<T> listener : listeners) {
+				listener.columnResized(column);
+			}			
+		}
+		
+		@Override
+		public void columnSorted(Column column) {
+			for (final IGridListener<T> listener : listeners) {
+				listener.columnSorted(column);
+			}			
+		}
 	}
 }
