@@ -195,13 +195,25 @@ public class SelectionModel<T> {
 	}
 
 	void removeRow(final Row<T> row) {
+		//
+		// Clear the rows selection state.
+		//
 		selectedElements.remove(row.getElement());
 		row.setSelected(false);
 
 		if (anchorElement == row.getElement()) {
+			//
+			// If the row removed had the anchor, clear the anchor.
+			//
 			anchorElement = null;
 			anchorColumn = null;
 		}
+		
+//		//
+//		// Select the next row (or group).
+//		//
+//		final int rowIndex = row.getRowIndex();
+//		System.out.println("Select " + rowIndex);
 	}
 
 	public void selectRange(final Row<T> row, final boolean keepExisting) {

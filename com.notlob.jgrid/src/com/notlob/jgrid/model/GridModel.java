@@ -424,6 +424,7 @@ public class GridModel<T> {
 
 	public void removeElements(final Collection<T> elements) {
 		int heightDelta = 0;
+		int lastSelectedIndex = -1;
 		
 		for (final T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
@@ -434,10 +435,25 @@ public class GridModel<T> {
 
 			if (row.isSelected()) {
 				selectionModel.removeRow(row);
+				lastSelectedIndex = Math.max(lastSelectedIndex, row.getRowIndex());
 			}
 
 			if (row.isPinned()) {
 				columnHeaderRows.remove(row);
+			}
+		}
+		
+		//
+		// If there WAS a selection and now there is NONE then select the row or group AFTER the last 
+		// previously selected row or group.
+		//
+		if (lastSelectedIndex != -1) {
+			final int nextIndex = lastSelectedIndex - elements.size() + 1;
+			
+			if ((nextIndex >= 0) && (nextIndex <= (rows.size()-1))) {
+				final Row<T> row = rows.get(nextIndex);
+				final List<Row<T>> rowsToSelect = isGroupRow(row) ? getWholeGroup(row) : Collections.singletonList(row); 
+				selectionModel.setSelectedRows(rowsToSelect);
 			}
 		}
 		
@@ -460,9 +476,7 @@ public class GridModel<T> {
 		for (Object element : elements) {
 			final Row<T> row = rowsByElement.get(element);
 			
-			if (row == null) {
-				System.out.println("updateElemets called for element without a row " + element);
-			} else {
+			if (row != null) {
 				//
 				// Should the row be shown/hidden?
 				//
@@ -475,13 +489,7 @@ public class GridModel<T> {
 					final int expectedIndex = Math.abs(sortModel.getSortedRowIndex(row));
 					final int actualIndex = row.getRowIndex();
 					
-					//System.out.println(String.format("Row update resulted in move - Expected [%s] Actual [%s]", expectedIndex, actualIndex));
-					
 					if (expectedIndex != actualIndex) {
-						
-	// TODO: THEN get this method to use show/hide row.
-	// TODO: All children should be removed and then re-inserted as well.
-						
 						//
 						// Move the row to the correct position.
 						//										
@@ -494,8 +502,6 @@ public class GridModel<T> {
 					}
 					
 				} else if (visible && !row.isVisible()) {
-					//System.out.println("Showing hidden row.");
-					
 					//
 					// Reveal the row.
 					//
@@ -503,8 +509,6 @@ public class GridModel<T> {
 					heightDelta += getRowHeight(row);
 					
 				} else if (!visible && row.isVisible()) {
-					//System.out.println("Hiding visible row.");
-					
 					//
 					// Hide the row.
 					//
@@ -528,7 +532,6 @@ public class GridModel<T> {
 			fireRowCountChangedEvent();
 			
 		} else {
-			// TODO: Replace this with a rowMoved event that just triggers a redraw not a full recalc of scrollbars and viewprt..
 			fireElementsUpdatedEvent(elements);
 			fireChangeEvent();
 		}

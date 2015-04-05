@@ -39,19 +39,17 @@ import com.notlob.jgrid.styles.StyleRegistry;
 import com.notlob.jgrid.util.ResourceManager;
 
 public class Grid<T> extends Composite {
-	
-	// TODO: Resizing / positioning / sorting a column should raise an event.
-	// TODO: Column pinning.
-	// TODO: Partially filtered groups.
-	// BUG: Dragging a column header width should NOT be fire general change events to grid listeners although it does need to trigger scrollbar updates.
-	// TODO: Option to only show group sort icon if ALT held down.
-	// TODO: Select next row/group if current is removed (and fire event to unselect).
+		
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Focus select style / un-focus select style.	
 	// TODO: Keep selection in viewport.
 	// TODO: Border perimeter thingy.
+	
+	// TODO: Column pinning.
+	// TODO: Partially filtered groups.
+	// TODO: Autoresize column.
+	
 	// TODO: Javadoc.
-	// TODO: Option to STOP hiding anchor with focus loss?
 
 	// Affects the rending of the selection region rather than how the selection model works.
 	public enum SelectionStyle {
