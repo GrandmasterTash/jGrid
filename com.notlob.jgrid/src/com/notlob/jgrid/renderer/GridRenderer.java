@@ -17,6 +17,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextLayout;
 
 import com.notlob.jgrid.Grid;
+import com.notlob.jgrid.Grid.SelectionStyle;
 import com.notlob.jgrid.input.GridMouseHandler;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.GridModel;
@@ -267,11 +268,41 @@ public class GridRenderer<T> implements PaintListener {
 			gc.drawImage(columnDragImage, mouseLocation.x, mouseLocation.y);
 		}
 	}
+	
+	protected void paintSelection(final GC gc) {
+		if (grid.getSelectionStyle() == SelectionStyle.COLUMN_BASED) {
+			paintColumnBasedSelection(gc);
+		} else {
+			paintRowBasedSelection(gc);
+		}
+	}
+	
+	/**
+	 * Paint a selection region in the column containing the anchor.
+	 */
+	protected void paintColumnBasedSelection(final GC gc) {
+		final Rectangle viewportArea = viewport.getViewportArea(gc);
+		final Column column = grid.getAnchorColumn();
+		
+		if (column != null) {						
+			selectionRegion.x = viewport.getColumnViewportX(gc, column);
+			selectionRegion.y = viewportArea.x;
+			selectionRegion.width = column.getWidth();
+			selectionRegion.height= viewportArea.height;
+			paintSelectionRegion(gc, selectionRegion, (viewport.getFirstRowIndex() == 0), true, true, true, styleRegistry.getSelectionRegionStyle());
+			
+		} else {
+			selectionRegion.x = -1;
+			selectionRegion.y = -1;
+			selectionRegion.width = -1;
+			selectionRegion.height= -1;
+		}		
+	}
 
 	/**
 	 * Paint the selection region's background OR the selection region's borders.
 	 */
-	protected void paintSelection(final GC gc) {
+	protected void paintRowBasedSelection(final GC gc) {
 		final Rectangle viewportArea = viewport.getViewportArea(gc);
 		final boolean paintLeftEdge = (viewport.getFirstColumnIndex() == 0);
 		final boolean paintRightEdge = viewport.getVisibleRowWidth(gc) < viewportArea.width;

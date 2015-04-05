@@ -51,7 +51,6 @@ public class Grid<T> extends Composite {
 	// BUG: Dragging a column header width should NOT be fire general change events to grid listeners although it does need to trigger scrollbar updates.
 	// TODO: Option to only show group sort icon if ALT held down.
 	// TODO: Allow ESC to cancel any mouse down click.	
-	// TODO: Column selection mode.
 	// TODO: Select next row/group if current is removed (and fire event to unselect).
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Focus select style / un-focus select style.
@@ -61,6 +60,12 @@ public class Grid<T> extends Composite {
 	// TODO: Javadoc.
 	// TODO: Option to STOP hiding anchor with focus loss?
 
+	// Affects the rending of the selection region rather than how the selection model works.
+	public enum SelectionStyle {
+		ROW_BASED,
+		COLUMN_BASED
+	};
+	
 	// Models.
 	private final GridModel<T> gridModel;
 	private IGridLabelProvider<T> labelProvider;
@@ -96,10 +101,11 @@ public class Grid<T> extends Composite {
 	private final ToolTip toolTip;
 	private String emptyMessage;
 
-	// Some grid behavioural flags.
+	// Some grid behavioural flags.		
 	private boolean highlightHoveredRow = true;
 	private boolean highlightAnchorInHeaders = true;
 	private boolean highlightAnchorCellBorder = true;
+	private SelectionStyle selectionStyle = SelectionStyle.ROW_BASED;
 	
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
@@ -215,6 +221,16 @@ public class Grid<T> extends Composite {
 	public void setSelectGroupIfAllChildrenSelected(boolean selectGroupIfAllChildrenSelected) {
 		checkWidget();
 		gridModel.getSelectionModel().setSelectGroupIfAllChildrenSelected(selectGroupIfAllChildrenSelected);
+	}
+	
+	public SelectionStyle getSelectionStyle() {
+		checkWidget();
+		return selectionStyle;
+	}
+	
+	public void setSelectionStyle(SelectionStyle selectionStyle) {
+		checkWidget();
+		this.selectionStyle = selectionStyle;
 	}
 
 	public StyleRegistry<T> getStyleRegistry() {
