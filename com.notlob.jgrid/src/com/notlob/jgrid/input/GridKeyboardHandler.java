@@ -23,12 +23,19 @@ public class GridKeyboardHandler<T> implements KeyListener {
 	private final Grid<T> grid;
 	private final GridModel<T> gridModel;
 	private final SelectionModel<T> selectionModel;
+	
+	// Used to abort mouse-up processing.
+	private boolean escapePressed;
 
 	public GridKeyboardHandler(final Grid<T> grid, final GC gc) {
 		this.gc = gc;
 		this.grid = grid;
 		this.gridModel = grid.getGridModel();
 		this.selectionModel = grid.getGridModel().getSelectionModel();
+	}
+	
+	public boolean isEscapePressed() {
+		return escapePressed;
 	}
 
 	@Override
@@ -40,6 +47,9 @@ public class GridKeyboardHandler<T> implements KeyListener {
 			// CTRL+A
 			//
 			gridModel.getSelectionModel().selectAll();
+			
+		} else if (e.keyCode == SWT.ESC) {
+			escapePressed = false;
 		}
 	}
 
@@ -118,6 +128,10 @@ public class GridKeyboardHandler<T> implements KeyListener {
 				if (ctrl) {
 					toggleSelection();
 				}
+				break;
+				
+			case SWT.ESC:
+				escapePressed = true;
 				break;
 		}
 		

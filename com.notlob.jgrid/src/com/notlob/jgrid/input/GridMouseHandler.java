@@ -366,10 +366,24 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		if (!mouseDown) {
 			return;
 		}
-
+		
 		mouseDown = false;
 		repositioningDetect = null;
 
+		if (grid.getKeyboardHandler().isEscapePressed()) {
+			if (resizing != null) {
+				resizing = null;
+				grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+			}
+			
+			if (repositioning != null) {
+				repositioning = null;
+				targetColumn = null;
+			}
+			
+			return;
+		}
+		
 		//
 		// Get the event details.
 		//		

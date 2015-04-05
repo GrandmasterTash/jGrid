@@ -44,13 +44,8 @@ public class Grid<T> extends Composite {
 	// TODO: Resizing / positioning / sorting a column should raise an event.
 	// TODO: Column visibility.
 	// TODO: Partially filtered groups.
-	// Bug: Column sorting seems to ignore most clicks on the header.
-	// BUG: Right-edge clipping/rendering of viewport is a little iffy.
-	// Bug: SelectionChanged fired if anchor moves left/right on same row
-	// BUG: Alternating group colour is on viewport not full group list.
 	// BUG: Dragging a column header width should NOT be fire general change events to grid listeners although it does need to trigger scrollbar updates.
 	// TODO: Option to only show group sort icon if ALT held down.
-	// TODO: Allow ESC to cancel any mouse down click.	
 	// TODO: Select next row/group if current is removed (and fire event to unselect).
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Focus select style / un-focus select style.
@@ -124,8 +119,8 @@ public class Grid<T> extends Composite {
 		listeners = new ArrayList<>();
 		toolTip = new ToolTip(parent.getShell(), SWT.NONE);
 		toolTip.setAutoHide(true);
-		mouseHandler = new GridMouseHandler<T>(this, gc, listeners, toolTip);
 		keyboardHandler = new GridKeyboardHandler<T>(this, gc);
+		mouseHandler = new GridMouseHandler<T>(this, gc, listeners, toolTip);		
 
 		parent.addDisposeListener(disposeListener);
 		addKeyListener(keyboardHandler);
@@ -434,6 +429,11 @@ public class Grid<T> extends Composite {
 	public GridMouseHandler<T> getMouseHandler() {
 		checkWidget();
 		return mouseHandler;
+	}
+	
+	public GridKeyboardHandler<T> getKeyboardHandler() {
+		checkWidget();
+		return keyboardHandler;
 	}
 
 	public GridRenderer<T> getGridRenderer() {
