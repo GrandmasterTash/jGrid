@@ -67,7 +67,7 @@ public class StyleRegistry<T> {
 		// Build a default cell style.
 		//
 		defaultStyle = new CellStyle();
-		defaultStyle.setInheritanceStyle(InheritanceStyle.USE_BOTH);
+		defaultStyle.setInheritanceStyle(InheritanceStyle.USE_EXISTING);
 		defaultStyle.setContentStyle(ContentStyle.IMAGE_THEN_TEXT);
 		defaultStyle.setAllowContentOverlap(false);
 		defaultStyle.setBackground(new RGB(255, 255, 255));

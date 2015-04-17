@@ -75,7 +75,6 @@ public class SelectionModel<T> {
 		return lastParentAnchorColumn;
 	}
 
-	// TODO: Make this un-modifiable to ensure the .selected flag is ref integ?
 	public Set<T> getSelectedElements() {
 		return selectedElements;
 	}
@@ -208,12 +207,6 @@ public class SelectionModel<T> {
 			anchorElement = null;
 			anchorColumn = null;
 		}
-		
-//		//
-//		// Select the next row (or group).
-//		//
-//		final int rowIndex = row.getRowIndex();
-//		System.out.println("Select " + rowIndex);
 	}
 
 	public void selectRange(final Row<T> row, final boolean keepExisting) {

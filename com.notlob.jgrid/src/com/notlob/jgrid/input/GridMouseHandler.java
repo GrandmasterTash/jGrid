@@ -496,11 +496,31 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						}
 					}
 				}
-
+				
 				//
 				// Handle the selection.
 				//
 				if (row != null && (row != Row.COLUMN_HEADER_ROW)) {
+					//
+					// Update the anchor column - before triggering selection changed events.
+					//
+					if (!shift) {
+						if (gridModel.isParentElement(row.getElement())) {
+							if (groupColumn != null) {
+								gridModel.getSelectionModel().setAnchorColumn(groupColumn);
+
+							} else if (groupValue != null) {
+								gridModel.getSelectionModel().setAnchorColumn(groupValue);
+								
+							} else if (!gridModel.getGroupByColumns().isEmpty()) {
+								gridModel.getSelectionModel().setAnchorColumn(gridModel.getGroupByColumns().get(0));
+							}
+
+						} else if (column != Column.ROW_NUMBER_COLUMN) {
+							gridModel.getSelectionModel().setAnchorColumn(column);
+						}
+					}
+					
 					if (!(shift || ctrl)) {
 						//
 						// If the right mouse button is used, and the row being right-clicked is already selected, don't un-select it.
@@ -533,26 +553,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						// Range addition.
 						//
 						gridModel.getSelectionModel().selectRange(row, true);
-					}
-
-					//
-					// Update the anchor column.
-					//
-					if (!shift) {
-						if (gridModel.isParentElement(row.getElement())) {
-							if (groupColumn != null) {
-								gridModel.getSelectionModel().setAnchorColumn(groupColumn);
-	
-							} else if (groupValue != null) {
-								gridModel.getSelectionModel().setAnchorColumn(groupValue);
-								
-							} else if (!gridModel.getGroupByColumns().isEmpty()) {
-								gridModel.getSelectionModel().setAnchorColumn(gridModel.getGroupByColumns().get(0));
-							}
-	
-						} else if (column != Column.ROW_NUMBER_COLUMN) {
-							gridModel.getSelectionModel().setAnchorColumn(column);
-						}
 					}
 				}
 

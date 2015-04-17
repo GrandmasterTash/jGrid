@@ -336,21 +336,6 @@ public class GridModel<T> {
 		fireChangeEvent();
 	}
 
-//	private void updateColumn(final Column column) {
-//		if (allColumns.indexOf(column) == -1) {
-//			throw new IllegalArgumentException("The specified column cannot be updated until it's been added.");
-//		}
-//	}
-//
-//	public void refreshColumns(/*final List<Column> columns*/) {
-////		for (final Column column : columns) {
-////			updateColumn(column);
-////		}
-//
-//		rebuildVisibleColumns();
-//		fireChangeEvent();
-//	}
-
 	private void rebuildVisibleColumns() {
 		columns.clear();
 
@@ -447,7 +432,7 @@ public class GridModel<T> {
 		// If there WAS a selection and now there is NONE then select the row or group AFTER the last 
 		// previously selected row or group.
 		//
-		if (lastSelectedIndex != -1) {
+		if ((lastSelectedIndex != -1) && (selectionModel.getSelectedElements().isEmpty())) {
 			final int nextIndex = lastSelectedIndex - elements.size() + 1;
 			
 			if ((nextIndex >= 0) && (nextIndex <= (rows.size()-1))) {
@@ -494,8 +479,6 @@ public class GridModel<T> {
 						// Move the row to the correct position.
 						//										
 						rows.remove(row);
-						
-						// TODO: Remove this and figure out what need to happen properly.
 						final int newEexpectedIndex = sortModel.getSortedRowIndex(row);					
 						rows.add(newEexpectedIndex, row);
 						row.setRowIndex(newEexpectedIndex);

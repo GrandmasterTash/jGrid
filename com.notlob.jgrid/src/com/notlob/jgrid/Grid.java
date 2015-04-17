@@ -44,6 +44,7 @@ public class Grid<T> extends Composite {
 	// TODO: Focus select style / un-focus select style.	
 	// TODO: Keep selection in viewport.
 	// TODO: Border perimeter thingy.
+	// TODO: try..catch around all calls to listeners...
 	
 	// TODO: Column pinning.
 	// TODO: Partially filtered groups.
@@ -76,8 +77,7 @@ public class Grid<T> extends Composite {
 
 	// The grid monitors the internal model for certain events.
 	private GridModel.IModelListener<T> modelListener;
-	
-	// TODO: try..catch around all calls to listeners...
+		
 	// Things that listen to the grid.
 	private final Collection<IGridListener<T>> listeners;
 
@@ -558,6 +558,19 @@ public class Grid<T> extends Composite {
 	public boolean isAltHeld() {
 		checkWidget();
 		return mouseHandler.isAltHeld();
+	}
+	
+	public void moveAnchor(final int direction) {
+		checkWidget();
+		
+		//
+		// One of the arrow key / directions.
+		//
+		if ((direction != SWT.ARROW_UP) && (direction != SWT.ARROW_DOWN) && (direction != SWT.ARROW_LEFT) && (direction != SWT.ARROW_RIGHT)) {
+			throw new IllegalArgumentException(String.format("An invalid direction was specified %s", direction));
+		}
+		
+		keyboardHandler.moveAnchor(direction);
 	}
 	
 	public Point getTextExtent(final String text, final GC gc, final FontData fontData) {

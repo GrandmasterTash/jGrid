@@ -314,7 +314,7 @@ public class GridKeyboardHandler<T> implements KeyListener {
 		}
 	}
 
-	private void moveAnchor(final int direction) {
+	public void moveAnchor(final int direction) {
 		ensureAnchorSet();
 		final T oldAnchorElement = selectionModel.getAnchorElement();
 
