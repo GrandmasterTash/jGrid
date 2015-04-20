@@ -1,5 +1,7 @@
 package com.notlob.jgrid.examples;
 
+import java.util.List;
+
 /**
  * Exposes parent and children so the grid forms groups of people.
  * 
@@ -9,9 +11,9 @@ package com.notlob.jgrid.examples;
 public class GroupedGridContentProvider extends GridContentProvider {
 	
 	@Override
-	public Person[] getChildren(Person person) {
+	public List<Person> getChildren(Person person) {
 		if (person.getChildren() != null) {		
-			return person.getChildren().toArray(new Person[] {});
+			return person.getChildren();
 		}
 		
 		return super.getChildren(person);

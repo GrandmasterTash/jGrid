@@ -1,5 +1,7 @@
 package com.notlob.jgrid.examples;
 
+import java.util.List;
+
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.providers.IGridContentProvider;
 
@@ -18,7 +20,7 @@ public class GridContentProvider implements IGridContentProvider<Person> {
 	public final static String COLUMN_ID__AGE = "age";
 	
 	@Override
-	public Person[] getChildren(Person person) {
+	public List<Person> getChildren(Person person) {
 		return null;
 	}
 
@@ -51,5 +53,9 @@ public class GridContentProvider implements IGridContentProvider<Person> {
 	@Override
 	public boolean isCollapsed(Person person) {
 		return false;
+	}
+	
+	@Override
+	public void setCollapsed(Person element, boolean collapsed) {
 	}
 }

@@ -26,8 +26,8 @@ public class PersonFilter extends Filter<Person> implements IHighlightingFilter 
 	}
 
 	@Override
-	public Column getColumn() {
-		return column;
+	public boolean isColumnHighlighted(Column column) {
+		return (this.column == column);
 	}
 
 	@Override

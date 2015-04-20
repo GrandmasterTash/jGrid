@@ -8,10 +8,6 @@ import com.notlob.jgrid.listeners.IGridListener;
 import com.notlob.jgrid.model.Column;
 
 public class GridListener implements IGridListener<Person> {
-	@Override
-	public void gridChanged() {
-		// The grid content or structure has changed in some way.
-	}
 
 	@Override
 	public void selectionChanged(Collection<Person> selectedpersons) {
@@ -49,12 +45,42 @@ public class GridListener implements IGridListener<Person> {
 	}
 
 	@Override
-	public void groupExpanded(Person person) {
-		System.out.println("Group-Expanded");	
+	public void elementsAdded(Collection<Person> elements) {
+		System.out.println("elementsAdded");
 	}
 
 	@Override
-	public void groupCollapsed(Person person) {
-		System.out.println("Group-Collapsed");	
+	public void elementsUpdated(Collection<Person> elements) {
+		System.out.println("elementsUpdated");		
+	}
+
+	@Override
+	public void elementsRemoved(Collection<Person> elements) {
+		System.out.println("elementsRemoved");		
+	}
+
+	@Override
+	public void rowCountChanged() {
+		System.out.println("rowCountChanged");		
+	}
+
+	@Override
+	public void filtersChanged() {
+		System.out.println("filtersChanged");	
+	}
+
+	@Override
+	public void columnResized(Column column) {
+		System.out.println("columnResized");	
+	}
+
+	@Override
+	public void columnMoved(Column column) {
+		System.out.println("columnMoved");	
+	}
+
+	@Override
+	public void columnSorted(Column column) {
+		System.out.println("columnSorted");	
 	}
 }
