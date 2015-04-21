@@ -79,9 +79,9 @@ public class FilterModel<T> {
 		for (final Filter<T> filter : filters) {
 			boolean matches = false;
 			
-			if (filter.isShowWholeGroup() && gridModel.isGroupRow(row)) {
+			if ((filter.isShowWholeGroup() && gridModel.isGroupRow(row)) || gridModel.isParentRow(row)) {
 				//
-				// If anything in the group match then this row should be shown.
+				// If anything in the group match then this row should be shown OR if it's a parent row, always show it.
 				//
 				for (Row<T> relative : gridModel.getWholeGroup(row)) {
 					if (filter.matches(relative)) {
