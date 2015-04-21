@@ -793,7 +793,9 @@ public class GridModel<T> {
 			//
 			group.add(row);
 			for (final Row<T> childRow : getChildren(row)) {
-				group.addAll(getAllChildren(childRow));
+				if (childRow != null) {
+					group.addAll(getAllChildren(childRow));
+				}
 			}
 		}
 

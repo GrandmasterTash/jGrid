@@ -377,6 +377,11 @@ public class Grid<T> extends Composite {
 		return gridModel.getSelectionModel().getAnchorColumn();
 	}
 	
+	public void setAnchorColumn(final Column column) {
+		checkWidget();
+		gridModel.getSelectionModel().setAnchorColumn(column);
+	}
+	
 	public T getAnchorElement() {
 		checkWidget();
 		return gridModel.getSelectionModel().getAnchorElement();
@@ -580,7 +585,12 @@ public class Grid<T> extends Composite {
 	
 	public Rectangle getCellBounds(final Column column, final T element) {
 		checkWidget();
-				
+		
+		//
+		// Ensure the viewport isn't invalidated before getting coordinates.
+		//
+		viewport.calculateVisibleCellRange(gc);
+		
 		final Row<T> row = gridModel.getRow(element);
 		final boolean isGroupColumn = getGroupByColumns().contains(column);
 		
