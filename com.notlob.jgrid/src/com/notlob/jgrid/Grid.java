@@ -58,6 +58,11 @@ public class Grid<T> extends Composite {
 		COLUMN_BASED
 	};
 	
+	public enum GroupRenderStyle {
+		INLINE,
+		COLUMN_BASED
+	}
+	
 	// Models.
 	private final GridModel<T> gridModel;
 	private IGridLabelProvider<T> labelProvider;
@@ -92,11 +97,12 @@ public class Grid<T> extends Composite {
 	private final ToolTip toolTip;
 	private String emptyMessage;
 
-	// Some grid behavioural flags.		
+	// Some grid behavioural flags.	
 	private boolean highlightHoveredRow = true;
 	private boolean highlightAnchorInHeaders = true;
 	private boolean highlightAnchorCellBorder = true;
 	private SelectionStyle selectionStyle = SelectionStyle.ROW_BASED;
+	private GroupRenderStyle groupRenderStyle = GroupRenderStyle.INLINE;
 	
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
@@ -224,6 +230,16 @@ public class Grid<T> extends Composite {
 		this.selectionStyle = selectionStyle;
 	}
 
+	public GroupRenderStyle getGroupRenderStyle() {
+		checkWidget();
+		return groupRenderStyle;
+	}
+	
+	public void setGroupRenderStyle(final GroupRenderStyle groupRenderStyle) {
+		checkWidget();
+		this.groupRenderStyle = groupRenderStyle;
+	}
+	
 	public StyleRegistry<T> getStyleRegistry() {
 		checkWidget();
 		return gridModel.getStyleRegistry();
@@ -469,6 +485,7 @@ public class Grid<T> extends Composite {
 	}
 	
 	public IGridLabelProvider<T> getLabelProvider() {
+		checkWidget();
 		return labelProvider;
 	}
 
@@ -481,7 +498,7 @@ public class Grid<T> extends Composite {
 		}
 		redraw();
 	}
-
+	
 	public void setContentProvider(final IGridContentProvider<T> contentProvider) {
 		checkWidget();
 		this.contentProvider = contentProvider;

@@ -301,11 +301,6 @@ public class GridModel<T> {
 			// The first column should cause a row to be added for the column headers. This header row should be the first row in the header region.
 			//
 			columnHeaderRows.add(0, Row.COLUMN_HEADER_ROW);
-
-			//
-			// Build a row style for the header row.
-			//
-			styleRegistry.setCellStyle(Row.COLUMN_HEADER_ROW, styleRegistry.getDefaultHeaderStyle());
 		}
 
 		fireChangeEvent();
@@ -709,7 +704,7 @@ public class GridModel<T> {
 	}
 
 	public int getRowHeight(final Row<T> row) {
-		final CellStyle cellStyle = styleRegistry.getCellStyle(row);
+		final CellStyle cellStyle = (row == Row.COLUMN_HEADER_ROW) ? styleRegistry.getHeaderStyle() : styleRegistry.getDefaultStyle();
 		return row.getHeight(resourceManager, gc, cellStyle);
 	}
 

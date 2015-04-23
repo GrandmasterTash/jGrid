@@ -11,6 +11,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.ScrollBar;
 
 import com.notlob.jgrid.Grid;
+import com.notlob.jgrid.Grid.GroupRenderStyle;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
@@ -306,7 +307,7 @@ public class GridKeyboardHandler<T> implements KeyListener {
 		// If there's no current anchor column, use the first visible column.
 		//
 		if (selectionModel.getAnchorColumn() == null) {
-			if (gridModel.isParentElement(selectionModel.getAnchorElement()) && !gridModel.getGroupByColumns().isEmpty()) {
+			if ((grid.getGroupRenderStyle() == GroupRenderStyle.INLINE) && gridModel.isParentElement(selectionModel.getAnchorElement()) && !gridModel.getGroupByColumns().isEmpty()) {
 				selectionModel.setAnchorColumn(gridModel.getGroupByColumns().get(0));
 			} else {
 				selectionModel.setAnchorColumn(gridModel.getColumns().get(0));
@@ -342,24 +343,26 @@ public class GridKeyboardHandler<T> implements KeyListener {
 			final Row<T> newRow = gridModel.getRows().get(newRowIndex);
 			selectionModel.setAnchorElement(newRow.getElement());
 
-			if (gridModel.isParentElement(oldAnchorElement) && !gridModel.isParentElement(newRow.getElement())) {
-				//
-				// Transitioning from a group-to-non-group row means the anchor column must change.
-				//
-				selectionModel.setAnchorColumn(selectionModel.getLastChildAnchorColumn());
-
-			} else if (!gridModel.isParentElement(oldAnchorElement) && gridModel.isParentElement(newRow.getElement())) {
-				//
-				// Transitioning from a non-group-to-group row means the anchor column must change.
-				//
-				selectionModel.setAnchorColumn(selectionModel.getLastParentAnchorColumn());
+			if (grid.getGroupRenderStyle() == GroupRenderStyle.INLINE) {
+				if (gridModel.isParentElement(oldAnchorElement) && !gridModel.isParentElement(newRow.getElement())) {
+					//
+					// Transitioning from a group-to-non-group row means the anchor column must change.
+					//
+					selectionModel.setAnchorColumn(selectionModel.getLastChildAnchorColumn());
+	
+				} else if (!gridModel.isParentElement(oldAnchorElement) && gridModel.isParentElement(newRow.getElement())) {
+					//
+					// Transitioning from a non-group-to-group row means the anchor column must change.
+					//
+					selectionModel.setAnchorColumn(selectionModel.getLastParentAnchorColumn());
+				}
 			}
 
 		} else if ((direction == SWT.ARROW_LEFT) || (direction == SWT.ARROW_RIGHT)) {
 			//
 			// Is this a group row or child row?
 			//
-			final List<Column> columns = gridModel.isParentElement(selectionModel.getAnchorElement()) ? gridModel.getGroupByColumns() : gridModel.getColumns();
+			final List<Column> columns = ((grid.getGroupRenderStyle() == GroupRenderStyle.INLINE) && gridModel.isParentElement(selectionModel.getAnchorElement())) ? gridModel.getGroupByColumns() : gridModel.getColumns();
 
 			//
 			// Move the anchor left or right (if we're not already at the left or right edge of the grid).
@@ -479,6 +482,4 @@ public class GridKeyboardHandler<T> implements KeyListener {
 			}
 		}
 	}
-	
-	
 }

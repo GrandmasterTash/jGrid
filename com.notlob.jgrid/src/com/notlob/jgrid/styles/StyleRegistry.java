@@ -1,8 +1,5 @@
 package com.notlob.jgrid.styles;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
@@ -11,7 +8,6 @@ import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.Row;
 
-// TODO: Make this lot protected / overridable.
 public class StyleRegistry<T> {
 	
 	private final Grid<T> grid;
@@ -20,28 +16,27 @@ public class StyleRegistry<T> {
 	protected int cellSpacingVertical;
 	protected int cellSpacingHorizontal;
 
-	protected final CellStyle defaultStyle;
-	protected final CellStyle defaultHeaderStyle;
-	protected final CellStyle rowNumberStyle;
-	protected final CellStyle cornerStyle;
-	protected final CellStyle groupNameStyle;
-	protected final CellStyle groupValueStyle;
-	protected final CellStyle noDataStyle;
-	protected final CellStyle pinnedStyle;
-	protected final BorderStyle groupFooterBorderTop;
-	protected final BorderStyle groupFooterBorderBottom;
-	protected final BorderStyle dragDropBorder;
+	protected CellStyle defaultStyle;
+	protected CellStyle headerStyle;
+	protected CellStyle rowNumberStyle;
+	protected CellStyle cornerStyle;
+	protected CellStyle groupNameStyle;
+	protected CellStyle groupValueStyle;
+	protected CellStyle noDataStyle;
+	protected BorderStyle groupFooterBorderTop;
+	protected BorderStyle groupFooterBorderBottom;
+	protected BorderStyle dragDropBorder;
 
 	// Filter matches are highlight in these colours.
 	protected RGB filterMatchForeground;
 	protected RGB filterMatchBackground;
 
 	// Selection styles.
-	protected final CellStyle selectionStyle;
-	protected final CellStyle selectionGroupStyle;
-	protected final CellStyle selectionHeaderStyle;
-	protected final CellStyle selectionRowNumberStyle;
-	protected final CellStyle anchorStyle;
+	protected CellStyle selectionStyle;
+	protected CellStyle selectionGroupStyle;
+	protected CellStyle selectionHeaderStyle;
+	protected CellStyle selectionRowNumberStyle;
+	protected CellStyle anchorStyle;
 	protected RegionStyle selectionRegionStyle;
 
 	// Hover styles.
@@ -52,15 +47,8 @@ public class StyleRegistry<T> {
 	protected final static int PADDING_TOP = 3;
 	protected final static int PADDING_BOTTOM = 3;
 
-	protected final Map<String, CellStyle> customStyles;
-	protected final Map<Column, CellStyle> columnStyles;
-	protected final Map<Row<T>, CellStyle> rowStyles;
-
 	public StyleRegistry(final Grid<T> grid) {
 		this.grid = grid;
-		rowStyles = new HashMap<>();
-		columnStyles = new HashMap<>();
-		customStyles = new HashMap<>();
 		backgroundColour = new RGB(255, 255, 255);
 		
 		//
@@ -86,28 +74,28 @@ public class StyleRegistry<T> {
 		//
 		// Build a default header cell style.
 		//
-		defaultHeaderStyle = defaultStyle.copy();
-		defaultHeaderStyle.setFontData(new FontData("Segoe UI", 9, SWT.NORMAL));
-		defaultHeaderStyle.setContentStyle(ContentStyle.TEXT_THEN_IMAGE);
-		defaultHeaderStyle.setImageAlignment(AlignmentStyle.RIGHT_CENTER);
-		defaultHeaderStyle.setAllowContentOverlap(true);
-		defaultHeaderStyle.setForeground(new RGB(39, 65, 62));
-		defaultHeaderStyle.setBackgroundGradient1(new RGB(249, 252, 253));
-		defaultHeaderStyle.setBackground(new RGB(230, 235, 243));
-		defaultHeaderStyle.setBackgroundGradient2(new RGB(211, 219, 233));
-		defaultHeaderStyle.setBackgroundAlternate(null);
-		defaultHeaderStyle.setPaddingTop(4);
-		defaultHeaderStyle.setPaddingBottom(4);
-		defaultHeaderStyle.setPaddingLeft(4);
-		defaultHeaderStyle.setBorderOuterTop(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
-		defaultHeaderStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
-		defaultHeaderStyle.setBorderOuterRight(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
-		defaultHeaderStyle.setBorderOuterLeft(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
+		headerStyle = defaultStyle.copy();
+		headerStyle.setFontData(new FontData("Segoe UI", 9, SWT.NORMAL));
+		headerStyle.setContentStyle(ContentStyle.TEXT_THEN_IMAGE);
+		headerStyle.setImageAlignment(AlignmentStyle.RIGHT_CENTER);
+		headerStyle.setAllowContentOverlap(true);
+		headerStyle.setForeground(new RGB(39, 65, 62));
+		headerStyle.setBackgroundGradient1(new RGB(249, 252, 253));
+		headerStyle.setBackground(new RGB(230, 235, 243));
+		headerStyle.setBackgroundGradient2(new RGB(211, 219, 233));
+		headerStyle.setBackgroundAlternate(null);
+		headerStyle.setPaddingTop(4);
+		headerStyle.setPaddingBottom(4);
+		headerStyle.setPaddingLeft(4);
+		headerStyle.setBorderOuterTop(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
+		headerStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
+		headerStyle.setBorderOuterRight(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
+		headerStyle.setBorderOuterLeft(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
 
 		//
 		// Build a style for group (parent) rows.
 		//
-		groupValueStyle = defaultHeaderStyle.copy();
+		groupValueStyle = headerStyle.copy();
 		groupValueStyle.setBackgroundAlternate(defaultStyle.getBackgroundAlternate());
 		groupValueStyle.setBackground(defaultStyle.getBackground());
 		groupValueStyle.setForeground(new RGB(0, 0, 0));
@@ -126,7 +114,7 @@ public class StyleRegistry<T> {
 		//
 		selectionStyle = defaultStyle.copy();
 		selectionGroupStyle = groupValueStyle.copy();
-		selectionHeaderStyle = defaultHeaderStyle.copy();
+		selectionHeaderStyle = headerStyle.copy();
 		selectionHeaderStyle.setBackground(new RGB(255, 213, 141));
 		selectionHeaderStyle.setBackgroundGradient1(new RGB(248, 215, 155));
 		selectionHeaderStyle.setBackgroundGradient2(new RGB(241, 193, 95));
@@ -172,7 +160,7 @@ public class StyleRegistry<T> {
 		//
 		// Builds the row number cell style.
 		//
-		rowNumberStyle = defaultHeaderStyle.copy();
+		rowNumberStyle = headerStyle.copy();
 		rowNumberStyle.setContentStyle(ContentStyle.TEXT);
 		rowNumberStyle.setTextAlignment(AlignmentStyle.CENTER);
 		rowNumberStyle.setPaddingTop(PADDING_TOP);
@@ -204,103 +192,11 @@ public class StyleRegistry<T> {
 		noDataStyle = defaultStyle.copy();
 		noDataStyle.setTextAlignment(AlignmentStyle.CENTER);
 
-		pinnedStyle = defaultStyle.copy();
-		pinnedStyle.setForeground(new RGB(39, 65, 62));
-		pinnedStyle.setBackground(new RGB(230, 235, 243));
-
 		filterMatchForeground = new RGB(0, 97, 83);
 		filterMatchBackground = new RGB(198, 239, 206);
 	}
-
-	public Map<String, CellStyle> getCustomStyles() {
-		return customStyles;
-	}
-
-	public CellStyle getDefaultHeaderStyle() {
-		return defaultHeaderStyle;
-	}
-
-	public CellStyle getDefaultStyle() {
-		return defaultStyle;
-	}
-
-	public CellStyle getRowNumberStyle() {
-		return rowNumberStyle;
-	}
-
-	public CellStyle getCornerStyle() {
-		return cornerStyle;
-	}
-
-	public void setFilterMatchBackground(final RGB filterMatchBackground) {
-		this.filterMatchBackground = filterMatchBackground;
-	}
-
-	public void setFilterMatchForeground(final RGB filterMatchForeground) {
-		this.filterMatchForeground = filterMatchForeground;
-	}
-
-	public RGB getFilterMatchBackground() {
-		return filterMatchBackground;
-	}
-
-	public RGB getFilterMatchForeground() {
-		return filterMatchForeground;
-	}
-
-	public CellStyle getSelectionStyle() {
-		return selectionStyle;
-	}
-
-	public RegionStyle getSelectionRegionStyle() {
-		return selectionRegionStyle;
-	}
-
-	public CellStyle getSelectionHeaderStyle() {
-		return selectionHeaderStyle;
-	}
-
-	public CellStyle getSelectionRowNumberStyle() {
-		return selectionRowNumberStyle;
-	}
-
-	public RegionStyle getHoverRegionStyle() {
-		return hoverRegionStyle;
-	}
-
-	public RGB getHoverGroupNameBackground() {
-		return hoverGroupNameBackground;
-	}
-
-	public RGB getHoverGroupNameForeground() {
-		return hoverGroupNameForeground;
-	}
-
-	public CellStyle getNoDataStyle() {
-		return noDataStyle;
-	}
-
-	public CellStyle getGroupNameStyle() {
-		return groupNameStyle;
-	}
-
-	public CellStyle getGroupValueStyle() {
-		return groupValueStyle;
-	}
-
-	public CellStyle getPinnedStyle() {
-		return pinnedStyle;
-	}
-
-	public CellStyle getAnchorStyle() {
-		return anchorStyle;
-	}
-
+	
 	public CellStyle getCellStyle(final Column column, final Row<T> row) {
-
-		if (row.isPinned()) {
-			return pinnedStyle;
-		}
 
 		if (column != null) {
 			//
@@ -336,37 +232,161 @@ public class StyleRegistry<T> {
 			return groupValueStyle;
 		}
 
-		if (rowStyles.containsKey(row)) {
-			return rowStyles.get(row);
-		}
-
-		if (columnStyles.containsKey(column)) {
-			return columnStyles.get(column);
+		if (row == Row.COLUMN_HEADER_ROW) {
+			return headerStyle;
 		}
 
 		return defaultStyle;
 	}
 
-	public CellStyle getCellStyle(final Row<T> row) {
-		if (rowStyles.containsKey(row)) {
-			return rowStyles.get(row);
-		}
+	public CellStyle getHeaderStyle() {
+		return headerStyle;
+	}
+	
+	public void setHeaderStyle(CellStyle headerStyle) {
+		this.headerStyle = headerStyle;
+	}
 
+	public CellStyle getDefaultStyle() {
 		return defaultStyle;
 	}
-
-	public void setCellStyle(final Column column, final CellStyle cellStyle) {
-		columnStyles.put(column, cellStyle);
+	
+	public void setDefaultStyle(CellStyle defaultStyle) {
+		this.defaultStyle = defaultStyle;
 	}
 
-	public void setCellStyle(final Row<T> row, final CellStyle cellStyle) {
-		rowStyles.put(row, cellStyle);
+	public CellStyle getRowNumberStyle() {
+		return rowNumberStyle;
+	}
+	
+	public void setRowNumberStyle(CellStyle rowNumberStyle) {
+		this.rowNumberStyle = rowNumberStyle;
+	}
+
+	public CellStyle getCornerStyle() {
+		return cornerStyle;
+	}
+	
+	public void setCornerStyle(CellStyle cornerStyle) {
+		this.cornerStyle = cornerStyle;
+	}
+
+	public RGB getFilterMatchBackground() {
+		return filterMatchBackground;
+	}
+	
+	public void setFilterMatchBackground(final RGB filterMatchBackground) {
+		this.filterMatchBackground = filterMatchBackground;
+	}
+
+	public RGB getFilterMatchForeground() {
+		return filterMatchForeground;
+	}
+	
+	public void setFilterMatchForeground(final RGB filterMatchForeground) {
+		this.filterMatchForeground = filterMatchForeground;
+	}
+
+	public CellStyle getSelectionStyle() {
+		return selectionStyle;
+	}
+	
+	public void setSelectionStyle(CellStyle selectionStyle) {
+		this.selectionStyle = selectionStyle;
+	}
+
+	public RegionStyle getSelectionRegionStyle() {
+		return selectionRegionStyle;
+	}
+	
+	public void setSelectionRegionStyle(RegionStyle selectionRegionStyle) {
+		this.selectionRegionStyle = selectionRegionStyle;
+	}
+
+	public CellStyle getSelectionHeaderStyle() {
+		return selectionHeaderStyle;
+	}
+	
+	public void setSelectionHeaderStyle(CellStyle selectionHeaderStyle) {
+		this.selectionHeaderStyle = selectionHeaderStyle;
+	}
+
+	public CellStyle getSelectionRowNumberStyle() {
+		return selectionRowNumberStyle;
+	}
+	
+	public void setSelectionRowNumberStyle(CellStyle selectionRowNumberStyle) {
+		this.selectionRowNumberStyle = selectionRowNumberStyle;
+	}
+	
+	public CellStyle getSelectionGroupStyle() {
+		return selectionGroupStyle;
+	}
+	
+	public void setSelectionGroupStyle(CellStyle selectionGroupStyle) {
+		this.selectionGroupStyle = selectionGroupStyle;
+	}
+
+	public RegionStyle getHoverRegionStyle() {
+		return hoverRegionStyle;
+	}
+	
+	public void setHoverRegionStyle(RegionStyle hoverRegionStyle) {
+		this.hoverRegionStyle = hoverRegionStyle;
+	}
+
+	public RGB getHoverGroupNameBackground() {
+		return hoverGroupNameBackground;
+	}
+	
+	public void setHoverGroupNameBackground(RGB hoverGroupNameBackground) {
+		this.hoverGroupNameBackground = hoverGroupNameBackground;
+	}
+
+	public RGB getHoverGroupNameForeground() {
+		return hoverGroupNameForeground;
+	}
+	
+	public void setHoverGroupNameForeground(RGB hoverGroupNameForeground) {
+		this.hoverGroupNameForeground = hoverGroupNameForeground;
+	}
+
+	public CellStyle getNoDataStyle() {
+		return noDataStyle;
+	}
+	
+	public void setNoDataStyle(CellStyle noDataStyle) {
+		this.noDataStyle = noDataStyle;
+	}
+
+	public CellStyle getGroupNameStyle() {
+		return groupNameStyle;
+	}
+	
+	public void setGroupNameStyle(CellStyle groupNameStyle) {
+		this.groupNameStyle = groupNameStyle;
+	}
+
+	public CellStyle getGroupValueStyle() {
+		return groupValueStyle;
+	}
+	
+	public void setGroupValueStyle(CellStyle groupValueStyle) {
+		this.groupValueStyle = groupValueStyle;
+	}
+
+	public CellStyle getAnchorStyle() {
+		return anchorStyle;
+	}
+	
+	public void setAnchorStyle(CellStyle anchorStyle) {
+		this.anchorStyle = anchorStyle;
 	}
 
 	public int getCellSpacingHorizontal() {
 		return cellSpacingHorizontal;
 	}
-
+	
 	public void setCellSpacingHorizontal(final int cellSpacingHorizontal) {
 		this.cellSpacingHorizontal = cellSpacingHorizontal;
 	}
@@ -382,17 +402,33 @@ public class StyleRegistry<T> {
 	public RGB getBackgroundColour() {
 		return backgroundColour;
 	}
+	
+	public void setBackgroundColour(RGB backgroundColour) {
+		this.backgroundColour = backgroundColour;
+	}
 
 	public BorderStyle getGroupFooterBorderTop() {
 		return groupFooterBorderTop;
+	}
+	
+	public void setGroupFooterBorderTop(BorderStyle groupFooterBorderTop) {
+		this.groupFooterBorderTop = groupFooterBorderTop;
 	}
 	
 	public BorderStyle getGroupFooterBorderBottom() {
 		return groupFooterBorderBottom;
 	}
 	
+	public void setGroupFooterBorderBottom(BorderStyle groupFooterBorderBottom) {
+		this.groupFooterBorderBottom = groupFooterBorderBottom;
+	}
+	
 	public BorderStyle getDragDropBorder() {
 		return dragDropBorder;
 	}
-
+	
+	public void setDragDropBorder(BorderStyle dragDropBorder) {
+		this.dragDropBorder = dragDropBorder;
+	}
+	
 }

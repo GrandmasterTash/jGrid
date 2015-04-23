@@ -17,6 +17,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextLayout;
 
 import com.notlob.jgrid.Grid;
+import com.notlob.jgrid.Grid.GroupRenderStyle;
 import com.notlob.jgrid.Grid.SelectionStyle;
 import com.notlob.jgrid.input.GridMouseHandler;
 import com.notlob.jgrid.model.Column;
@@ -92,8 +93,6 @@ public class GridRenderer<T> implements PaintListener {
 	private final static int SPACING__GROUP_FIELD = 4;
 	private final static int PADDING__GROUP_FIELD = 8;
 	
-	private final static String EXTENT_SEPARATOR = "|";
-
 	public GridRenderer(final Grid<T> grid) {
 		this.grid = grid;
 		gridModel = grid.getGridModel();
@@ -514,72 +513,83 @@ public class GridRenderer<T> implements PaintListener {
 	}
 
 	protected void paintGroupRow(final GC gc, final Point point, final Row<T> row) {
-		final CellStyle groupValueStyle = styleRegistry.getGroupValueStyle();
-
-		rowBounds.x = point.x;
-		rowBounds.y = point.y;
-		rowBounds.width = viewport.getVisibleRowWidth(gc); //(viewport.getViewportArea(gc).width);
-		rowBounds.height = getRowHeight(row);
-
-		final Rectangle oldClipping = gc.getClipping();
-		gc.setClipping(rowBounds);
-
-		//
-		// Paint the row background.
-		//
-		if ((row.getElement() != null) && (renderPass == RenderPass.BACKGROUND)) {
-			gc.setBackground(getColour(alternate ? groupValueStyle.getBackgroundAlternate() : groupValueStyle.getBackground()));
-			gc.fillRectangle(rowBounds);
-		}
-
-		//
-		// Paint the expand/collapse icon.
-		//
-		final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? getImage("plus.png") : getImage("minus.png");
-		gc.drawImage(expandImage, rowBounds.x + groupValueStyle.getPaddingLeft(), rowBounds.y + groupValueStyle.getPaddingTop() + PADDING__EXPAND_COLLAPSE_IMAGE);
-
-		//
-		// Paint the grouped values.
-		//
-		if ((row.getElement() != null) && (renderPass == RenderPass.FOREGROUND)) {
-			final CellStyle groupNameStyle = styleRegistry.getGroupNameStyle();
-			fieldLocation.x = PADDING__EXPAND_COLLAPSE_IMAGE + groupValueStyle.getPaddingLeft() + expandImage.getBounds().width + rowBounds.x + groupValueStyle.getPaddingLeft();
-			fieldLocation.y = rowBounds.y + groupValueStyle.getPaddingTop();
-
-			for (final Column column : gridModel.getGroupByColumns()) {
-				final CellStyle valueStyle = styleRegistry.getCellStyle(column, row);
-				paintGroupCellContent(gc, column, row, groupNameStyle, valueStyle);
+		if (grid.getGroupRenderStyle() == GroupRenderStyle.COLUMN_BASED) {
+			//
+			// Just paint the group row like any normal row.
+			//
+			paintRow(gc, point, row);
+			
+		} else {
+			//
+			// Paint the group row, by using the groupBy columns from left-to-right.
+			//
+			final CellStyle groupValueStyle = styleRegistry.getGroupValueStyle();
+	
+			rowBounds.x = point.x;
+			rowBounds.y = point.y;
+			rowBounds.width = viewport.getVisibleRowWidth(gc); //(viewport.getViewportArea(gc).width);
+			rowBounds.height = getRowHeight(row);
+	
+			final Rectangle oldClipping = gc.getClipping();
+			gc.setClipping(rowBounds);
+	
+			//
+			// Paint the row background.
+			//
+			if ((row.getElement() != null) && (renderPass == RenderPass.BACKGROUND)) {
+				gc.setBackground(getColour(alternate ? groupValueStyle.getBackgroundAlternate() : groupValueStyle.getBackground()));
+				gc.fillRectangle(rowBounds);
 			}
-		}
-		
-		gc.setClipping(oldClipping);
-
-		//
-		// Paint any footer border.
-		//
-		if ((row.getElement() != null) && (renderPass == RenderPass.FOREGROUND)) {
-			if (styleRegistry.getGroupFooterBorderTop() != null) {
-				//
-				// Paint a border along the top of the group row.
-				//
-				groupBottomLeft.x = rowBounds.x;
-				groupBottomLeft.y = rowBounds.y;
-				groupBottomRight.x = rowBounds.x + rowBounds.width;
-				groupBottomRight.y = groupBottomLeft.y;
-				paintBorderLine(gc, styleRegistry.getGroupFooterBorderTop(), groupBottomLeft, groupBottomRight);
+	
+			//
+			// Paint the expand/collapse icon.
+			//
+			final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? getImage("plus.png") : getImage("minus.png");
+			gc.drawImage(expandImage, rowBounds.x + groupValueStyle.getPaddingLeft(), rowBounds.y + groupValueStyle.getPaddingTop() + PADDING__EXPAND_COLLAPSE_IMAGE);
+	
+			//
+			// Paint the grouped values.
+			//
+			if ((row.getElement() != null) && (renderPass == RenderPass.FOREGROUND)) {
+				final CellStyle groupNameStyle = styleRegistry.getGroupNameStyle();
+				fieldLocation.x = PADDING__EXPAND_COLLAPSE_IMAGE + groupValueStyle.getPaddingLeft() + expandImage.getBounds().width + rowBounds.x + groupValueStyle.getPaddingLeft();
+				fieldLocation.y = rowBounds.y + groupValueStyle.getPaddingTop();
+	
+				for (final Column column : gridModel.getGroupByColumns()) {
+					final CellStyle valueStyle = styleRegistry.getCellStyle(column, row);
+					paintGroupCellContent(gc, column, row, groupNameStyle, valueStyle);
+				}
 			}
 			
-			if (styleRegistry.getGroupFooterBorderBottom() != null) {
-				//
-				// Paint a border along the bottom of the group row.
-				//
-				groupBottomLeft.x = rowBounds.x;
-				groupBottomLeft.y = rowBounds.y + rowBounds.height;
-				groupBottomRight.x = rowBounds.x + rowBounds.width;
-				groupBottomRight.y = groupBottomLeft.y;
-				paintBorderLine(gc, styleRegistry.getGroupFooterBorderBottom(), groupBottomLeft, groupBottomRight);
+			gc.setClipping(oldClipping);
+	
+			//
+			// Paint any footer border.
+			//
+			if ((row.getElement() != null) && (renderPass == RenderPass.FOREGROUND)) {
+				if (styleRegistry.getGroupFooterBorderTop() != null) {
+					//
+					// Paint a border along the top of the group row.
+					//
+					groupBottomLeft.x = rowBounds.x;
+					groupBottomLeft.y = rowBounds.y;
+					groupBottomRight.x = rowBounds.x + rowBounds.width;
+					groupBottomRight.y = groupBottomLeft.y;
+					paintBorderLine(gc, styleRegistry.getGroupFooterBorderTop(), groupBottomLeft, groupBottomRight);
+				}
+				
+				if (styleRegistry.getGroupFooterBorderBottom() != null) {
+					//
+					// Paint a border along the bottom of the group row.
+					//
+					groupBottomLeft.x = rowBounds.x;
+					groupBottomLeft.y = rowBounds.y + rowBounds.height;
+					groupBottomRight.x = rowBounds.x + rowBounds.width;
+					groupBottomRight.y = groupBottomLeft.y;
+					paintBorderLine(gc, styleRegistry.getGroupFooterBorderBottom(), groupBottomLeft, groupBottomRight);
+				}
 			}
-		}		
+		}
 	}
 
 	

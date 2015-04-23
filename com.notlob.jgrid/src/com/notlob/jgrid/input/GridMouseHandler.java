@@ -16,6 +16,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.ToolTip;
 
 import com.notlob.jgrid.Grid;
+import com.notlob.jgrid.Grid.GroupRenderStyle;
 import com.notlob.jgrid.listeners.IGridListener;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.ColumnMouseOperation;
@@ -98,6 +99,13 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	public void setAlt(final boolean alt) {
 		this.alt = alt;
 	}
+	
+	/**
+	 * Make the code more readable.
+	 */
+	private boolean isRenderGroupInline() {
+		return (grid.getGroupRenderStyle() == GroupRenderStyle.INLINE);
+	}
 
 	/**
 	 * Tracks the column and row under the mouse as it moves.
@@ -118,7 +126,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			//
 			// If this is a group row.
 			//
-			if (gridModel.isParentElement(newRow.getElement())) {
+			if (isRenderGroupInline() && gridModel.isParentElement(newRow.getElement())) {
 				//
 				// If the mouse is over a group field header - track it.
 				//
@@ -172,7 +180,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 					showToolTip(x, y, column.getCaption(), (toolTip != null && !toolTip.isEmpty()) ? toolTip : "");
 				}
 
-			} else if (gridModel.isParentRow(row)) {
+			} else if (isRenderGroupInline() && gridModel.isParentRow(row)) {
 				if (groupColumn != null) {
 					//
 					// A group row's header tool-tip.
@@ -243,7 +251,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 		} else if (repositioningDetect != null) {
 			//
-			// See if the user hs initiated a drag.
+			// See if the user has initiated a drag.
 			//
 			if (mouseDown && (repositioning == null)) {
 				repositioning = repositioningDetect;
@@ -454,7 +462,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		trackCell(e.x, e.y);
 
 		//
-		// Determine if there's been a mouse event we need to handle or we neeed to expose to listeners.
+		// Determine if there's been a mouse event we need to handle or we need to expose to listeners.
 		//
 		if (e.button == 1 || e.button == 3) { // LEFT or RIGHT
 			if (e.count == 1) {
@@ -468,32 +476,30 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 					}
 				}
 
-				if (column != null && row != null) {
+				//
+				// Check for group row hot-spots.
+				//
+				if ((column != null) && (row != null) && isRenderGroupInline() && gridModel.isParentRow(row)) {
 					//
-					// Check for group row hot-spots.
+					// Expand/collapse toggle.
 					//
-					if (gridModel.isParentRow(row)) {
-						//
-						// Expand/collapse toggle.
-						//
-						final Rectangle bounds = grid.getGridRenderer().getExpandImageBounds(gc, row);
-						if (bounds.contains(e.x,  e.y)) {							
-							if (grid.getContentProvider().isCollapsed(row.getElement())) {
-								grid.expandGroups(Collections.singletonList(row.getElement()));
-							} else {
-								grid.collapseGroups(Collections.singletonList(row.getElement()));
-							}
-							
-							//return; // Don't exit here - allow the group to be selected if expanding.
+					final Rectangle bounds = grid.getGridRenderer().getExpandImageBounds(gc, row);
+					if (bounds.contains(e.x,  e.y)) {							
+						if (grid.getContentProvider().isCollapsed(row.getElement())) {
+							grid.expandGroups(Collections.singletonList(row.getElement()));
+						} else {
+							grid.collapseGroups(Collections.singletonList(row.getElement()));
 						}
+						
+						//return; // Don't exit here - allow the group to be selected if expanding.
+					}
 
-						if (alt && (groupColumn != null)) {
-							//
-							// Toggle the sort on the group column.
-							//
-							gridModel.getSortModel().sort(groupColumn, true, ctrl, true);
-							return;
-						}
+					if (alt && (groupColumn != null)) {
+						//
+						// Toggle the sort on the group column.
+						//
+						gridModel.getSortModel().sort(groupColumn, true, ctrl, true);
+						return;
 					}
 				}
 				
@@ -505,7 +511,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 					// Update the anchor column - before triggering selection changed events.
 					//
 					if (!shift) {
-						if (gridModel.isParentElement(row.getElement())) {
+						if (isRenderGroupInline() && gridModel.isParentElement(row.getElement())) {
 							if (groupColumn != null) {
 								gridModel.getSelectionModel().setAnchorColumn(groupColumn);
 
