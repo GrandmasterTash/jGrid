@@ -55,7 +55,6 @@ public class StyleRegistry<T> {
 		// Build a default cell style.
 		//
 		defaultStyle = new CellStyle();
-		defaultStyle.setInheritanceStyle(InheritanceStyle.USE_EXISTING);
 		defaultStyle.setContentStyle(ContentStyle.IMAGE_THEN_TEXT);
 		defaultStyle.setAllowContentOverlap(false);
 		defaultStyle.setBackground(new RGB(255, 255, 255));
@@ -127,6 +126,8 @@ public class StyleRegistry<T> {
 		// Anchor style.
 		//
 		anchorStyle = new CellStyle();
+		anchorStyle.setForegroundOpacity(255);
+		anchorStyle.setBackgroundOpacity(255);
 		anchorStyle.setPaddingInnerBorder(2);
 		anchorStyle.setBorderInnerTop(new BorderStyle(1, LineStyle.DASHED, new RGB(180, 180, 180)));
 		anchorStyle.setBorderInnerRight(new BorderStyle(1, LineStyle.DASHED, new RGB(180, 180, 180)));

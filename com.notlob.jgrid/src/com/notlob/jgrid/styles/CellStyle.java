@@ -5,23 +5,19 @@ import org.eclipse.swt.graphics.RGB;
 
 public class CellStyle {
 
-	// TODO: Mouse cursor.
-
-	private InheritanceStyle inheritanceStyle;
 	private ContentStyle contentStyle;
-	private boolean allowContentOverlap;
-
+	private Boolean allowContentOverlap;
 	private FontData fontData;
-
+	private Integer mouseCursor;
 	private AlignmentStyle imageAlignment;
 	private AlignmentStyle textAlignment;
 
-	private int paddingTop;
-	private int paddingRight;
-	private int paddingBottom;
-	private int paddingLeft;
-	private int paddingImageText; // If both alignments are the same for image and text.
-	private int paddingInnerBorder; // The gap between the outer border and the inner border.
+	private Integer paddingTop;
+	private Integer paddingRight;
+	private Integer paddingBottom;
+	private Integer paddingLeft;
+	private Integer paddingImageText; // If both alignments are the same for image and text.
+	private Integer paddingInnerBorder; // The gap between the outer border and the inner border.
 
 	private RGB foreground;
 	private RGB background;
@@ -32,8 +28,8 @@ public class CellStyle {
 	private RGB backgroundAlternateGradient1;
 	private RGB backgroundAlternateGradient2;
 
-	private int foregroundOpacity;
-	private int backgroundOpacity;
+	private Integer foregroundOpacity;
+	private Integer backgroundOpacity;
 
 	private BorderStyle borderInnerTop;
 	private BorderStyle borderInnerRight;
@@ -46,14 +42,10 @@ public class CellStyle {
 	private BorderStyle borderOuterLeft;
 
 	public CellStyle() {
-		foregroundOpacity = 255;
-		backgroundOpacity = 255;
 	}
 
-	// TODO: Consider Base64Encoder copying....
 	public CellStyle copy() {
 		final CellStyle copy = new CellStyle();
-		copy.inheritanceStyle = inheritanceStyle;
 		copy.contentStyle = contentStyle;
 		copy.allowContentOverlap = allowContentOverlap;
 
@@ -65,6 +57,7 @@ public class CellStyle {
 			copy.fontData.setStyle(fontData.getStyle());
 		}
 
+		copy.mouseCursor = mouseCursor;
 		copy.imageAlignment = imageAlignment;
 		copy.textAlignment = textAlignment;
 		copy.paddingTop = paddingTop;
@@ -93,14 +86,6 @@ public class CellStyle {
 		return copy;
 	}
 
-	public InheritanceStyle getInheritanceStyle() {
-		return inheritanceStyle;
-	}
-
-	public void setInheritanceStyle(final InheritanceStyle inheritanceStyle) {
-		this.inheritanceStyle = inheritanceStyle;
-	}
-
 	public ContentStyle getContentStyle() {
 		return contentStyle;
 	}
@@ -109,11 +94,11 @@ public class CellStyle {
 		this.contentStyle = contentStyle;
 	}
 
-	public boolean isAllowContentOverlap() {
+	public Boolean isAllowContentOverlap() {
 		return allowContentOverlap;
 	}
 
-	public void setAllowContentOverlap(final boolean allowContentOverlap) {
+	public void setAllowContentOverlap(final Boolean allowContentOverlap) {
 		this.allowContentOverlap = allowContentOverlap;
 	}
 
@@ -123,6 +108,14 @@ public class CellStyle {
 
 	public void setFontData(final FontData fontData) {
 		this.fontData = fontData;
+	}
+	
+	public Integer getMouseCursor() {
+		return mouseCursor;
+	}
+	
+	public void setMouseCursor(Integer mouseCursor) {
+		this.mouseCursor = mouseCursor;
 	}
 
 	public AlignmentStyle getImageAlignment() {
@@ -141,51 +134,51 @@ public class CellStyle {
 		this.textAlignment = textAlignment;
 	}
 
-	public int getPaddingTop() {
+	public Integer getPaddingTop() {
 		return paddingTop;
 	}
 
-	public void setPaddingTop(final int paddingTop) {
+	public void setPaddingTop(final Integer paddingTop) {
 		this.paddingTop = paddingTop;
 	}
 
-	public int getPaddingRight() {
+	public Integer getPaddingRight() {
 		return paddingRight;
 	}
 
-	public void setPaddingRight(final int paddingRight) {
+	public void setPaddingRight(final Integer paddingRight) {
 		this.paddingRight = paddingRight;
 	}
 
-	public int getPaddingBottom() {
+	public Integer getPaddingBottom() {
 		return paddingBottom;
 	}
 
-	public void setPaddingBottom(final int paddingBottom) {
+	public void setPaddingBottom(final Integer paddingBottom) {
 		this.paddingBottom = paddingBottom;
 	}
 
-	public int getPaddingLeft() {
+	public Integer getPaddingLeft() {
 		return paddingLeft;
 	}
 
-	public void setPaddingLeft(final int paddingLeft) {
+	public void setPaddingLeft(final Integer paddingLeft) {
 		this.paddingLeft = paddingLeft;
 	}
 
-	public int getPaddingImageText() {
+	public Integer getPaddingImageText() {
 		return paddingImageText;
 	}
 
-	public void setPaddingImageText(final int paddingImageText) {
+	public void setPaddingImageText(final Integer paddingImageText) {
 		this.paddingImageText = paddingImageText;
 	}
 
-	public int getPaddingInnerBorder() {
+	public Integer getPaddingInnerBorder() {
 		return paddingInnerBorder;
 	}
 
-	public void setPaddingInnerBorder(final int paddingInnerBorder) {
+	public void setPaddingInnerBorder(final Integer paddingInnerBorder) {
 		this.paddingInnerBorder = paddingInnerBorder;
 	}
 
@@ -245,19 +238,19 @@ public class CellStyle {
 		this.backgroundAlternateGradient2 = backgroundAlternateGradient2;
 	}
 
-	public int getForegroundOpacity() {
+	public Integer getForegroundOpacity() {
 		return foregroundOpacity;
 	}
 
-	public void setForegroundOpacity(final int foregroundOpacity) {
+	public void setForegroundOpacity(final Integer foregroundOpacity) {
 		this.foregroundOpacity = foregroundOpacity;
 	}
 
-	public int getBackgroundOpacity() {
+	public Integer getBackgroundOpacity() {
 		return backgroundOpacity;
 	}
 
-	public void setBackgroundOpacity(final int backgroundOpacity) {
+	public void setBackgroundOpacity(final Integer backgroundOpacity) {
 		this.backgroundOpacity = backgroundOpacity;
 	}
 
