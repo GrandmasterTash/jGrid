@@ -29,6 +29,7 @@ import com.notlob.jgrid.model.filtering.IHighlightingFilter;
 import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.BorderStyle;
 import com.notlob.jgrid.styles.CellStyle;
+import com.notlob.jgrid.styles.CompositeCellStyle;
 import com.notlob.jgrid.styles.ContentStyle;
 import com.notlob.jgrid.styles.RegionStyle;
 import com.notlob.jgrid.styles.StyleRegistry;
@@ -945,21 +946,31 @@ public class GridRenderer<T> implements PaintListener {
 
 	protected void paintCell(final GC gc, final Rectangle bounds, final Column column, final Row<T> row, final CellStyle cellStyle) {
 		try {
+			CellStyle currentStyle = cellStyle;
+			
+			//
+			// If the cell has the anchor, use a composite style.
+			//
+			if (grid.isFocusControl() && grid.isHighlightAnchorCellBorder() && doesColumnHaveAnchor(column) && doesRowHaveAnchor(row)) {
+				final CompositeCellStyle compositeStyle = new CompositeCellStyle();
+				compositeStyle.add(styleRegistry.getAnchorStyle());
+				compositeStyle.add(cellStyle);
+				currentStyle = compositeStyle;
+			}			
+			
 			//
 			// Paint the cell background.
 			//
 			if (renderPass == RenderPass.BACKGROUND) {
-				paintCellBackground(gc, bounds, cellStyle);
+				paintCellBackground(gc, bounds, currentStyle);
 			}
 
 			//
 			// Paint cell content.
 			//
 			if (renderPass == RenderPass.FOREGROUND) {
-				paintCellContent(gc, bounds, column, row, cellStyle);
-
-				final CellStyle borderCellStyle = (grid.isFocusControl() && grid.isHighlightAnchorCellBorder() && (column != null) && (column == gridModel.getSelectionModel().getAnchorColumn()) && doesRowHaveAnchor(row)) ? styleRegistry.getAnchorStyle() : cellStyle;
-				paintCellBorders(gc, bounds, borderCellStyle);
+				paintCellContent(gc, bounds, column, row, currentStyle);
+				paintCellBorders(gc, bounds, currentStyle);
 			}
 
 		} catch (final Throwable t) {
@@ -979,7 +990,7 @@ public class GridRenderer<T> implements PaintListener {
 			gc.drawText("ERROR", bounds.x + 2 + errorImage.getBounds().width, bounds.y + 2);
 		}
 	}
-
+	
 	/**
 	 * Paint the outer then inner borders of the cell.
 	 */
@@ -1342,6 +1353,10 @@ public class GridRenderer<T> implements PaintListener {
 	
 	protected int getRowHeight(final Row<T> row) {
 		return grid.getRowHeight(row);
+	}
+	
+	protected boolean doesColumnHaveAnchor(final Column column) {
+		return (column == gridModel.getSelectionModel().getAnchorColumn());
 	}
 
 	protected boolean doesRowHaveAnchor(final Row<T> row) {

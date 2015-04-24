@@ -31,7 +31,12 @@ public class BorderStyle {
 		final BorderStyle copy = new BorderStyle();
 		copy.lineStyle = borderStyle.lineStyle;
 		copy.width = borderStyle.width;
-		copy.colour = new RGB(borderStyle.colour.red, borderStyle.colour.green, borderStyle.colour.blue);
+		
+		if (borderStyle.colour != null) {
+			copy.colour = new RGB(borderStyle.colour.red, borderStyle.colour.green, borderStyle.colour.blue);
+		} else {
+			copy.colour = null;
+		}
 		return copy;
 	}
 

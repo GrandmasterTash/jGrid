@@ -111,8 +111,8 @@ public class StyleRegistry<T> {
 		//
 		// Selection cell styles
 		//
-		selectionStyle = defaultStyle.copy();
-		selectionGroupStyle = groupValueStyle.copy();
+		selectionStyle = new CellStyle();
+		selectionGroupStyle = new CellStyle();
 		selectionHeaderStyle = headerStyle.copy();
 		selectionHeaderStyle.setBackground(new RGB(255, 213, 141));
 		selectionHeaderStyle.setBackgroundGradient1(new RGB(248, 215, 155));
@@ -143,7 +143,7 @@ public class StyleRegistry<T> {
 		selectionRegionStyle.setBackgroundGradient1(new RGB(255, 213, 141));
 		selectionRegionStyle.setBackgroundGradient2(new RGB(255, 213, 141));
 		selectionRegionStyle.setForegroundOpacity(200);
-		selectionRegionStyle.setBackgroundOpacity(100);
+		selectionRegionStyle.setBackgroundOpacity(120);
 
 		//
 		// Mouse hover region style.
@@ -205,6 +205,16 @@ public class StyleRegistry<T> {
 			//
 			final CellStyle customStyle = (row == Row.COLUMN_HEADER_ROW) ? grid.getLabelProvider().getHeaderStyle(column) : grid.getLabelProvider().getCellStyle(column, row.getElement());
 			if (customStyle != null) {
+				//
+				// If the row is selected, combine the style with the selection style.
+				//
+				if (row.isSelected()) {
+					final CompositeCellStyle compositeCellStyle = new CompositeCellStyle();
+					compositeCellStyle.add(selectionStyle);
+					compositeCellStyle.add(customStyle);
+					return compositeCellStyle;
+				}
+				
 				return customStyle;
 			}
 
@@ -222,11 +232,17 @@ public class StyleRegistry<T> {
 		// Check for a selected row.
 		//
 		if (row.isSelected()) {
+			final CompositeCellStyle compositeCellStyle = new CompositeCellStyle();			
+			
 			if (parentRow) {
-				return selectionGroupStyle;
+				compositeCellStyle.add(groupValueStyle);
+				compositeCellStyle.add(selectionGroupStyle);
+			} else {
+				compositeCellStyle.add(defaultStyle);
+				compositeCellStyle.add(selectionStyle);
 			}
-
-			return selectionStyle;
+			
+			return compositeCellStyle;
 		}
 
 		if (parentRow) {

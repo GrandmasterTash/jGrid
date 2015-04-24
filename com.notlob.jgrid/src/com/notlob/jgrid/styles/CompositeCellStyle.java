@@ -23,10 +23,9 @@ public class CompositeCellStyle extends CellStyle {
 	}
 	
 	public void add(final CellStyle innerStyle) {
-		if (innerStyle == null) {
-			throw new IllegalArgumentException("Inner Styles cannot be null");
+		if (innerStyle != null) {
+			innerStyles.add(innerStyle);
 		}
-		innerStyles.add(innerStyle);
 	}
 	
 	public boolean isEmpty() {
