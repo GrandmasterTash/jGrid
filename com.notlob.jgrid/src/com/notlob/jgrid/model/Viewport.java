@@ -142,8 +142,18 @@ public class Viewport<T> {
 		if (gridModel.isShowRowNumbers()) {
 			final CellStyle cellStyle = gridModel.getStyleRegistry().getRowNumberStyle();
 			final Point extent = grid.getTextExtent(String.valueOf(gridModel.getRows().size() + 1), gc, cellStyle.getFontData());
-			viewportArea.x += (extent.x + cellStyle.getPaddingLeft() + cellStyle.getPaddingRight());
-			viewportArea.width -= (extent.x + cellStyle.getPaddingLeft() + cellStyle.getPaddingRight());
+			Column.ROW_NUMBER_COLUMN.setWidth(cellStyle.getPaddingLeft() + extent.x + cellStyle.getPaddingRight());
+			viewportArea.x += Column.ROW_NUMBER_COLUMN.getWidth(); 
+			viewportArea.width -= Column.ROW_NUMBER_COLUMN.getWidth();
+		}
+		
+		//
+		// Shift the viewport right for every pinned column.
+		//
+		for (Column pinnedColumn : gridModel.getPinnedColumns()) {
+			final int width = pinnedColumn.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal();
+			viewportArea.x += width;
+			viewportArea.width -= width;
 		}
 
 		return viewportArea;
@@ -223,6 +233,9 @@ public class Viewport<T> {
 		int currentX = getViewportArea(gc).x;
 
 		if (x >= currentX) {
+			//
+			// Look at viewport columns.
+			//
 			for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
 				final Column column = gridModel.getColumns().get(columnIndex);				
 				currentX += column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal();
@@ -230,6 +243,20 @@ public class Viewport<T> {
 				if (x <= currentX) {
 					return columnIndex;
 				}								
+			}
+			
+		} else {
+			//
+			// Look at pinned columns.
+			//
+			currentX = gridModel.isShowRowNumbers() ? Column.ROW_NUMBER_COLUMN.getWidth() : 0;
+			
+			for (Column column : gridModel.getPinnedColumns()) {
+				if ((x > currentX) && (x <= (currentX + column.getWidth()))) {
+					return gridModel.getColumns().indexOf(column);
+				}
+				
+				currentX += column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal();
 			}
 		}
 

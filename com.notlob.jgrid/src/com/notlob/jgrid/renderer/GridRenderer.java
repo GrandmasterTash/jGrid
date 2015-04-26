@@ -451,7 +451,7 @@ public class GridRenderer<T> implements PaintListener {
 			cellBounds.x = 0;
 			cellBounds.y = 0;
 			cellBounds.height = viewportArea.y;
-			cellBounds.width = viewportArea.x;
+			cellBounds.width = getCornerCellWidth() + styleRegistry.getCellSpacingHorizontal();
 
 			if (renderPass == RenderPass.BACKGROUND) {
 				paintCellBackground(gc, cellBounds, styleRegistry.getCornerStyle());
@@ -460,11 +460,11 @@ public class GridRenderer<T> implements PaintListener {
 				paintCellBorders(gc, cellBounds, styleRegistry.getCornerStyle());
 			}
 		}
-
+		
 		//
 		// Paint column header row(s).
 		//
-		rowLocation.x = viewportArea.x;
+		rowLocation.x = grid.isShowRowNumbers() ? (getCornerCellWidth() + styleRegistry.getCellSpacingHorizontal()) : 0;
 		rowLocation.y = 0;
 		alternate = false;
 		for (final Row<T> row : gridModel.getColumnHeaderRows()) {
@@ -476,7 +476,7 @@ public class GridRenderer<T> implements PaintListener {
 		// Paint data rows and row numbers.
 		//
 		alternate = false;
-		rowLocation.x = viewportArea.x;
+		rowLocation.x = grid.isShowRowNumbers() ? (getCornerCellWidth() + styleRegistry.getCellSpacingHorizontal()) : 0;
 		rowLocation.y = viewportArea.y;
 
 		for (int rowIndex=viewport.getFirstRowIndex(); rowIndex<viewport.getLastVisibleRowIndex(); rowIndex++) {
@@ -485,7 +485,7 @@ public class GridRenderer<T> implements PaintListener {
 			if (grid.isShowRowNumbers()) {
 				paintRowNumber(gc, rowLocation, row, rowIndex);
 			}
-
+			
 			if (gridModel.isParentRow(row)) {
 				paintGroupRow(gc, rowLocation, row);
 			} else {
@@ -509,7 +509,8 @@ public class GridRenderer<T> implements PaintListener {
 		cellBounds.x = 0;
 		cellBounds.y = point.y;
 		cellBounds.height = getRowHeight(row);
-		cellBounds.width = point.x;
+//		cellBounds.width = point.x;
+		cellBounds.width = Column.ROW_NUMBER_COLUMN.getWidth();
 		paintCell(gc, cellBounds, null, null, (grid.isFocusControl() && grid.isHighlightAnchorInHeaders() && doesRowHaveAnchor(row)) ? styleRegistry.getSelectionRowNumberStyle() : styleRegistry.getRowNumberStyle());
 	}
 
@@ -895,6 +896,23 @@ public class GridRenderer<T> implements PaintListener {
 				gc.setBackground(getColour(alternate ? rowStyle.getBackgroundAlternate() : rowStyle.getBackground()));
 				gc.fillRectangle(rowBounds);
 			}
+			
+			//
+			// Paint pinned cells.
+			//
+			for (Column pinnedColumn : gridModel.getPinnedColumns()) {
+				final CellStyle cellStyle = styleRegistry.getCellStyle(pinnedColumn, row);				
+				cellBounds.width = pinnedColumn.getWidth();
+				paintCell(gc, cellBounds, pinnedColumn, row, cellStyle);
+				cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
+			}
+			
+			//
+			// Paint a vertical border - to the right of the last pinned cell.
+			//
+			if (!gridModel.getPinnedColumns().isEmpty()) {
+				paintBorderLine(gc, styleRegistry.getHeaderStyle().getBorderOuterBottom(), getTopLeft(cellBounds), getBottomLeft(cellBounds));
+			}
 	
 			//
 			// Now paint every cell in the row.
@@ -1260,15 +1278,15 @@ public class GridRenderer<T> implements PaintListener {
 
 			// Draw three dark dots in-between column headers.
 			gc.setForeground(getColour(RGB__SHADOW_DARK));
-			gc.drawPoint((point1.x-1), spacer + spacer);
-			gc.drawPoint((point1.x-1), (spacer * 2) + spacer);
-			gc.drawPoint((point1.x-1), (spacer * 3) + spacer);
+			gc.drawPoint((point1.x), spacer + spacer);
+			gc.drawPoint((point1.x), (spacer * 2) + spacer);
+			gc.drawPoint((point1.x), (spacer * 3) + spacer);
 
 			// Draw three light dots to make the dark ones look 3d.
 			gc.setForeground(getColour(RGB__SHADOW_HIGHLIGHT));
-			gc.drawPoint((point1.x-1), spacer + spacer + 1);
-			gc.drawPoint((point1.x-1), (spacer * 2) + spacer + 1);
-			gc.drawPoint((point1.x-1), (spacer * 3) + spacer + 1);
+			gc.drawPoint((point1.x), spacer + spacer + 1);
+			gc.drawPoint((point1.x), (spacer * 2) + spacer + 1);
+			gc.drawPoint((point1.x), (spacer * 3) + spacer + 1);
 			break;
 
 		case SOLID:
@@ -1356,7 +1374,7 @@ public class GridRenderer<T> implements PaintListener {
 	}
 	
 	protected boolean doesColumnHaveAnchor(final Column column) {
-		return (column == gridModel.getSelectionModel().getAnchorColumn());
+		return ((column != null) && (column == gridModel.getSelectionModel().getAnchorColumn()));
 	}
 
 	protected boolean doesRowHaveAnchor(final Row<T> row) {
@@ -1437,5 +1455,9 @@ public class GridRenderer<T> implements PaintListener {
 		}
 		
 		return extent;
+	}
+	
+	protected int getCornerCellWidth() {
+		return gridModel.isShowRowNumbers() ? Column.ROW_NUMBER_COLUMN.getWidth() : 0;
 	}
 }

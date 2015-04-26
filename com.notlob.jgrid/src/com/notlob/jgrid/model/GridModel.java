@@ -43,6 +43,9 @@ public class GridModel<T> {
 
 	// Visible column headers, pinned rows, etc.
 	private final List<Row<T>> columnHeaderRows;
+	
+	// Pinned columns.
+	private final List<Column> pinnedColumns;
 
 	// If we're grouping data by particular column(s).
 	private final List<Column> groupByColumns;
@@ -61,6 +64,9 @@ public class GridModel<T> {
 
 	// Show/hide the row numbers.
 	private boolean showRowNumbers = false;
+	
+	// Show/hide the column headers.
+	private boolean showColumnHeaders = true;
 
 	// These external listeners are notified whenever something changes.
 	private final List<IModelListener<T>> listeners;
@@ -101,6 +107,7 @@ public class GridModel<T> {
 		columns = new ArrayList<>();
 		allColumns = new ArrayList<>();
 		columnHeaderRows = new ArrayList<>();
+		pinnedColumns = new ArrayList<>();
 		groupByColumns = new ArrayList<>();
 		listeners = new ArrayList<>();
 		styleRegistry = new StyleRegistry<T>(grid);
@@ -232,6 +239,10 @@ public class GridModel<T> {
 	public List<Row<T>> getColumnHeaderRows() {
 		return columnHeaderRows;
 	}
+	
+	public List<Column> getPinnedColumns() {
+		return pinnedColumns;
+	}
 
 	public Row<T> getRow(final T element) {
 		return rowsByElement.get(element);
@@ -296,7 +307,7 @@ public class GridModel<T> {
 
 		rebuildVisibleColumns();
 
-		if (!anyWereVisible && anyNowVisible) {
+		if (!anyWereVisible && anyNowVisible && showColumnHeaders) {
 			//
 			// The first column should cause a row to be added for the column headers. This header row should be the first row in the header region.
 			//
@@ -315,6 +326,7 @@ public class GridModel<T> {
 		allColumns.remove(column);
 		columns.remove(column);
 		groupByColumns.remove(column);
+		pinnedColumns.remove(column);
 	}
 
 	public void removeColumns(final List<Column> columns) {
@@ -699,6 +711,46 @@ public class GridModel<T> {
 		fireChangeEvent();
 	}
 
+	public boolean isShowColumnHeaders() {
+		return showColumnHeaders;				
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void setShowColumnHeaders(final boolean showColumnHeaders) {
+		this.showColumnHeaders = showColumnHeaders;
+				
+		if (showColumnHeaders && !columnHeaderRows.contains(Row.COLUMN_HEADER_ROW)) {
+			//
+			// Add the column headers if required.
+			//
+			columnHeaderRows.add(0, Row.COLUMN_HEADER_ROW);
+			
+		} else if (!showColumnHeaders && columnHeaderRows.contains(Row.COLUMN_HEADER_ROW)) {
+			//
+			// Remove the column headers if required.
+			//
+			columnHeaderRows.remove(Row.COLUMN_HEADER_ROW);
+		}
+		
+		fireChangeEvent();
+	}
+	
+	public void pinColumn(final Column column) {
+		if (!pinnedColumns.contains(column)) {
+			pinnedColumns.add(column);
+		}
+		
+		column.setPinned(true);
+		
+		fireChangeEvent();
+	}
+	
+	public void unpinColumn(final Column column) {
+		column.setPinned(false);
+		pinnedColumns.remove(column);
+		fireChangeEvent();
+	}
+	
 	public boolean isHeaderRow(final Row<T> row) {
 		return columnHeaderRows.contains(row);
 	}

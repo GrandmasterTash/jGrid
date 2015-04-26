@@ -240,6 +240,16 @@ public class Grid<T> extends Composite {
 		this.groupRenderStyle = groupRenderStyle;
 	}
 	
+	public void setShowColumnHeaders(final boolean showColumnHeaders) {
+		checkWidget();
+		gridModel.setShowColumnHeaders(showColumnHeaders);		
+	}
+	
+	public boolean isShowColumnHeaders() {
+		checkWidget();
+		return gridModel.isShowColumnHeaders();
+	}
+	
 	public StyleRegistry<T> getStyleRegistry() {
 		checkWidget();
 		return gridModel.getStyleRegistry();
@@ -282,12 +292,12 @@ public class Grid<T> extends Composite {
 	
 	public void pinColumn(final Column column) {
 		checkWidget();
-		System.out.println("Pin not yet implemented");
+		gridModel.pinColumn(column);
 	}
 	
 	public void unpinColumn(final Column column) {
 		checkWidget();
-		System.out.println("Unpin not yet implemented");
+		gridModel.unpinColumn(column);
 	}
 
 	public void groupBy(final List<Column> columns) {
