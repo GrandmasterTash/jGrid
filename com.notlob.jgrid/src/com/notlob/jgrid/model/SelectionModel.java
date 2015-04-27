@@ -193,11 +193,11 @@ public class SelectionModel<T> {
 		gridModel.fireSelectionChangedEvent();
 	}
 
-	void removeRow(final Row<T> row) {
+	boolean removeRow(final Row<T> row) {
 		//
 		// Clear the rows selection state.
 		//
-		selectedElements.remove(row.getElement());
+		final boolean removed = selectedElements.remove(row.getElement());
 		row.setSelected(false);
 
 		if (anchorElement == row.getElement()) {
@@ -207,6 +207,8 @@ public class SelectionModel<T> {
 			anchorElement = null;
 			anchorColumn = null;
 		}
+		
+		return removed;
 	}
 
 	public void selectRange(final Row<T> row, final boolean keepExisting) {

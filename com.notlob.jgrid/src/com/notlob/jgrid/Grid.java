@@ -45,8 +45,6 @@ public class Grid<T> extends Composite {
 	// TODO: Keep selection in viewport.
 	// TODO: Border perimeter thingy.
 	// TODO: try..catch around all calls to listeners...
-	
-	// TODO: Column pinning.
 	// TODO: Partially filtered groups.
 	// TODO: Autoresize column.
 	

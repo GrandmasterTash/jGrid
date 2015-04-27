@@ -417,6 +417,7 @@ public class GridModel<T> {
 	public void removeElements(final Collection<T> elements) {
 		int heightDelta = 0;
 		int lastSelectedIndex = -1;
+		boolean selectionChanged = false;
 		
 		for (final T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
@@ -426,7 +427,7 @@ public class GridModel<T> {
 			rowsByElement.remove(element);
 
 			if (row.isSelected()) {
-				selectionModel.removeRow(row);
+				selectionChanged |= selectionModel.removeRow(row);
 				lastSelectedIndex = Math.max(lastSelectedIndex, row.getRowIndex());
 			}
 
@@ -458,8 +459,12 @@ public class GridModel<T> {
 			fireHeightChangeEvent(heightDelta);
 		}
 		
-		fireElementsRemovedEvent(elements);
+		fireElementsRemovedEvent(elements);		
 		fireRowCountChangedEvent();
+		
+		if (selectionChanged) {
+			fireSelectionChangedEvent();
+		}
 	}
 
 	public void updateElements(final Collection<T> elements) {
