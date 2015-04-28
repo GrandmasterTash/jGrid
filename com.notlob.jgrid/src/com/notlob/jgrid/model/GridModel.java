@@ -330,7 +330,7 @@ public class GridModel<T> {
 	}
 
 	public void removeColumns(final List<Column> columns) {
-		for (final Column column : columns) {
+		for (final Column column : new ArrayList<>(columns)) {
 			removeColumn(column);
 		}
 
@@ -862,7 +862,9 @@ public class GridModel<T> {
 		group.add(row);
 
 		for (final Row<T> childRow : getChildren(row)) {
-			group.addAll(getAllChildren(childRow));
+			if (childRow != null) {
+				group.addAll(getAllChildren(childRow));
+			}
 		}
 		return group;
 	}
