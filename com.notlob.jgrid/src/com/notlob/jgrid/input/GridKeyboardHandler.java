@@ -74,11 +74,18 @@ public class GridKeyboardHandler<T> implements KeyListener {
 			case SWT.ARROW_RIGHT:
 				if (shift) {
 					//
-					// Expand selection range down or up - preserve the anchor though.
+					// Move the anchor.
 					//
-					final T anchorElement = selectionModel.getAnchorElement();
-					alterSelectionRange(e.keyCode);
-					selectionModel.setAnchorElement(anchorElement);
+					moveAnchor(e.keyCode);
+					
+					//
+					// Ensure the row is selected.
+					//
+					final Row<T> row = gridModel.getRow(gridModel.getSelectionModel().getAnchorElement());
+					if (!row.isSelected()) {
+						gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row));	
+					}
+					
 					
 				} else if (ctrl) {
 					//
@@ -398,88 +405,5 @@ public class GridKeyboardHandler<T> implements KeyListener {
 		// Cause a repaint.
 		//
 		gridModel.fireChangeEvent();
-	}
-	
-	private void alterSelectionRange(final int direction) {
-		//
-		// Verify the direction specified.
-		//
-		if (((direction == SWT.ARROW_LEFT) || (direction == SWT.ARROW_RIGHT))) {
-			return;
-			
-		} else if (!((direction == SWT.ARROW_UP) || (direction == SWT.ARROW_DOWN))) {
-			throw new IllegalArgumentException(String.format("Unknown direction %s", direction));
-		}		
-		
-		ensureAnchorSet();
-		final int anchorRowIndex = gridModel.getRows().indexOf(gridModel.getRow(selectionModel.getAnchorElement()));
-		
-		if (direction == SWT.ARROW_UP) {
-			//
-			// Shrink selection ranges below the anchor until they start growing above the anchor.
-			//
-			removeRowFromSelection();
-			
-		} else if (direction == SWT.ARROW_DOWN) {
-			//
-			// Shrink selection ranges above the anchor until they start growing below the anchor.
-			//
-			addRowToSelection(anchorRowIndex);
-		}
-		
-		//
-		// Cause a repaint.
-		//
-		gridModel.fireChangeEvent();
-	}
-
-	private void removeRowFromSelection() {
-		//
-		// Get the row index of the last selected row.
-		//
-		int lastIndex = -1;
-		for (int rowIndex=0; rowIndex<gridModel.getRows().size(); rowIndex++) {
-			if (gridModel.getRows().get(rowIndex).isSelected()) {
-				lastIndex = rowIndex;
-			}
-		}
-		
-		if (lastIndex != -1) {
-			selectionModel.toggleRowSelections(Collections.singletonList(gridModel.getRows().get(lastIndex)));
-		}
-	}
-
-	private void addRowToSelection(final int anchorRowIndex) {
-		//
-		// Get the row index of the last selected row.
-		//
-		int lastIndex = -1;
-		for (int rowIndex=0; rowIndex<gridModel.getRows().size(); rowIndex++) {
-			if (gridModel.getRows().get(rowIndex).isSelected()) {
-				lastIndex = rowIndex;
-			}
-		}
-		
-		//
-		// If the anchor is below the last selected row, use the anchor.
-		//
-		if (anchorRowIndex > lastIndex) {
-			lastIndex = anchorRowIndex - 1;
-		}
-		
-		if (lastIndex == -1) {
-			//
-			// If there's no selected row, select the anchor row.
-			//
-			selectionModel.setSelectedRows(Collections.singletonList(gridModel.getRow(selectionModel.getAnchorElement())));
-
-		} else {		
-			//
-			// Add the next row (if there is one) to the selection.
-			//
-			if (lastIndex < gridModel.getRows().size()-1) {
-				selectionModel.toggleRowSelections(Collections.singletonList(gridModel.getRows().get(lastIndex + 1)));
-			}
-		}
 	}
 }
