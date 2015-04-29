@@ -98,10 +98,10 @@ public class Viewport<T> {
 				setFirstColumnIndex(columnIndex);
 			}
 
-			x += column.getWidth();
+			x += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
 
 			if ((x > (originX + viewportArea.width)) && (getLastColumnIndex() == -1)) {
-				setLastColumnIndex(columnIndex);
+				setLastColumnIndex(++columnIndex);
 				break;
 			}
 		}
@@ -170,7 +170,7 @@ public class Viewport<T> {
 
 		for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
 			final Column column = gridModel.getColumns().get(columnIndex);
-			x += column.getWidth();
+			x += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
 		}
 
 		return Math.min(viewportArea.width, x - viewportArea.x); // Can't currently explain this substract. It's TOO early in the morning!!!
