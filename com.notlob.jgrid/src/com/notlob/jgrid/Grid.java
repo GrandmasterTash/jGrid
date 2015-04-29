@@ -682,6 +682,10 @@ public class Grid<T> extends Composite {
 		return column;
 	}
 	
+	/**
+	 * Scrolls the grid up or down during a drag-drop operation, if the coordinates of the thing being dragged
+	 * should trigger it.
+	 */
 	public boolean scrollRowIfNeeded(final int x, final int y) {
 		checkWidget();
 		
@@ -720,6 +724,23 @@ public class Grid<T> extends Composite {
 		}
 				
 		return (vDelta != 0);
+	}
+	
+	/**
+	 * Ensure the column is just wide enough to fit it's column caption (and sort/filter indicator) and it's
+	 * widest data content.
+	 */
+	public void autoSizeColumn(final Column column) {
+		checkWidget();
+		
+		final int width = gridRenderer.getMinimumWidth(column);
+		column.setWidth(width);
+		
+		//
+		// Cause the grid to repaint.
+		//
+		gridModel.fireChangeEvent();
+		gridModel.fireColumnResizedEvent(column);
 	}
 
 	private void updateScrollbars() {

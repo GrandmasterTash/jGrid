@@ -1460,4 +1460,10 @@ public class GridRenderer<T> implements PaintListener {
 	protected int getCornerCellWidth() {
 		return gridModel.isShowRowNumbers() ? Column.ROW_NUMBER_COLUMN.getWidth() : 0;
 	}
+	
+	public int getMinimumWidth(final Column column) {
+		//
+		// Iterate over each cell in the column getting style, content, images, padding, text extents, etc....
+		//
+	}
 }
