@@ -343,7 +343,7 @@ public class GridModel<T> {
 		fireChangeEvent();
 	}
 
-	private void rebuildVisibleColumns() {
+	public void rebuildVisibleColumns() {
 		columns.clear();
 
 		for (final Column column : allColumns) {

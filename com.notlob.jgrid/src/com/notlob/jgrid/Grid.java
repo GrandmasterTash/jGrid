@@ -283,10 +283,10 @@ public class Grid<T> extends Composite {
 		return gridModel.getColumnById(columnId);
 	}
 	
-//	public void refreshColumns() {
-//		checkWidget();
-//		gridModel.refreshColumns();
-//	}
+	public void rebuildVisibleColumns() {
+		checkWidget();
+		gridModel.rebuildVisibleColumns();
+	}
 	
 	public void pinColumn(final Column column) {
 		checkWidget();
