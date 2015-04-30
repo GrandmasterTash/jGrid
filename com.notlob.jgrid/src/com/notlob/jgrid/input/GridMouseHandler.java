@@ -404,12 +404,21 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		}
 		
 		if (resizing != null) {
+			final Column wasResizing = resizing;
+			
 			//
 			// Complete the resize operation.
 			//
 			gridModel.fireColumnResizedEvent(resizing);
 			resizing = null;
 			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+						
+			if (e.count > 1) {
+				//
+				// The user has double-clicked on a resize border - execute the auto-resize-a-tron.
+				//
+				grid.autoSizeColumn(wasResizing);
+			}
 			return;			
 		}
 		
@@ -569,7 +578,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 					gridModel.getSelectionModel().selectAll();
 				}
 
-			} else if (e.count > 1) {
+			} else if (e.count > 1) {				
 				//
 				// Double-click.
 				//
