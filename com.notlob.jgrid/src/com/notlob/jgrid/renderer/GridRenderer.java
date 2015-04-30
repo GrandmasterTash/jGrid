@@ -1461,9 +1461,52 @@ public class GridRenderer<T> implements PaintListener {
 		return gridModel.isShowRowNumbers() ? Column.ROW_NUMBER_COLUMN.getWidth() : 0;
 	}
 	
-	public int getMinimumWidth(final Column column) {
+	@SuppressWarnings("unchecked")
+	public int getMinimumWidth(final GC gc, final Column column) {
+		//
+		// Get the column header style and caption. 
+		//
+		int minWidth = getCellMinimumWidth(gc, column, Row.COLUMN_HEADER_ROW);
+		
 		//
 		// Iterate over each cell in the column getting style, content, images, padding, text extents, etc....
 		//
+		for (Row<T> row : grid.getRows()) {
+			minWidth = Math.max(minWidth, getCellMinimumWidth(gc, column, row));
+		}
+		
+		//
+		// Don't allow auto-resize to zap a column out of existence.
+		//
+		return Math.max(minWidth, 5);
+	}
+	
+	protected int getCellMinimumWidth(final GC gc, final Column column, final Row<T> row) {
+		final CellStyle cellStyle = styleRegistry.getCellStyle(column, row);
+		gc.setFont(getFont(cellStyle.getFontData()));
+		
+		//
+		// Include cell padding.
+		//
+		int width = cellStyle.getPaddingLeft() + cellStyle.getPaddingRight();
+
+		//
+		// Ensure the standard image can also fit.
+		//
+		if (cellStyle.getContentStyle() != ContentStyle.TEXT) {
+			final Image image = getImage("sort_ascending.png");
+			width += (image.getBounds().width + cellStyle.getPaddingImageText());
+		}
+		
+		//
+		// Include any text in the width.
+		//
+		if (cellStyle.getContentStyle() != ContentStyle.IMAGE) {
+			final String text = getCellText(column, row);
+			final Point point = getTextExtent(text, gc, cellStyle.getFontData());
+			width += point.x;
+		}
+		
+		return width;
 	}
 }

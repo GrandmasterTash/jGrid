@@ -733,7 +733,7 @@ public class Grid<T> extends Composite {
 	public void autoSizeColumn(final Column column) {
 		checkWidget();
 		
-		final int width = gridRenderer.getMinimumWidth(column);
+		final int width = gridRenderer.getMinimumWidth(gc, column);
 		column.setWidth(width);
 		
 		//
