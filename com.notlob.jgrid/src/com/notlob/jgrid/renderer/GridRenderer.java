@@ -1109,7 +1109,7 @@ public class GridRenderer<T> implements PaintListener {
 			final Point point = getTextExtent(text, gc, cellStyle.getFontData());
 			final int width = Math.min(point.x, (innerBounds.width - widthCap));
 			final int height = Math.min(point.y, innerBounds.height);
-			final AlignmentStyle textAlignment = (cellStyle.getTextAlignment() == null) ? column.getTextAlignment() : cellStyle.getTextAlignment();
+			final AlignmentStyle textAlignment = (cellStyle.getTextAlignment() == null) ? (column.getTextAlignment() == null ? AlignmentStyle.LEFT_CENTER : column.getTextAlignment()) : cellStyle.getTextAlignment();
 
 			align(width, height, innerBounds, textAlignment, cellStyle);
 
@@ -1494,8 +1494,7 @@ public class GridRenderer<T> implements PaintListener {
 		// Ensure the standard image can also fit.
 		//
 		if (cellStyle.getContentStyle() != ContentStyle.TEXT) {
-			final Image image = getImage("sort_ascending.png");
-			width += (image.getBounds().width + cellStyle.getPaddingImageText());
+			width += (16 + cellStyle.getPaddingImageText());
 		}
 		
 		//
