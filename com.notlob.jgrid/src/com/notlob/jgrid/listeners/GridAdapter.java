@@ -67,4 +67,8 @@ public class GridAdapter<T> implements IGridListener<T> {
 	@Override
 	public void columnSorted(Column column) {
 	}
+	
+	@Override
+	public void rowNumbersVisibilityChanged(boolean visible) {
+	}
 }

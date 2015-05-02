@@ -96,6 +96,7 @@ public class GridModel<T> {
 		void columnResized(final Column column);		
 		void columnMoved(final Column column);		
 		void columnSorted(final Column column);
+		void rowNumbersVisibilityChanged(final boolean visible);
 	}
 
 	public GridModel(final Grid<T> grid, final ResourceManager resourceManager, final GC gc) {
@@ -706,6 +707,12 @@ public class GridModel<T> {
 			listener.columnSorted(column);
 		}
 	}
+	
+	public void fireRowNumbersVisibilityChanged(final boolean visible) {
+		for (final IModelListener<T> listener : listeners) {
+			listener.rowNumbersVisibilityChanged(visible);
+		}
+	}
 
 	public boolean isShowRowNumbers() {
 		return showRowNumbers;
@@ -714,6 +721,7 @@ public class GridModel<T> {
 	public void setShowRowNumbers(final boolean showRowNumbers) {
 		this.showRowNumbers = showRowNumbers;
 		fireChangeEvent();
+		fireRowNumbersVisibilityChanged(showRowNumbers);
 	}
 
 	public boolean isShowColumnHeaders() {

@@ -46,8 +46,6 @@ public class Grid<T> extends Composite {
 	// TODO: Border perimeter thingy.
 	// TODO: try..catch around all calls to listeners...
 	// TODO: Partially filtered groups.
-	// TODO: Autoresize column.
-	
 	// TODO: Javadoc.
 
 	// Affects the rending of the selection region rather than how the selection model works.
@@ -803,7 +801,6 @@ public class Grid<T> extends Composite {
 		return gridModel.isShowRowNumbers();
 	}
 
-	// TODO: Rename setRowNumbersVisible.
 	public void setShowRowNumbers(final boolean show) {
 		checkWidget();
 		gridModel.setShowRowNumbers(show);
@@ -963,6 +960,10 @@ public class Grid<T> extends Composite {
 		
 		@Override
 		public void columnMoved(Column column) {
+			if (isEventsSuppressed()) {
+				return;
+			}
+			
 			for (final IGridListener<T> listener : listeners) {
 				listener.columnMoved(column);
 			}			
@@ -970,6 +971,10 @@ public class Grid<T> extends Composite {
 		
 		@Override
 		public void columnResized(Column column) {
+			if (isEventsSuppressed()) {
+				return;
+			}
+			
 			for (final IGridListener<T> listener : listeners) {
 				listener.columnResized(column);
 			}			
@@ -977,9 +982,24 @@ public class Grid<T> extends Composite {
 		
 		@Override
 		public void columnSorted(Column column) {
+			if (isEventsSuppressed()) {
+				return;
+			}
+			
 			for (final IGridListener<T> listener : listeners) {
 				listener.columnSorted(column);
 			}			
+		}
+		
+		@Override
+		public void rowNumbersVisibilityChanged(boolean visible) {
+			if (isEventsSuppressed()) {
+				return;
+			}
+			
+			for (final IGridListener<T> listener : listeners) {
+				listener.rowNumbersVisibilityChanged(visible);
+			}
 		}
 	}
 }
