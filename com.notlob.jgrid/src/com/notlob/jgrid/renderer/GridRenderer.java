@@ -286,10 +286,13 @@ public class GridRenderer<T> implements PaintListener {
 		
 		if (column != null) {						
 			selectionRegion.x = viewport.getColumnViewportX(gc, column);
-			selectionRegion.y = viewportArea.x;
-			selectionRegion.width = column.getWidth();
-			selectionRegion.height= viewportArea.height;
-			paintSelectionRegion(gc, selectionRegion, (viewport.getFirstRowIndex() == 0), true, true, true, styleRegistry.getSelectionRegionStyle());
+			
+			if (selectionRegion.x != -1) {
+				selectionRegion.y = viewportArea.y;
+				selectionRegion.width = column.getWidth();
+				selectionRegion.height= viewportArea.height;
+				paintSelectionRegion(gc, selectionRegion, (viewport.getFirstRowIndex() == 0), true, true, true, styleRegistry.getSelectionRegionStyle());
+			}
 			
 		} else {
 			selectionRegion.x = -1;
