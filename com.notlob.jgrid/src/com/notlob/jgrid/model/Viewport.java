@@ -407,7 +407,7 @@ public class Viewport<T> {
 		return -1;
 	}
 
-	private int getRowY(final GC gc, final Row<T> row) {
+	public int getRowY(final GC gc, final Row<T> row) {
 		int currentY = 0;
 
 		for (final Row<T> current : gridModel.getRows()) {

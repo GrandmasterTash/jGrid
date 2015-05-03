@@ -46,6 +46,7 @@ public class Grid<T> extends Composite {
 	// TODO: Border perimeter thingy.
 	// TODO: try..catch around all calls to listeners...
 	// TODO: Partially filtered groups.
+	// TODO: Don't render grips on last column-header.
 	// TODO: Javadoc.
 
 	// Affects the rending of the selection region rather than how the selection model works.
@@ -476,6 +477,9 @@ public class Grid<T> extends Composite {
 		addPaintListener(gridRenderer);
 	}
 
+	/**
+	 * Don't mess with this.
+	 */
 	public Viewport<T> getViewport() {
 		checkWidget();
 		return viewport;
@@ -630,6 +634,25 @@ public class Grid<T> extends Composite {
 		return null;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public Rectangle getHeaderBounds(final Column column) {
+		checkWidget();
+		
+		final boolean isGroupColumn = getGroupByColumns().contains(column);
+		
+		if (isGroupColumn) {
+			System.out.println("getHeaderBounds not currently support for group columns");
+			return null;
+		}
+		
+		final int x = viewport.getColumnViewportX(gc, column);
+		if (x == -1) {
+			return null;
+		}
+		
+		return new Rectangle(x, 0, column.getWidth(), getRowHeight(Row.COLUMN_HEADER_ROW));
+	}
+	
 	/**
 	 * Gets the row at the control location, can include the column header row.
 	 */
@@ -768,7 +791,7 @@ public class Grid<T> extends Composite {
 		computedArea.y = -1;
 	}
 
-	private Point getComputedArea() {
+	public Point getComputedArea() {
 		if (computedArea.x == -1 || computedArea.y == -1) {
 			computedArea.x = 0;
 			computedArea.y = 0;
