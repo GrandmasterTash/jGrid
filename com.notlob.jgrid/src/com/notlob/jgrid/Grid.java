@@ -409,6 +409,11 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		return gridModel.getSelectionModel().getAnchorElement();
 	}
+	
+	public Row<T> getRow(final T element) {
+		checkWidget();
+		return gridModel.getRow(element);
+	}
 
 	public List<Row<T>> getRows() {
 		checkWidget();

@@ -155,7 +155,7 @@ public class GridRenderer<T> implements PaintListener {
 			gc.setBackground(getColour(styleRegistry.getBackgroundColour()));
 			gc.fillRectangle(grid.getClientArea());
 			gc.setAntialias(SWT.ON);
-			gc.setTextAntialias(SWT.ON);
+			gc.setTextAntialias(SWT.ON);						
 
 			if (gridModel != null && !gridModel.getColumns().isEmpty()) {
 				//
@@ -198,6 +198,15 @@ public class GridRenderer<T> implements PaintListener {
 				gc.drawText(text, content.x, content.y, SWT.DRAW_TRANSPARENT);
 			}
 
+			//
+			// Paint a main border if required (column header outer-top border can be used for the top border along the grid).
+			//
+			final Rectangle borderBounds = new Rectangle(grid.getClientArea().x, grid.getClientArea().y, grid.getClientArea().width - 1, grid.getClientArea().height - 1);
+			paintBorderLine(gc, styleRegistry.getMainBorderLeft(), getTopLeft(borderBounds), getBottomLeft(borderBounds));
+			paintBorderLine(gc, styleRegistry.getMainBorderRight(), getTopRight(borderBounds), getBottomRight(borderBounds));
+			paintBorderLine(gc, styleRegistry.getMainBorderTop(), getTopLeft(borderBounds), getTopRight(borderBounds));
+			paintBorderLine(gc, styleRegistry.getMainBorderBottom(), getBottomLeft(borderBounds), getBottomRight(borderBounds));
+			
 			//
 			// Paint the image to the real GC now.
 			//

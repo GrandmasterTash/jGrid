@@ -43,6 +43,12 @@ public class StyleRegistry<T> {
 	protected RegionStyle hoverRegionStyle;
 	protected RGB hoverGroupNameForeground;
 	protected RGB hoverGroupNameBackground;
+	
+	// Grid perimeter borders.
+	protected BorderStyle mainBorderLeft;
+	protected BorderStyle mainBorderRight;
+	protected BorderStyle mainBorderTop;
+	protected BorderStyle mainBorderBottom;
 
 	protected final static int PADDING_TOP = 3;
 	protected final static int PADDING_BOTTOM = 3;
@@ -448,4 +454,35 @@ public class StyleRegistry<T> {
 		this.dragDropBorder = dragDropBorder;
 	}
 	
+	public BorderStyle getMainBorderBottom() {
+		return mainBorderBottom;
+	}
+	
+	public void setMainBorderBottom(BorderStyle mainBorderBottom) {
+		this.mainBorderBottom = mainBorderBottom;
+	}
+	
+	public BorderStyle getMainBorderLeft() {
+		return mainBorderLeft;
+	}
+	
+	public void setMainBorderLeft(BorderStyle mainBorderLeft) {
+		this.mainBorderLeft = mainBorderLeft;
+	}
+	
+	public BorderStyle getMainBorderRight() {
+		return mainBorderRight;
+	}
+	
+	public void setMainBorderRight(BorderStyle mainBorderRight) {
+		this.mainBorderRight = mainBorderRight;
+	}
+	
+	public BorderStyle getMainBorderTop() {
+		return mainBorderTop;
+	}
+	
+	public void setMainBorderTop(BorderStyle mainBorderTop) {
+		this.mainBorderTop = mainBorderTop;
+	}
 }

@@ -12,7 +12,9 @@ public class BorderStyle {
 	}
 
 	public BorderStyle(final LineStyle lineStyle) {
+		this.width = 1;
 		this.lineStyle = lineStyle;
+		
 	}
 
 

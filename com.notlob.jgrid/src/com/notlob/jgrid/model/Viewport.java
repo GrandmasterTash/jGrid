@@ -407,6 +407,9 @@ public class Viewport<T> {
 		return -1;
 	}
 
+	/**
+	 * Locate the y pixel co-ordinate of the row regardless of whether its on screen or not.
+	 */
 	public int getRowY(final GC gc, final Row<T> row) {
 		int currentY = 0;
 
