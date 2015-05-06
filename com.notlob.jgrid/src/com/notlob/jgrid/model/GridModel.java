@@ -10,8 +10,7 @@ import java.util.Map;
 import org.eclipse.swt.graphics.GC;
 
 import com.notlob.jgrid.Grid;
-import com.notlob.jgrid.model.filtering.CollapsedGroupFilter;
-import com.notlob.jgrid.model.filtering.Filter;
+import com.notlob.jgrid.Grid.GroupRenderStyle;
 import com.notlob.jgrid.model.filtering.FilterModel;
 import com.notlob.jgrid.providers.IGridContentProvider;
 import com.notlob.jgrid.providers.IGridLabelProvider;
@@ -67,6 +66,9 @@ public class GridModel<T> {
 	
 	// Show/hide the column headers.
 	private boolean showColumnHeaders = true;
+	
+	// Are we rendering groups in columns or in-line?
+	private GroupRenderStyle groupRenderStyle = GroupRenderStyle.INLINE;
 
 	// These external listeners are notified whenever something changes.
 	private final List<IModelListener<T>> listeners;
@@ -144,6 +146,14 @@ public class GridModel<T> {
 	
 	public boolean isEventsSuppressed() {
 		return (suppressedEvents > 0);
+	}
+	
+	public GroupRenderStyle getGroupRenderStyle() {
+		return groupRenderStyle;
+	}
+	
+	public void setGroupRenderStyle(final GroupRenderStyle groupRenderStyle) {
+		this.groupRenderStyle = groupRenderStyle;
 	}
 
 	public StyleRegistry<T> getStyleRegistry() {
@@ -268,11 +278,6 @@ public class GridModel<T> {
 	
 	public void clearFilters() {
 		filterModel.clear();
-		
-		//
-		// Add a collapsed group filter to the model. It provides the ability to collapse/expand groups.
-		//
-		this.filterModel.addFilters(Collections.singletonList((Filter<T>) new CollapsedGroupFilter<T>(contentProvider)));
 	}
 
 	public IGridContentProvider<T> getContentProvider() {
@@ -492,9 +497,9 @@ public class GridModel<T> {
 						// Move the row to the correct position.
 						//										
 						rows.remove(row);
-						final int newEexpectedIndex = sortModel.getSortedRowIndex(row);					
-						rows.add(newEexpectedIndex, row);
-						row.setRowIndex(newEexpectedIndex);
+						final int newExpectedIndex = sortModel.getSortedRowIndex(row);					
+						rows.add(newExpectedIndex, row);
+						row.setRowIndex(newExpectedIndex);
 					}
 					
 				} else if (visible && !row.isVisible()) {

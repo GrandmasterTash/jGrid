@@ -8,6 +8,8 @@ public interface IGridContentProvider<T> {
 
 	String getElementId(final T element);
 	
+	int getNaturalIndex(final T element);
+	
 	Object getValue(final Column column, final T element);
 
 	T getParent(final T element);

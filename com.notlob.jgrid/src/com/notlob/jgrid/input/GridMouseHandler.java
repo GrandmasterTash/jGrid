@@ -551,11 +551,26 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 					} else if (ctrl && !shift) {
 						//
-						// Single row/group toggle.
+						// Set the whole group to match parent's toggled state.
 						//
-						final List<Row<T>> rows = new ArrayList<>();
-						rows.addAll(gridModel.isParentRow(row) ? gridModel.getWholeGroup(row) : Collections.singletonList(row));
-						gridModel.getSelectionModel().toggleRowSelections(rows);
+						if (gridModel.isParentRow(row)) {
+							final List<Row<T>> rowsToToggle = new ArrayList<>();
+							rowsToToggle.add(row);
+							
+							for (Row<T> member : gridModel.getWholeGroup(row)) {
+								if ((member != row) && (member.isSelected() == row.isSelected())) {
+									rowsToToggle.add(member);
+								}
+							}
+							
+							gridModel.getSelectionModel().toggleRowSelections(rowsToToggle);
+							
+						} else {
+							//
+							// Single row/group toggle.
+							//
+							gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row));
+						}
 
 					} else if (!ctrl && shift) {
 						//

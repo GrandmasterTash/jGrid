@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.notlob.jgrid.Grid.GroupRenderStyle;
 import com.notlob.jgrid.providers.IGridContentProvider;
 
 public class SortModel<T> {
@@ -133,6 +134,7 @@ public class SortModel<T> {
 	public void clear() {
 		clearInternal();
 		Collections.sort(gridModel.getRows(), rowComparator);
+		gridModel.reindex();
 		gridModel.fireChangeEvent();
 	}
 
@@ -228,11 +230,11 @@ public class SortModel<T> {
 		}
 
 		/**
-		 * Protect against comparissons between parent rows (that don't have a field for the sorted column)
+		 * Protect against comparisons between parent rows (that don't have a field for the sorted column)
 		 * and child rows.
 		 */
 		private Object getValue(final Column column, final T element) {
-			if (gridModel.isParentElement(element) && !gridModel.getGroupByColumns().contains(column)) {
+			if ((gridModel.getGroupRenderStyle() == GroupRenderStyle.INLINE) && gridModel.isParentElement(element) && !gridModel.getGroupByColumns().contains(column)) {
 				return null;
 			}
 
@@ -274,8 +276,8 @@ public class SortModel<T> {
 			//
 			// Fall-back on the id of the element.
 			//
-			final String value1 = getContentProvider().getElementId(element1);
-			final String value2 = getContentProvider().getElementId(element2);
+			final Integer value1 = getContentProvider().getNaturalIndex(element1);
+			final Integer value2 = getContentProvider().getNaturalIndex(element2);
 			return value1.compareTo(value2);
 		}
 	}

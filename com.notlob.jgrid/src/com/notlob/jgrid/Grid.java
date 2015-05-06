@@ -99,7 +99,6 @@ public class Grid<T> extends Composite {
 	private boolean highlightAnchorInHeaders = true;
 	private boolean highlightAnchorCellBorder = true;
 	private SelectionStyle selectionStyle = SelectionStyle.ROW_BASED;
-	private GroupRenderStyle groupRenderStyle = GroupRenderStyle.INLINE;
 	
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
@@ -153,6 +152,26 @@ public class Grid<T> extends Composite {
 		gc.dispose();
 		resourceManager.dispose();
 		super.dispose();
+	}
+	
+	/**
+	 * Testing method to ensure our rows are indexed correctly.
+	 */
+	public boolean checkIndexes() {
+		checkWidget();
+		boolean invalid = false;
+		
+		int index = 0;
+		for (Row<T> row : gridModel.getRows()) {
+			if (row.getRowIndex() != index) {
+				invalid |= true;
+				System.out.println(String.format("Row at index [%s] has incorrect cached index [%s] for element [%s]", index, row.getRowIndex(), contentProvider.getElementId(row.getElement())));
+			}
+			
+			index++;
+		}
+		
+		return !invalid;
 	}
 	
 	/**
@@ -229,12 +248,12 @@ public class Grid<T> extends Composite {
 
 	public GroupRenderStyle getGroupRenderStyle() {
 		checkWidget();
-		return groupRenderStyle;
+		return gridModel.getGroupRenderStyle();
 	}
 	
 	public void setGroupRenderStyle(final GroupRenderStyle groupRenderStyle) {
 		checkWidget();
-		this.groupRenderStyle = groupRenderStyle;
+		gridModel.setGroupRenderStyle(groupRenderStyle);
 	}
 	
 	public void setShowColumnHeaders(final boolean showColumnHeaders) {
@@ -270,11 +289,6 @@ public class Grid<T> extends Composite {
 	public List<Column> getAllColumns() {
 		checkWidget();
 		return gridModel.getAllColumns();
-	}
-
-	public Column getColumn(final int columnIndex) {
-		checkWidget();
-		return gridModel.getColumns().get(columnIndex);
 	}
 
 	public Column getColumnById(final String columnId) {
@@ -650,6 +664,7 @@ public class Grid<T> extends Composite {
 			return null;
 		}
 		
+		viewport.calculateVisibleCellRange(gc);
 		final int x = viewport.getColumnViewportX(gc, column);
 		if (x == -1) {
 			return null;

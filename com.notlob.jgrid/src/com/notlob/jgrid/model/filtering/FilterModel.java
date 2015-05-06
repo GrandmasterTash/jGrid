@@ -2,6 +2,7 @@ package com.notlob.jgrid.model.filtering;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
@@ -41,6 +42,12 @@ public class FilterModel<T> {
 
 	public void clear() {
 		filters.clear();
+		
+		//
+		// Add a collapsed group filter to the model. It provides the ability to collapse/expand groups.
+		//
+		addFilters(Collections.singletonList((Filter<T>) new CollapsedGroupFilter<T>(gridModel.getContentProvider())));
+		
 		applyFilters();
 	}
 
