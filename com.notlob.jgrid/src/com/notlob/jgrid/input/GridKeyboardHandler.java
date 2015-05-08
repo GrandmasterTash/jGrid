@@ -83,7 +83,7 @@ public class GridKeyboardHandler<T> implements KeyListener {
 					//
 					final Row<T> row = gridModel.getRow(gridModel.getSelectionModel().getAnchorElement());
 					if (!row.isSelected()) {
-						gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row));	
+						gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row), false);	
 					}
 					
 					
@@ -157,7 +157,7 @@ public class GridKeyboardHandler<T> implements KeyListener {
 		final Row<T> row = gridModel.getRow(gridModel.getSelectionModel().getAnchorElement());
 		final List<Row<T>> rows = new ArrayList<>();
 		rows.addAll(gridModel.isParentRow(row) ? gridModel.getWholeGroup(row) : Collections.singletonList(row));
-		gridModel.getSelectionModel().toggleRowSelections(rows);
+		gridModel.getSelectionModel().toggleRowSelections(rows, true);
 		
 	}
 

@@ -80,8 +80,10 @@ public class SelectionModel<T> {
 	}
 
 	private void selectRow(final Row<T> row) {
-		row.setSelected(true);
-		selectedElements.add(row.getElement());
+		if (row.isVisible()) {
+			row.setSelected(true);
+			selectedElements.add(row.getElement());
+		}
 	}
 
 	private void unselectRow(final Row<T> row) {
@@ -166,13 +168,28 @@ public class SelectionModel<T> {
 	/**
 	 * Flips the selected state of the rows specified.
 	 */
-	public void toggleRowSelections(final List<Row<T>> rowsToToggle) {
+	public void toggleRowSelections(final List<Row<T>> rowsToToggle, final boolean includeGroup) {
 		boolean firstSelection = true;
+		
+		final List<Row<T>> fullListToToggle = new ArrayList<Row<T>>(rowsToToggle);		
+		//
+		// If any of the rows are parent rows - add any children with the same selection state as the parent.
+		// This will ensure, if a group row is toggled, the children are toggled to match.
+		//
+		for (final Row<T> row : rowsToToggle) {
+			if (gridModel.isParentRow(row)) {
+				for (Row<T> child : gridModel.getWholeGroup(row)) {
+					if ((child != row) && (child.isSelected() == row.isSelected())) {
+						fullListToToggle.add(child);
+					}
+				}
+			}
+		}		
 
 		//
 		// Toggle selection state.
 		//
-		for (final Row<T> row : rowsToToggle) {
+		for (final Row<T> row : fullListToToggle) {
 			if (row.isSelected()) {
 				unselectRow(row);
 			} else {
@@ -188,7 +205,7 @@ public class SelectionModel<T> {
 		//
 		// If all child rows of a group are selected, select the group.
 		//
-		checkGroupSelection(rowsToToggle);
+		checkGroupSelection(fullListToToggle);
 
 		gridModel.fireSelectionChangedEvent();
 	}
