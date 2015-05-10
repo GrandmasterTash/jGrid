@@ -359,6 +359,47 @@ public class GridModel<T> {
 		}
 	}
 	
+	/**
+	 * If the insertBefore argument is null, the column is moved to the end of the grid.
+	 */
+	public void moveColumn(final Column columnToMove, final Column insertBefore) {
+		//
+		// This check prevents dropping a column onto itself from causing the column to shuffle to the end of the grid.
+		//
+		if (columns.indexOf(insertBefore) != -1) {
+			//
+			// Move the column in the visible-only list of columns.
+			//
+			int insertIndex = insertBefore == null ? -1 : columns.indexOf(insertBefore);
+			columns.remove(columnToMove);
+			
+			if (insertIndex == -1) {			
+				columns.add(columnToMove);
+			} else {
+				columns.add(insertIndex, columnToMove);
+			}
+			
+			//
+			// Move the column in the full list of columns.
+			//
+			insertIndex = insertBefore == null ? -1 : allColumns.indexOf(insertBefore);		
+			allColumns.remove(columnToMove);
+			
+			if (insertIndex == -1) {			
+				allColumns.add(columnToMove);
+			} else {
+				allColumns.add(insertIndex, columnToMove);
+			}
+			
+			//
+			// Cause the grid to repaint and recalculate the scrollbars - because the 
+			// v-scroll amount may need updating.
+			//
+			fireChangeEvent();
+			fireColumnMovedEvent(columnToMove);
+		}
+	}
+	
 	public Column getColumnById(final String columnId) {
 		for (final Column column : allColumns) {
 			if (column.getColumnId().equalsIgnoreCase(columnId)) {

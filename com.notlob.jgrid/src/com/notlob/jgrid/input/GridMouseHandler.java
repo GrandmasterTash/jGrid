@@ -431,33 +431,14 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 					//
 					// Edge-case, we're moving the column to the end of the grid.
 					//
-					gridModel.getColumns().remove(repositioning);
-					gridModel.getColumns().add(repositioning);
-					
-					//
-					// Cause the grid to repaint and recalculate the scrollbars - because the 
-					// v-scroll amount may need updating.
-					//
-					gridModel.fireChangeEvent();
+					gridModel.moveColumn(repositioning, null);
 					
 				} else {
 					//
 					// Move the column now.
 					//
-					final int targetIndex = gridModel.getColumns().indexOf(targetColumn);				
-					if (targetIndex != -1) {
-						gridModel.getColumns().remove(repositioning);
-						gridModel.getColumns().add(gridModel.getColumns().indexOf(targetColumn), repositioning);
-						
-						//
-						// Cause the grid to repaint and recalculate the scrollbars - because the 
-						// v-scroll amount may need updating.
-						//
-						gridModel.fireChangeEvent();
-					}
+					gridModel.moveColumn(repositioning, targetColumn);
 				}
-				
-				gridModel.fireColumnMovedEvent(repositioning);
 			}
 			
 			repositioning = null;
