@@ -31,6 +31,7 @@ import com.notlob.jgrid.styles.BorderStyle;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.CompositeCellStyle;
 import com.notlob.jgrid.styles.ContentStyle;
+import com.notlob.jgrid.styles.LineStyle;
 import com.notlob.jgrid.styles.RegionStyle;
 import com.notlob.jgrid.styles.StyleRegistry;
 
@@ -87,6 +88,10 @@ public class GridRenderer<T> implements PaintListener {
 	protected Image dropImage;
 	protected Image columnDragImage;
 
+	// Stops the grip column header separator style being painted for the corner cell and the last column
+	// header cell.
+	protected boolean dontPaintGrip;
+	
 	// Double-buffering image. Used as a key for the setData method.
 	private final static String DATA__DOUBLE_BUFFER_IMAGE = "double-buffer-image"; //$NON-NLS-1$
 
@@ -362,7 +367,6 @@ public class GridRenderer<T> implements PaintListener {
 				// This is the next row after a selection region. We now need to paint the region.
 				//
 				paintSelectionRegion(gc, selectionRegion, paintTopEdge, paintRightEdge, true, paintLeftEdge, styleRegistry.getSelectionRegionStyle());
-
 			}
 
 			if (grid.isHighlightHoveredRow() && !row.isSelected() && (row == grid.getMouseHandler().getRow())) {
@@ -464,6 +468,7 @@ public class GridRenderer<T> implements PaintListener {
 			cellBounds.y = 0;
 			cellBounds.height = viewportArea.y;
 			cellBounds.width = getCornerCellWidth() + styleRegistry.getCellSpacingHorizontal();
+			dontPaintGrip = true;
 
 			if (renderPass == RenderPass.BACKGROUND) {
 				paintCellBackground(gc, cellBounds, styleRegistry.getCornerStyle());
@@ -471,6 +476,8 @@ public class GridRenderer<T> implements PaintListener {
 			} else if (renderPass == RenderPass.FOREGROUND) {
 				paintCellBorders(gc, cellBounds, styleRegistry.getCornerStyle());
 			}
+			
+			dontPaintGrip = false;
 		}
 		
 		//
@@ -933,9 +940,11 @@ public class GridRenderer<T> implements PaintListener {
 				final Column column = gridModel.getColumns().get(columnIndex);
 				final CellStyle cellStyle = styleRegistry.getCellStyle(column, row);
 	
+				dontPaintGrip = (columnIndex == (gridModel.getColumns().size() - 1));
 				cellBounds.width = column.getWidth();
 				paintCell(gc, cellBounds, column, row, cellStyle);
 				cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
+				dontPaintGrip = false;
 			}
 	
 			//
@@ -1025,23 +1034,28 @@ public class GridRenderer<T> implements PaintListener {
 	 * Paint the outer then inner borders of the cell.
 	 */
 	protected void paintCellBorders(final GC gc, final Rectangle bounds, final CellStyle cellStyle) {
+		
+		// TODO: Edge-case - do not paint the 'grip' style header border on the corner cell or the last column.
 		//
 		// Render outer border.
 		//
 		gc.setAlpha(cellStyle.getForegroundOpacity());
 		paintBorderLine(gc, cellStyle.getBorderOuterTop(), getTopLeft(bounds), getTopRight(bounds));
-		paintBorderLine(gc, cellStyle.getBorderOuterRight(), getTopRight(bounds), getBottomRight(bounds));
 		paintBorderLine(gc, cellStyle.getBorderOuterBottom(), getBottomLeft(bounds), getBottomRight(bounds));
 		paintBorderLine(gc, cellStyle.getBorderOuterLeft(), getTopLeft(bounds), getBottomLeft(bounds));
+		
+		if (!(dontPaintGrip && (cellStyle.getBorderOuterRight() != null) && (cellStyle.getBorderOuterRight().getLineStyle() == LineStyle.GRIP))) {
+			paintBorderLine(gc, cellStyle.getBorderOuterRight(), getTopRight(bounds), getBottomRight(bounds));
+		}
 
 		//
 		// Render inner border.
 		//
 		setInnerBounds(bounds, cellStyle.getPaddingInnerBorder());
-		paintBorderLine(gc, cellStyle.getBorderInnerTop(), getTopLeft(innerBounds), getTopRight(innerBounds));
-		paintBorderLine(gc, cellStyle.getBorderInnerRight(), getTopRight(innerBounds), getBottomRight(innerBounds));
+		paintBorderLine(gc, cellStyle.getBorderInnerTop(), getTopLeft(innerBounds), getTopRight(innerBounds));		
 		paintBorderLine(gc, cellStyle.getBorderInnerBottom(), getBottomLeft(innerBounds), getBottomRight(innerBounds));
 		paintBorderLine(gc, cellStyle.getBorderInnerLeft(), getTopLeft(innerBounds), getBottomLeft(innerBounds));
+		paintBorderLine(gc, cellStyle.getBorderInnerRight(), getTopRight(innerBounds), getBottomRight(innerBounds));
 	}
 
 	/**
