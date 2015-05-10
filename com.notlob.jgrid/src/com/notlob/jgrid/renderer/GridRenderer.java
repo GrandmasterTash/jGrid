@@ -197,12 +197,16 @@ public class GridRenderer<T> implements PaintListener {
 				final String text = grid.getEmptyMessage() == null ? (grid.getFilters().size() > 1 ? getDefaultFiltersHiddenDataMessage() : getDefaultNoDataMessage()) : grid.getEmptyMessage();
 				final CellStyle cellStyle = styleRegistry.getNoDataStyle();
 				final Point point = getTextExtent(text, gc, cellStyle.getFontData());
-
+				final Rectangle bounds = viewport.getViewportArea(gc);
+				final Rectangle oldBounds = gc.getClipping();
+				
 				gc.setAlpha(cellStyle.getForegroundOpacity());
 				gc.setFont(getFont(cellStyle.getFontData()));
 				gc.setForeground(getColour(cellStyle.getForeground()));
-				align(point.x, point.y, grid.getClientArea(), cellStyle.getTextAlignment(), cellStyle);				
+				align(point.x, point.y, bounds, cellStyle.getTextAlignment(), cellStyle);
+				gc.setClipping(bounds);
 				gc.drawText(text, content.x, content.y, SWT.DRAW_TRANSPARENT);
+				gc.setClipping(oldBounds);
 			}
 
 			//
