@@ -89,6 +89,11 @@ public class SelectionModel<T> {
 	private void unselectRow(final Row<T> row) {
 		row.setSelected(false);
 		selectedElements.remove(row.getElement());
+		
+		if (row.getElement() == anchorElement) {
+			anchorElement = null;
+			anchorColumn = null;
+		}
 	}
 
 	public void selectAll() {
