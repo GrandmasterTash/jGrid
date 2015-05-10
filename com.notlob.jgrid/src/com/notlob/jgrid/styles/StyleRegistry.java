@@ -65,7 +65,7 @@ public class StyleRegistry<T> {
 		defaultStyle.setAllowContentOverlap(false);
 		defaultStyle.setBackground(new RGB(255, 255, 255));
 		defaultStyle.setBackgroundAlternate(new RGB(240, 240, 240));
-		defaultStyle.setFontData(new FontData("Segoe UI", 9, SWT.NORMAL));
+		defaultStyle.setFontData(getDefaultFont());
 		defaultStyle.setForeground(new RGB(0, 0, 0));
 		defaultStyle.setForegroundOpacity(255);
 		defaultStyle.setBackgroundOpacity(255);
@@ -80,7 +80,7 @@ public class StyleRegistry<T> {
 		// Build a default header cell style.
 		//
 		headerStyle = defaultStyle.copy();
-		headerStyle.setFontData(new FontData("Segoe UI", 9, SWT.NORMAL));
+		headerStyle.setFontData(getDefaultFont());
 		headerStyle.setContentStyle(ContentStyle.TEXT_THEN_IMAGE);
 		headerStyle.setImageAlignment(AlignmentStyle.RIGHT_CENTER);
 		headerStyle.setAllowContentOverlap(true);
@@ -201,6 +201,19 @@ public class StyleRegistry<T> {
 
 		filterMatchForeground = new RGB(0, 97, 83);
 		filterMatchBackground = new RGB(198, 239, 206);
+	}
+	
+	protected FontData getDefaultFont() {
+		final String OS = System.getProperty("os.name");
+		
+		if (OS.toLowerCase().contains("win")) {
+			return new FontData("Segoe UI", 9, SWT.NORMAL);
+			
+		} else if (OS.toLowerCase().contains("mac")) {
+			return new FontData("Arial", 9, SWT.NORMAL);
+		}
+		
+		return new FontData("Monospaced", 8, SWT.NORMAL);
 	}
 	
 	public CellStyle getCellStyle(final Column column, final Row<T> row) {
