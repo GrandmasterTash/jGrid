@@ -553,7 +553,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				//
 				// Select All - the corner has been clicked.
 				//
-				if ((e.x < viewport.getViewportArea(gc).x) && (e.y < viewport.getViewportArea(gc).y)) {
+				if ((e.x < viewport.getViewportArea(gc).x) && (e.y < viewport.getViewportArea(gc).y) && (viewport.getColumnIndexByX(e.x, gc) == -1)) {
 					gridModel.getSelectionModel().selectAll();
 				}
 

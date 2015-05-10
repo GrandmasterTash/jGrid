@@ -240,7 +240,7 @@ public class StyleRegistry<T> {
 			//
 			// Check for a selected column header
 			//
-			if (grid.isFocusControl() && grid.isHighlightAnchorInHeaders() && (row == Row.COLUMN_HEADER_ROW)  && (column == grid.getGridModel().getSelectionModel().getAnchorColumn())) {
+			if (grid.isFocusControl() && grid.isHighlightAnchorInHeaders() && (row == Row.COLUMN_HEADER_ROW)  && (column == grid.getGridModel().getSelectionModel().getAnchorColumn()) && !(grid.getGridRenderer().isPaintingPinned())) {
 				return selectionHeaderStyle;
 			}
 		}

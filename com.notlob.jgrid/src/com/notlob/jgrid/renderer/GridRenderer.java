@@ -88,9 +88,11 @@ public class GridRenderer<T> implements PaintListener {
 	protected Image dropImage;
 	protected Image columnDragImage;
 
-	// Stops the grip column header separator style being painted for the corner cell and the last column
-	// header cell.
+	// Stops the grip column header separator style being painted for the corner cell and the last column header cell.
 	protected boolean dontPaintGrip;
+	
+	// Stops the grid painting the anchor in a pinned column.
+	protected boolean paintingPinned;
 	
 	// Double-buffering image. Used as a key for the setData method.
 	private final static String DATA__DOUBLE_BUFFER_IMAGE = "double-buffer-image"; //$NON-NLS-1$
@@ -919,12 +921,14 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			// Paint pinned cells.
 			//
+			paintingPinned = true;
 			for (Column pinnedColumn : gridModel.getPinnedColumns()) {
 				final CellStyle cellStyle = styleRegistry.getCellStyle(pinnedColumn, row);				
 				cellBounds.width = pinnedColumn.getWidth();
 				paintCell(gc, cellBounds, pinnedColumn, row, cellStyle);
 				cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
 			}
+			paintingPinned = false;
 			
 			//
 			// Paint a vertical border - to the right of the last pinned cell.
@@ -990,7 +994,7 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			// If the cell has the anchor, use a composite style.
 			//
-			if (grid.isFocusControl() && grid.isHighlightAnchorCellBorder() && doesColumnHaveAnchor(column) && doesRowHaveAnchor(row)) {
+			if (!paintingPinned && grid.isFocusControl() && grid.isHighlightAnchorCellBorder() && doesColumnHaveAnchor(column) && doesRowHaveAnchor(row)) {
 				final CompositeCellStyle compositeStyle = new CompositeCellStyle();
 				compositeStyle.add(styleRegistry.getAnchorStyle());
 				compositeStyle.add(cellStyle);
@@ -1405,6 +1409,10 @@ public class GridRenderer<T> implements PaintListener {
 
 	protected boolean doesRowHaveAnchor(final Row<T> row) {
 		return ((row != null) && (row != Row.COLUMN_HEADER_ROW) && (row.getElement() == grid.getAnchorElement()));
+	}
+	
+	public boolean isPaintingPinned() {
+		return paintingPinned;
 	}
 
 	/**
