@@ -42,6 +42,15 @@ public abstract class Filter<T> {
 	//
 	public abstract String toReadableString(final boolean includeStyleTokens);
 
+	//
+	// If show whole group is false, then only matched child elements in a group are shown.
+	// This method can be used to ensure some records are always shown if anything else in the group is shown.
+	// For example - the parent row itself.
+	//
+	public boolean mandatoryInGroup(final Row<T> row) {
+		return false;
+	}
+	
 	@Override
 	public String toString() {
 		return toReadableString(false);
