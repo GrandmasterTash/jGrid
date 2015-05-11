@@ -2,6 +2,7 @@ package com.notlob.jgrid;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -494,6 +495,14 @@ public class Grid<T> extends Composite {
 		removePaintListener(this.gridRenderer);
 		this.gridRenderer = gridRenderer;
 		addPaintListener(gridRenderer);
+	}
+	
+	/**
+	 * Override the standard comparator behvaiour.
+	 */
+	public void setRowComparator(final Comparator<Row<T>> rowComparator) {
+		checkWidget();
+		gridModel.getSortModel().setRowComparator(rowComparator);
 	}
 
 	/**
