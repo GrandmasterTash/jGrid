@@ -354,18 +354,20 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 	@Override
 	public void mouseDown(final MouseEvent e) {
-		mouseDown = true;
-		
-		//
-		// See if the mouse is near a column header boundary. If so, begin a resize drag.
-		//
-		resizing = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.RESIZE);
-		
-		//
-		// If we're not resizing, maybe we're dragging a column?
-		//
-		if (resizing == null) {
-			repositioningDetect = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.REPOSITION);
+		if (e.button == 1) {			
+			mouseDown = true;
+			
+			//
+			// See if the mouse is near a column header boundary. If so, begin a resize drag.
+			//
+			resizing = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.RESIZE);
+			
+			//
+			// If we're not resizing, maybe we're dragging a column?
+			//
+			if (resizing == null) {
+				repositioningDetect = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.REPOSITION);
+			}
 		}
 	}
 
@@ -389,6 +391,13 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				targetColumn = null;
 			}
 			
+			return;
+		}
+		
+		//
+		// If the event is outside the widget bounds - ignore it.
+		//
+		if (!grid.getBounds().contains(e.x, e.y)) {
 			return;
 		}
 		
