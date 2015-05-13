@@ -94,12 +94,17 @@ public class GridRenderer<T> implements PaintListener {
 	// Stops the grid painting the anchor in a pinned column.
 	protected boolean paintingPinned;
 	
+	// True if one or more rows has not finished it's throb animation.
+	protected boolean animationPending;
+	
 	// Double-buffering image. Used as a key for the setData method.
 	private final static String DATA__DOUBLE_BUFFER_IMAGE = "double-buffer-image"; //$NON-NLS-1$
 
 	private final static int PADDING__EXPAND_COLLAPSE_IMAGE = 2;
 	private final static int SPACING__GROUP_FIELD = 4;
 	private final static int PADDING__GROUP_FIELD = 8;
+	private final static int ANIMATION_INTERVAL = 10;
+	private final static int ANIMATION_DURATION = 500; // In frames
 	
 	public GridRenderer(final Grid<T> grid) {
 		this.grid = grid;
@@ -130,6 +135,8 @@ public class GridRenderer<T> implements PaintListener {
 	@Override
 	public void paintControl(final PaintEvent e) {
 		GC gc = null;
+		animationPending = false;
+		
 		try {
 			if (grid.getLabelProvider() == null) {
 				throw new IllegalArgumentException("There's no IGridLabelProvider on the grid.");
@@ -222,6 +229,18 @@ public class GridRenderer<T> implements PaintListener {
 			// Paint the image to the real GC now.
 			//
 			e.gc.drawImage(image, 0, 0);
+			
+			//
+			// Schedule another paint if we're animating.
+			//
+			if (animationPending) {
+				grid.getDisplay().timerExec(ANIMATION_INTERVAL, new Runnable() {
+					@Override
+					public void run() {
+						grid.redraw();
+					}
+				});
+			}
 
 		} catch (final Throwable t) {
 			if (!errorLogged) {
@@ -1043,7 +1062,6 @@ public class GridRenderer<T> implements PaintListener {
 	 */
 	protected void paintCellBorders(final GC gc, final Rectangle bounds, final CellStyle cellStyle) {
 		
-		// TODO: Edge-case - do not paint the 'grip' style header border on the corner cell or the last column.
 		//
 		// Render outer border.
 		//
@@ -1147,11 +1165,26 @@ public class GridRenderer<T> implements PaintListener {
 
 			align(width, height, innerBounds, textAlignment, cellStyle);
 
+			//
+			// Perform an animation on the row - if required. This can cause the text to bounce into view.
+			//			
+			int contentY = content.y;			
+			if (row != null && row != Row.COLUMN_HEADER_ROW && row.getFrame() > -1 && row.getFrame() < ANIMATION_DURATION) {
+				content.y = (int) bounce(row.getFrame(), ANIMATION_DURATION, innerBounds.y - innerBounds.height, innerBounds.height);
+				row.setFrame(row.getFrame() + 1);
+				if (row.getFrame() > 0) {
+					animationPending = true;
+				}
+			}
+			
 			if (filterMatch) {
 				gc.drawText(text, content.x, content.y);
 			} else {
 				gc.drawText(text, content.x, content.y, SWT.DRAW_TRANSPARENT);
 			}
+			
+			// If the animation has messed with this location - restore it.
+			content.y = contentY;
 
 			if (widthCap > 0) {
 				innerBounds.width += widthCap;
@@ -1545,5 +1578,20 @@ public class GridRenderer<T> implements PaintListener {
 		}
 		
 		return width;
+	}
+	
+	protected float bounce(float time, final float duration, final float start, final float destination) {
+		if ((time /= duration) < (1 / 2.75f)) {
+			return destination * (7.5625f * time * time) + start;
+			
+		} else if (time < (2 / 2.75f)) {
+			return destination * (7.5625f * (time -= (1.5f / 2.75f)) * time + .75f) + start;
+			
+		} else if (time < (2.5 / 2.75)) {
+			return destination * (7.5625f * (time -= (2.25f / 2.75f)) * time + .9375f) + start;
+			
+		} else {
+			return destination * (7.5625f * (time -= (2.625f / 2.75f)) * time + .984375f) + start;
+		}
 	}
 }

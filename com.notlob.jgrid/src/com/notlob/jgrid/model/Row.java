@@ -17,6 +17,9 @@ public class Row<T> {
 	private int height;
 	private int rowIndex = -1; // Allows updateElements to be implemented without an indexOf.
 	private final T element;
+	
+	// An animation frame counter.
+	private int frame;
 
 	// If this row has matched a filter which highlights results, store the matches here.
 	private Collection<IHighlightingFilter> filterMatches;
@@ -27,6 +30,7 @@ public class Row<T> {
 	Row(final T element) {
 		this.element = element;
 		height = -1;
+		frame = -1; // No animation.
 	}
 
 	int getHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
@@ -97,6 +101,14 @@ public class Row<T> {
 
 	public boolean hasFilterMatches() {
 		return (filterMatches != null) && (!filterMatches.isEmpty());
+	}
+	
+	public int getFrame() {
+		return frame;
+	}
+	
+	public void setFrame(int frame) {
+		this.frame = frame;
 	}
 
 	@Override

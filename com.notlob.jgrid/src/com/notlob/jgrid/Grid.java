@@ -44,10 +44,8 @@ public class Grid<T> extends Composite {
 	// TODO: Mouse cursor in CellStyle.
 	// TODO: Focus select style / un-focus select style.	
 	// TODO: Keep selection in viewport.
-	// TODO: Border perimeter thingy.
 	// TODO: try..catch around all calls to listeners...
 	// TODO: Partially filtered groups.
-	// TODO: Don't render grips on last column-header.
 	// TODO: Javadoc.
 
 	// Affects the rending of the selection region rather than how the selection model works.
@@ -99,6 +97,7 @@ public class Grid<T> extends Composite {
 	private boolean highlightHoveredRow = true;
 	private boolean highlightAnchorInHeaders = true;
 	private boolean highlightAnchorCellBorder = true;
+	private boolean animateNewRows = false;
 	private SelectionStyle selectionStyle = SelectionStyle.ROW_BASED;
 	
 	public Grid(final Composite parent) {
@@ -221,6 +220,16 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		return highlightAnchorCellBorder;
 	}
+	
+	public boolean isAnimateNewRows() {
+		checkWidget();
+		return animateNewRows;
+	}
+	
+	public void setAnimateNewRows(final boolean animateNewRows) {
+		checkWidget();
+		this.animateNewRows = animateNewRows;
+	}
 
 	public void setHighlightAnchorCellBorder(final boolean highlightAnchorCellBorder) {
 		checkWidget();
@@ -334,7 +343,25 @@ public class Grid<T> extends Composite {
 
 	public void addElements(final Collection<T> elements) {
 		checkWidget();
-		gridModel.addElements(elements);
+		
+		final boolean wasEmpty = gridModel.getRows().isEmpty();
+		final Collection<Row<T>> rowsAdded = gridModel.addElements(elements);
+		boolean animationRequired = false;
+		
+		//
+		// Begin animating any rows inserted into the viewport area.
+		//
+		if (animateNewRows && !wasEmpty) { 
+			for (Row<T> row : rowsAdded) {
+				if ((row.getRowIndex() >= viewport.getFirstRowIndex()) && (row.getRowIndex() <= viewport.getLastRowIndex())) {
+					row.setFrame(0);
+					animationRequired = true;
+				}
+			}
+		}
+		if (animationRequired) {
+			redraw();
+		}
 	}
 
 	public void removeElements(final Collection<T> elements) {

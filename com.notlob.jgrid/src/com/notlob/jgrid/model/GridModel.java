@@ -409,8 +409,12 @@ public class GridModel<T> {
 		return null;
 	}
 
-	public void addElements(final Collection<T> elements) {
+	/**
+	 * Returns the rows which are visible after the operation.
+	 */
+	public Collection<Row<T>> addElements(final Collection<T> elements) {
 		int heightDelta = 0;
+		final Collection<Row<T>> rowsShown = new ArrayList<Row<T>>();
 		
 		for (final T element : elements) {
 			//
@@ -421,20 +425,23 @@ public class GridModel<T> {
 			
 			if (addRow(row)) {
 				heightDelta += getRowHeight(row);
+				rowsShown.add(row);
 			}
 		}
 		
 		//
-		// Reseed the row-indexes if there's been any move or show/hiding.
+		// Re-seed the row-indexes if there's been any move or show/hiding.
 		//
 		reindex();
-
+		
 		if (heightDelta != 0) {
 			fireHeightChangeEvent(heightDelta);
 		}
 		
 		fireElementsAddedEvent(elements);		
 		fireRowCountChangedEvent();
+		
+		return rowsShown;
 	}
 
 	private boolean addRow(final Row<T> row) {
