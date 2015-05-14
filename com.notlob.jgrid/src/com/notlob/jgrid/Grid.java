@@ -927,10 +927,17 @@ public class Grid<T> extends Composite {
 	}
 
 	private class ResizeListener implements Listener {
+		private boolean updating = false;
+		
 		@Override
 		public void handleEvent(final Event event) {
-			if (event.type == SWT.Resize) {
-				updateScrollbars();
+			if (event.type == SWT.Resize && !updating) {
+				try {
+					updating = true;
+					updateScrollbars();
+				} finally {
+					updating = false;
+				}
 			}
 		}
 	}
