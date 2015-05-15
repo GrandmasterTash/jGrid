@@ -340,6 +340,16 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		return gridModel.getGroupByColumns().get(columnIndex);
 	}
+	
+	public Row<T> getColumnHeaderRow() {
+		checkWidget();
+		return gridModel.getColumnHeaderRow();
+	}
+	
+	public Column getRowNumberColumn() {
+		checkWidget();
+		return gridModel.getRowNumberColumn();
+	}
 
 	public void addElements(final Collection<T> elements) {
 		checkWidget();
@@ -689,7 +699,6 @@ public class Grid<T> extends Composite {
 		return null;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Rectangle getHeaderBounds(final Column column) {
 		checkWidget();
 		
@@ -706,13 +715,12 @@ public class Grid<T> extends Composite {
 			return null;
 		}
 		
-		return new Rectangle(x, 0, column.getWidth(), getRowHeight(Row.COLUMN_HEADER_ROW));
+		return new Rectangle(x, 0, column.getWidth(), getRowHeight(gridModel.getColumnHeaderRow()));
 	}
 	
 	/**
 	 * Gets the row at the control location, can include the column header row.
 	 */
-	@SuppressWarnings("unchecked")
 	public Row<T> getRowAtXY(final int x, final int y) {
 		checkWidget();
 		
@@ -725,10 +733,10 @@ public class Grid<T> extends Composite {
 			//
 			if (y >= 0 ) {
 				row = null;
-				final int headerHeight = getRowHeight(Row.COLUMN_HEADER_ROW);
+				final int headerHeight = getRowHeight(gridModel.getColumnHeaderRow());
 
 				if (y < headerHeight) {
-					row = Row.COLUMN_HEADER_ROW;
+					row = gridModel.getColumnHeaderRow();
 				}
 			}
 
@@ -750,7 +758,7 @@ public class Grid<T> extends Composite {
 		final int columnIndex = viewport.getColumnIndexByX(x, gc);
 		
 		if ((columnIndex == -1) && (x < viewport.getViewportArea(gc).x)) {
-			column = Column.ROW_NUMBER_COLUMN;
+			column = gridModel.getRowNumberColumn();
 			
 		} else if (columnIndex != -1) {
 			column = gridModel.getColumns().get(columnIndex);

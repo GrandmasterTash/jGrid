@@ -48,6 +48,12 @@ public class GridModel<T> {
 
 	// If we're grouping data by particular column(s).
 	private final List<Column> groupByColumns;
+	
+	// A column where row numbers are rendered.
+	private final Column rowNumberColumn;
+	
+	// The column headers are represented by this row.
+	private final Row<T> columnHeaderRow;
 
 	// Selection model (also Row has a selected property).
 	private final SelectionModel<T> selectionModel;
@@ -117,6 +123,8 @@ public class GridModel<T> {
 		selectionModel = new SelectionModel<T>(this);
 		sortModel = new SortModel<T>(this);
 		filterModel = new FilterModel<T>(this);
+		rowNumberColumn = new Column(null);
+		columnHeaderRow = new Row<T>(null);
 	}
 	
 	public void enableEvents(final boolean enable) {
@@ -182,6 +190,14 @@ public class GridModel<T> {
 
 	public List<Column> getGroupByColumns() {
 		return groupByColumns;
+	}
+	
+	public Row<T> getColumnHeaderRow() {
+		return columnHeaderRow;
+	}
+	
+	public Column getRowNumberColumn() {
+		return rowNumberColumn;
 	}
 
 	/**
@@ -301,7 +317,6 @@ public class GridModel<T> {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void addColumns(final List<Column> columns) {
 		final boolean anyWereVisible = !this.columns.isEmpty();
 		boolean anyNowVisible = false;
@@ -317,7 +332,7 @@ public class GridModel<T> {
 			//
 			// The first column should cause a row to be added for the column headers. This header row should be the first row in the header region.
 			//
-			columnHeaderRows.add(0, Row.COLUMN_HEADER_ROW);
+			columnHeaderRows.add(0, columnHeaderRow);
 		}
 
 		fireChangeEvent();
@@ -781,21 +796,20 @@ public class GridModel<T> {
 		return showColumnHeaders;				
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void setShowColumnHeaders(final boolean showColumnHeaders) {
 		this.showColumnHeaders = showColumnHeaders;
 				
-		if (showColumnHeaders && !columnHeaderRows.contains(Row.COLUMN_HEADER_ROW)) {
+		if (showColumnHeaders && !columnHeaderRows.contains(columnHeaderRow)) {
 			//
 			// Add the column headers if required.
 			//
-			columnHeaderRows.add(0, Row.COLUMN_HEADER_ROW);
+			columnHeaderRows.add(0, columnHeaderRow);
 			
-		} else if (!showColumnHeaders && columnHeaderRows.contains(Row.COLUMN_HEADER_ROW)) {
+		} else if (!showColumnHeaders && columnHeaderRows.contains(columnHeaderRow)) {
 			//
 			// Remove the column headers if required.
 			//
-			columnHeaderRows.remove(Row.COLUMN_HEADER_ROW);
+			columnHeaderRows.remove(columnHeaderRow);
 		}
 		
 		fireChangeEvent();
@@ -822,7 +836,7 @@ public class GridModel<T> {
 	}
 
 	public int getRowHeight(final Row<T> row) {
-		final CellStyle cellStyle = (row == Row.COLUMN_HEADER_ROW) ? styleRegistry.getHeaderStyle() : styleRegistry.getDefaultStyle();
+		final CellStyle cellStyle = (row == columnHeaderRow) ? styleRegistry.getHeaderStyle() : styleRegistry.getDefaultStyle();
 		return row.getHeight(resourceManager, gc, cellStyle);
 	}
 

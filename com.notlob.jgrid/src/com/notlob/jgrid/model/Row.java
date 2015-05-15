@@ -24,9 +24,6 @@ public class Row<T> {
 	// If this row has matched a filter which highlights results, store the matches here.
 	private Collection<IHighlightingFilter> filterMatches;
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public final static Row COLUMN_HEADER_ROW = new Row(null);
-
 	Row(final T element) {
 		this.element = element;
 		height = -1;

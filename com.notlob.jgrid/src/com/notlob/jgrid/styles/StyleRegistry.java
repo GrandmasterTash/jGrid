@@ -222,7 +222,7 @@ public class StyleRegistry<T> {
 			//
 			// See if there's a custom style first.
 			//
-			final CellStyle customStyle = (row == Row.COLUMN_HEADER_ROW) ? grid.getLabelProvider().getHeaderStyle(column) : grid.getLabelProvider().getCellStyle(column, row.getElement());
+			final CellStyle customStyle = (row == grid.getColumnHeaderRow()) ? grid.getLabelProvider().getHeaderStyle(column) : grid.getLabelProvider().getCellStyle(column, row.getElement());
 			if (customStyle != null) {
 				//
 				// If the row is selected, combine the style with the selection style.
@@ -240,7 +240,7 @@ public class StyleRegistry<T> {
 			//
 			// Check for a selected column header
 			//
-			if (grid.isFocusControl() && grid.isHighlightAnchorInHeaders() && (row == Row.COLUMN_HEADER_ROW)  && (column == grid.getGridModel().getSelectionModel().getAnchorColumn()) && !(grid.getGridRenderer().isPaintingPinned())) {
+			if (grid.isFocusControl() && grid.isHighlightAnchorInHeaders() && (row == grid.getColumnHeaderRow())  && (column == grid.getGridModel().getSelectionModel().getAnchorColumn()) && !(grid.getGridRenderer().isPaintingPinned())) {
 				return selectionHeaderStyle;
 			}
 		}
@@ -268,7 +268,7 @@ public class StyleRegistry<T> {
 			return groupValueStyle;
 		}
 
-		if (row == Row.COLUMN_HEADER_ROW) {
+		if (row == grid.getColumnHeaderRow()) {
 			return headerStyle;
 		}
 

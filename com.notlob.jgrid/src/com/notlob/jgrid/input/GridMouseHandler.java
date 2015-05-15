@@ -122,7 +122,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		final Column newColumn = grid.getColumnAtXY(x, y);
 		final Row<T> newRow = grid.getRowAtXY(x, y);
 
-		if ((newRow != null) && (newRow != Row.COLUMN_HEADER_ROW)) {
+		if ((newRow != null) && (newRow != gridModel.getColumnHeaderRow())) {
 			//
 			// If this is a group row.
 			//
@@ -168,11 +168,11 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		//
 		// Show a tool-tip.
 		//
-		if ((repositioning == null) && (column != null) && (column != Column.ROW_NUMBER_COLUMN) && (row != null) && (grid.getLabelProvider() != null)) {
+		if ((repositioning == null) && (column != null) && (column != gridModel.getRowNumberColumn()) && (row != null) && (grid.getLabelProvider() != null)) {
 			final int x = e.x;
 			final int y = e.y + 16;
 
-			if (row == Row.COLUMN_HEADER_ROW) {
+			if (row == gridModel.getColumnHeaderRow()) {
 				if (grid.getToolTipProvider() != null) {
 					grid.getToolTipProvider().showToolTip(x, y, column, row);
 				} else {
@@ -465,8 +465,8 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		//
 		if (e.button == 1 || e.button == 3) { // LEFT or RIGHT
 			if (e.count == 1) {
-				if ((column != null) && (column != Column.ROW_NUMBER_COLUMN) && (e.y < viewport.getViewportArea(gc).y)) {
-					if (row == Row.COLUMN_HEADER_ROW && e.button == 1) {
+				if ((column != null) && (column != gridModel.getRowNumberColumn()) && (e.y < viewport.getViewportArea(gc).y)) {
+					if (row == gridModel.getColumnHeaderRow() && e.button == 1) {
 						//
 						// Column sorting.
 						//
@@ -505,7 +505,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				//
 				// Handle the selection.
 				//
-				if (row != null && (row != Row.COLUMN_HEADER_ROW)) {
+				if (row != null && (row != gridModel.getColumnHeaderRow())) {
 					//
 					// Update the anchor column - before triggering selection changed events.
 					//
@@ -521,7 +521,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 								gridModel.getSelectionModel().setAnchorColumn(gridModel.getGroupByColumns().get(0));
 							}
 
-						} else if (column != Column.ROW_NUMBER_COLUMN) {
+						} else if (column != gridModel.getRowNumberColumn()) {
 							gridModel.getSelectionModel().setAnchorColumn(column);
 						}
 					}
@@ -620,18 +620,18 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		//
 		// Notify listeners.
 		//
-		if (row != null && column != null && (column != Column.ROW_NUMBER_COLUMN)) {
+		if (row != null && column != null && (column != gridModel.getRowNumberColumn())) {
 			for (final IGridListener<T> listener : listeners) {
 				if (e.button == 1) {
 					if (e.count == 1) {
-						if (row == Row.COLUMN_HEADER_ROW) {
+						if (row == gridModel.getColumnHeaderRow()) {
 							listener.headerClick(column, new Point(e.x, e.y), e.stateMask);
 						} else {
 							listener.click(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
 						}
 
 					} else if (e.count > 1) {
-						if (row == Row.COLUMN_HEADER_ROW) {
+						if (row == gridModel.getColumnHeaderRow()) {
 							listener.headerDoubleClick(column, new Point(e.x, e.y), e.stateMask);
 						} else {
 							listener.doubleClick(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
@@ -639,7 +639,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 					}
 
 				} else if (e.button == 3) {
-					if (row == Row.COLUMN_HEADER_ROW) {
+					if (row == gridModel.getColumnHeaderRow()) {
 						listener.headerRightClick(column, new Point(e.x, e.y), e.stateMask);
 					} else {
 						listener.rightClick(column, row.getElement(), new Point(e.x, e.y), e.stateMask);

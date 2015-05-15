@@ -142,9 +142,16 @@ public class Viewport<T> {
 		if (gridModel.isShowRowNumbers()) {
 			final CellStyle cellStyle = gridModel.getStyleRegistry().getRowNumberStyle();
 			final Point extent = grid.getTextExtent(String.valueOf(gridModel.getRows().size() + 1), gc, cellStyle.getFontData());
-			Column.ROW_NUMBER_COLUMN.setWidth(cellStyle.getPaddingLeft() + extent.x + cellStyle.getPaddingRight());
-			viewportArea.x += Column.ROW_NUMBER_COLUMN.getWidth(); 
-			viewportArea.width -= Column.ROW_NUMBER_COLUMN.getWidth();
+			final Column rowNumberColumn = gridModel.getRowNumberColumn();
+			rowNumberColumn.setWidth(cellStyle.getPaddingLeft() + extent.x + cellStyle.getPaddingRight());
+//			if (gridModel.getRows().size() == 4) {
+//				System.out.println(String.valueOf(gridModel.getRows().size() + 1));
+//				System.out.println(cellStyle.getFontData());
+//				System.out.println("NUM WIDTH: " + Column.ROW_NUMBER_COLUMN.getWidth());
+//			}
+			
+			viewportArea.x += rowNumberColumn.getWidth(); 
+			viewportArea.width -= rowNumberColumn.getWidth();
 		}
 		
 		//
@@ -249,7 +256,7 @@ public class Viewport<T> {
 			//
 			// Look at pinned columns.
 			//
-			currentX = gridModel.isShowRowNumbers() ? Column.ROW_NUMBER_COLUMN.getWidth() : 0;
+			currentX = gridModel.isShowRowNumbers() ? gridModel.getRowNumberColumn().getWidth() : 0;
 			
 			for (Column column : gridModel.getPinnedColumns()) {
 				if ((x > currentX) && (x <= (currentX + column.getWidth()))) {
@@ -305,9 +312,8 @@ public class Viewport<T> {
 	 * For REPOSITION - if the location is in the middle of the column (but not in the RESIZE bounds, then
 	 * return that column);
 	 */
-	@SuppressWarnings("unchecked")
 	public Column getColumnForMouseOperation(final GC gc, final int x, final int y, final ColumnMouseOperation operation) {		
-		final int height = grid.getRowHeight(Row.COLUMN_HEADER_ROW);
+		final int height = grid.getRowHeight(gridModel.getColumnHeaderRow());
 				
 		//
 		// Only proceed if the mouse is in the mouse header region.

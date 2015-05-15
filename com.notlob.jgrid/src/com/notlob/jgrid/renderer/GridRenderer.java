@@ -268,7 +268,6 @@ public class GridRenderer<T> implements PaintListener {
 	 * If there's a column being repositioned with the mouse, render a 'drag image' representing the column
 	 * header at the mouse location.
 	 */
-	@SuppressWarnings("unchecked")
 	protected void paintColumnDragImage(final GC gc) {
 		final Column column = grid.getMouseHandler().getRepositioningColumn();
 		
@@ -284,15 +283,15 @@ public class GridRenderer<T> implements PaintListener {
 				//
 				// Create a column drag image.
 				//
-				final CellStyle cellStyle = styleRegistry.getCellStyle(column, Row.COLUMN_HEADER_ROW);
-				final int height = getRowHeight(Row.COLUMN_HEADER_ROW);
+				final CellStyle cellStyle = styleRegistry.getCellStyle(column, gridModel.getColumnHeaderRow());
+				final int height = getRowHeight(gridModel.getColumnHeaderRow());
 				columnDragImage = new Image(grid.getDisplay(), column.getWidth(), height);
 				final Rectangle dragImageBounds = new Rectangle(columnDragImage.getBounds().x, columnDragImage.getBounds().y, columnDragImage.getBounds().width - 1, columnDragImage.getBounds().height - 1);
 				
 				final GC imageGC = new GC(columnDragImage);
 				paintCellBackground(imageGC, dragImageBounds, cellStyle);
 				paintCellBorders(imageGC, dragImageBounds, cellStyle);
-				paintCellContent(imageGC, dragImageBounds, column, Row.COLUMN_HEADER_ROW, cellStyle);
+				paintCellContent(imageGC, dragImageBounds, column, gridModel.getColumnHeaderRow(), cellStyle);
 				imageGC.dispose();
 			}
 			
@@ -553,8 +552,7 @@ public class GridRenderer<T> implements PaintListener {
 		cellBounds.x = 0;
 		cellBounds.y = point.y;
 		cellBounds.height = getRowHeight(row);
-//		cellBounds.width = point.x;
-		cellBounds.width = Column.ROW_NUMBER_COLUMN.getWidth();
+		cellBounds.width = gridModel.getRowNumberColumn().getWidth();
 		paintCell(gc, cellBounds, null, null, (grid.isFocusControl() && grid.isHighlightAnchorInHeaders() && doesRowHaveAnchor(row)) ? styleRegistry.getSelectionRowNumberStyle() : styleRegistry.getRowNumberStyle());
 	}
 
@@ -935,7 +933,7 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			// Fill the row background (not the header row though).
 			//
-			if ((row != Row.COLUMN_HEADER_ROW) && (renderPass == RenderPass.BACKGROUND)) {
+			if ((row != gridModel.getColumnHeaderRow()) && (renderPass == RenderPass.BACKGROUND)) {
 				final CellStyle rowStyle = styleRegistry.getCellStyle(null, row);
 				gc.setBackground(getColour(alternate ? rowStyle.getBackgroundAlternate() : rowStyle.getBackground()));
 				gc.fillRectangle(rowBounds);
@@ -977,7 +975,7 @@ public class GridRenderer<T> implements PaintListener {
 			//
 			// Render a column-reposition indicator if we're dragging columns around.
 			//
-			if ((row == Row.COLUMN_HEADER_ROW) && (renderPass == RenderPass.FOREGROUND) && (grid.getMouseHandler().getTargetColumn() != null)) {
+			if ((row == gridModel.getColumnHeaderRow()) && (renderPass == RenderPass.FOREGROUND) && (grid.getMouseHandler().getTargetColumn() != null)) {
 				cellBounds.x = point.x;
 				
 				if (grid.getMouseHandler().getTargetColumn() == GridMouseHandler.LAST_COLUMN) {
@@ -1149,7 +1147,7 @@ public class GridRenderer<T> implements PaintListener {
 			// Ensure any image in the header row that follows text, doesn't have text running through it.
 			//
 			int widthCap = 0;
-			if (row == Row.COLUMN_HEADER_ROW && (cellStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE)) {
+			if (row == gridModel.getColumnHeaderRow() && (cellStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE)) {
 				final Image image = getCellImage(column, row);
 				if (image != null) {
 					widthCap = image.getBounds().width + cellStyle.getPaddingImageText();
@@ -1169,7 +1167,7 @@ public class GridRenderer<T> implements PaintListener {
 			// Perform an animation on the row - if required. This can cause the text to bounce into view.
 			//			
 			int contentY = content.y;			
-			if (row != null && row != Row.COLUMN_HEADER_ROW && row.getFrame() > -1 && row.getFrame() < ANIMATION_DURATION) {
+			if (row != null && row != gridModel.getColumnHeaderRow() && row.getFrame() > -1 && row.getFrame() < ANIMATION_DURATION) {
 				content.y = (int) bounce(row.getFrame(), ANIMATION_DURATION, innerBounds.y - innerBounds.height, innerBounds.height);
 				row.setFrame(row.getFrame() + 1);
 				if (row.getFrame() > 0) {
@@ -1236,10 +1234,10 @@ public class GridRenderer<T> implements PaintListener {
 	 * Gets the text for the cell from the label provider if required.
 	 */
 	protected String getCellText(final Column column, final Row<T> row) {
-		if (row == null || column == Column.ROW_NUMBER_COLUMN) {
+		if (row == null || column == gridModel.getRowNumberColumn()) {
 			return String.valueOf(rowIndex + 1);
 
-		} else if (row == Row.COLUMN_HEADER_ROW) {
+		} else if (row == gridModel.getColumnHeaderRow()) {
 			return column.getCaption();
 
 		} else {
@@ -1251,7 +1249,7 @@ public class GridRenderer<T> implements PaintListener {
 	 * Return the image for the given cell.
 	 */
 	protected Image getCellImage(final Column column, final Row<T> row) {
-		 if (row == Row.COLUMN_HEADER_ROW) {
+		 if (row == gridModel.getColumnHeaderRow()) {
 			//
 			// Get any image from the provider
 			//
@@ -1445,7 +1443,7 @@ public class GridRenderer<T> implements PaintListener {
 	}
 
 	protected boolean doesRowHaveAnchor(final Row<T> row) {
-		return ((row != null) && (row != Row.COLUMN_HEADER_ROW) && (row.getElement() == grid.getAnchorElement()));
+		return ((row != null) && (row != gridModel.getColumnHeaderRow()) && (row.getElement() == grid.getAnchorElement()));
 	}
 	
 	public boolean isPaintingPinned() {
@@ -1529,15 +1527,14 @@ public class GridRenderer<T> implements PaintListener {
 	}
 	
 	protected int getCornerCellWidth() {
-		return gridModel.isShowRowNumbers() ? Column.ROW_NUMBER_COLUMN.getWidth() : 0;
+		return gridModel.isShowRowNumbers() ? gridModel.getRowNumberColumn().getWidth() : 0;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public int getMinimumWidth(final GC gc, final Column column) {
 		//
 		// Get the column header style and caption. 
 		//
-		int minWidth = getCellMinimumWidth(gc, column, Row.COLUMN_HEADER_ROW);
+		int minWidth = getCellMinimumWidth(gc, column, gridModel.getColumnHeaderRow());
 		
 		//
 		// Iterate over each cell in the column getting style, content, images, padding, text extents, etc....

@@ -23,12 +23,6 @@ public class Column {
 	// Arbitrary things can be tagged onto a column by key.
 	private Map<String, Object> dataByKey;
 
-	// Constant to denote the row number column.
-	public final static Column ROW_NUMBER_COLUMN = new Column(null);
-	
-	// Constant to denote the group selector column.
-	public final static Column GROUP_SELECTOR_COLUMN = new Column(null);
-
 	public Column(final String columnId) {
 		this.columnId = columnId;
 		this.width = 125;
