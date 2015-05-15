@@ -397,7 +397,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		//
 		// If the event is outside the widget bounds - ignore it.
 		//
-		if (!grid.getBounds().contains(e.x, e.y)) {
+		if (!grid.getClientArea().contains(e.x, e.y)) {
 			return;
 		}
 		
