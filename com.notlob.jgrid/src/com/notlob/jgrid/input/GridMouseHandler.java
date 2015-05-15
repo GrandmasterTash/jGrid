@@ -368,6 +368,27 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			if (resizing == null) {
 				repositioningDetect = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.REPOSITION);
 			}
+			
+		} else if (e.button == 3) {
+			//
+			// Keep the tracked cell up-to-date.
+			//
+			trackCell(e.x, e.y);
+
+			//
+			// Move the anchor to the thing under the mouse.
+			//
+			if ((row != null) && (row != gridModel.getColumnHeaderRow())) {
+				if (!row.isSelected()) {
+					gridModel.getSelectionModel().setSelectedRows(Collections.singletonList(row));
+				}
+				
+				gridModel.getSelectionModel().setAnchorElement(row.getElement());
+			}
+			
+			if ((column != null) && (column != gridModel.getRowNumberColumn())) {
+				gridModel.getSelectionModel().setAnchorColumn(column);
+			}			
 		}
 	}
 

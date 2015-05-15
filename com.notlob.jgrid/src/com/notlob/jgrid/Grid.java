@@ -495,6 +495,7 @@ public class Grid<T> extends Composite {
 	public void applyFilters() {
 		checkWidget();
 		gridModel.getFilterModel().applyFilters();
+		gridModel.fireFiltersChangedEvent();
 	}
 
 	public Collection<Filter<T>> getFilters() {
