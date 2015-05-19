@@ -112,6 +112,13 @@ public class Viewport<T> {
 		if (getLastColumnIndex() == -1 && !gridModel.getColumns().isEmpty()) {
 			setLastColumnIndex(gridModel.getColumns().size());
 		}
+		
+		//
+		// If we're showing a mega-wide column that's wider than the grid.
+		//
+		if ((getFirstColumnIndex() == -1) && (getLastColumnIndex() != -1)) {
+			setFirstColumnIndex(getLastColumnIndex());
+		}
 	}
 
 	/**
@@ -144,11 +151,6 @@ public class Viewport<T> {
 			final Point extent = grid.getTextExtent(String.valueOf(gridModel.getRows().size() + 1), gc, cellStyle.getFontData());
 			final Column rowNumberColumn = gridModel.getRowNumberColumn();
 			rowNumberColumn.setWidth(cellStyle.getPaddingLeft() + extent.x + cellStyle.getPaddingRight());
-//			if (gridModel.getRows().size() == 4) {
-//				System.out.println(String.valueOf(gridModel.getRows().size() + 1));
-//				System.out.println(cellStyle.getFontData());
-//				System.out.println("NUM WIDTH: " + Column.ROW_NUMBER_COLUMN.getWidth());
-//			}
 			
 			viewportArea.x += rowNumberColumn.getWidth(); 
 			viewportArea.width -= rowNumberColumn.getWidth();
