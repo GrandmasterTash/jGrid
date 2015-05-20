@@ -643,6 +643,18 @@ public class Grid<T> extends Composite {
 		return mouseHandler.getRow();
 	}
 	
+	public Column getTrackedBodyColumn() {
+		checkWidget();		
+		final Column trackedColumn = mouseHandler.getColumn();		
+		return (trackedColumn == getRowNumberColumn()) ? null : trackedColumn;
+	}
+	
+	public Row<T> getTrackedBodyRow() {
+		checkWidget();
+		final Row<T> trackedRow = mouseHandler.getRow(); 
+		return (trackedRow == getColumnHeaderRow()) ? null : trackedRow;
+	}
+	
 	public boolean isCtrlHeld() {
 		checkWidget();
 		return mouseHandler.isCtrlHeld();
