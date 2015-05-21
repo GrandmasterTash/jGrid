@@ -41,7 +41,6 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class Grid<T> extends Composite {
 		
-	// TODO: Mouse cursor in CellStyle.
 	// TODO: Focus select style / un-focus select style.	
 	// TODO: Keep selection in viewport.
 	// TODO: try..catch around all calls to listeners...
@@ -97,7 +96,7 @@ public class Grid<T> extends Composite {
 	private boolean highlightHoveredRow = true;
 	private boolean highlightAnchorInHeaders = true;
 	private boolean highlightAnchorCellBorder = true;
-	private boolean animateNewRows = false;
+	private boolean animateNewRows = false;	
 	private SelectionStyle selectionStyle = SelectionStyle.ROW_BASED;
 	
 	public Grid(final Composite parent) {
@@ -244,6 +243,16 @@ public class Grid<T> extends Composite {
 	public void setSelectGroupIfAllChildrenSelected(boolean selectGroupIfAllChildrenSelected) {
 		checkWidget();
 		gridModel.getSelectionModel().setSelectGroupIfAllChildrenSelected(selectGroupIfAllChildrenSelected);
+	}
+	
+	public void setSelectNextOnRemove(final boolean selectNextOnRemove) {
+		checkWidget();
+		gridModel.getSelectionModel().setSelectNextOnRemove(selectNextOnRemove);
+	}
+	
+	public boolean isSelectNextOnRemove() {
+		checkWidget();
+		return gridModel.getSelectionModel().isSelectNextOnRemove();
 	}
 	
 	public SelectionStyle getSelectionStyle() {

@@ -509,7 +509,7 @@ public class GridModel<T> {
 		// If there WAS a selection and now there is NONE then select the row or group AFTER the last 
 		// previously selected row or group.
 		//
-		if ((lastSelectedIndex != -1) && (selectionModel.getSelectedElements().isEmpty())) {
+		if (selectionModel.isSelectNextOnRemove() && (lastSelectedIndex != -1) && (selectionModel.getSelectedElements().isEmpty())) {
 			final int nextIndex = lastSelectedIndex - elements.size() + 1;
 			
 			if ((nextIndex >= 0) && (nextIndex <= (rows.size()-1))) {

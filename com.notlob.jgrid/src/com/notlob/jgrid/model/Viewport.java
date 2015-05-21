@@ -454,7 +454,7 @@ public class Viewport<T> {
 				grid.getHorizontalBar().setSelection(grid.getHorizontalBar().getMaximum());
 
 			} else {
-				final Column scrollToColumn = gridModel.getColumns().get(columnIndex + 1);
+				final Column scrollToColumn = gridModel.getColumns().get(columnIndex);
 
 				if (hDelta < 0) {
 					grid.getHorizontalBar().setSelection(getColumnX(scrollToColumn) - scrollToColumn.getWidth());

@@ -15,6 +15,7 @@ public class SelectionModel<T> {
 	private Column lastChildAnchorColumn;  // Used when moving the anchor up/down with the keyboard.
 	private Column lastParentAnchorColumn; // Gives some consistency to the position rather than snapping to the first column.
 	private boolean selectGroupIfAllChildrenSelected = true;
+	private boolean selectNextOnRemove = true;
 
 	public SelectionModel(final GridModel<T> gridModel) {
 		this.gridModel = gridModel;
@@ -27,6 +28,14 @@ public class SelectionModel<T> {
 	
 	public void setSelectGroupIfAllChildrenSelected(boolean selectGroupIfAllChildrenSelected) {
 		this.selectGroupIfAllChildrenSelected = selectGroupIfAllChildrenSelected;
+	}
+	
+	public void setSelectNextOnRemove(final boolean selectNextOnRemove) {
+		this.selectNextOnRemove = selectNextOnRemove;
+	}
+	
+	public boolean isSelectNextOnRemove() {
+		return this.selectNextOnRemove;
 	}
 
 	public T getAnchorElement() {
