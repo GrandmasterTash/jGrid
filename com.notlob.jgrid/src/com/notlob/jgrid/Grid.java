@@ -947,6 +947,17 @@ public class Grid<T> extends Composite {
 		viewport.invalidate();
 		redraw();
 	}
+	
+	public void invalidateRowHeights() {
+		checkWidget();
+		
+		for (Row<T> row : gridModel.getAllRows()) {
+			row.setHeight(-1);
+		}
+		
+		invalidateComputedArea();
+		updateScrollbars();
+	}
 
 	private class ScrollListener extends SelectionAdapter {
 		@Override
