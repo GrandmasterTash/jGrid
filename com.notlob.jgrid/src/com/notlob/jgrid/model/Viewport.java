@@ -445,7 +445,6 @@ public class Viewport<T> {
 		//
 		final int vDelta = (rowIndex < firstRowIndex) ? -1 : ((rowIndex > (lastRowIndex-1)) ? 1 : 0);
 		final int hDelta = (columnIndex < firstColumnIndex) ? -1 : ((columnIndex > (lastColumnIndex-1)) ? 1 : 0);
-
 		if (hDelta != 0) {
 			//
 			// Last column edge case - select max scroll.
@@ -457,9 +456,9 @@ public class Viewport<T> {
 				final Column scrollToColumn = gridModel.getColumns().get(columnIndex);
 
 				if (hDelta < 0) {
-					grid.getHorizontalBar().setSelection(getColumnX(scrollToColumn) - scrollToColumn.getWidth());
+					grid.getHorizontalBar().setSelection(getColumnX(scrollToColumn));
 				} else {
-					grid.getHorizontalBar().setSelection((getColumnX(scrollToColumn) - viewportArea.width));
+					grid.getHorizontalBar().setSelection(((getColumnX(scrollToColumn) + scrollToColumn.getWidth()) - viewportArea.width));
 				}
 			}
 		}
