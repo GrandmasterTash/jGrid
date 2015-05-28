@@ -161,6 +161,9 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 	@Override
 	public void mouseExit(final MouseEvent e) {
+		if (grid.getToolTipProvider() != null) {
+			grid.getToolTipProvider().hide();
+		}
 	}
 
 	@Override
