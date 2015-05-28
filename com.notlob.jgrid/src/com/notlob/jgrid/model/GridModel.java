@@ -572,12 +572,26 @@ public class GridModel<T> {
 					showRow(row);
 					heightDelta += getRowHeight(row);
 					
+					//
+					// If it's a parent, check its kiddies.
+					//
+					if (isParentElement(row.getElement())) {
+						heightDelta += childChildVisibility(row);
+					}					
+					
 				} else if (!visible && row.isVisible()) {
 					//
 					// Hide the row.
 					//
 					hideRow(row);				
 					heightDelta -= getRowHeight(row);
+					
+					//
+					// If it's a parent, check the sprogs.
+					//
+					if (isParentElement(row.getElement())) {
+						heightDelta += childChildVisibility(row);
+					}					
 				}
 			}
 		}
@@ -599,6 +613,30 @@ public class GridModel<T> {
 			fireElementsUpdatedEvent(elements);
 			fireChangeEvent();
 		}
+	}
+	
+	/**
+	 * Check the visibility of all the child rows - and show/hide as appropriate.
+	 * 
+	 * The change in total row heights is returned.
+	 */
+	private int childChildVisibility(final Row<T> parentRow) {
+		int heightDelta = 0;
+		
+		final List<Row<T>> children = getChildren(parentRow);
+		for (Row<T> childRow : children) {
+			final boolean childShouldBeVisible = filterModel.match(childRow);
+			if (!childRow.isVisible() && childShouldBeVisible) {
+				showRow(childRow);
+				heightDelta += getRowHeight(childRow);
+				
+			} else if (childRow.isVisible() && !childShouldBeVisible) {
+				hideRow(childRow);				
+				heightDelta -= getRowHeight(childRow);
+			}
+		}
+		
+		return heightDelta;
 	}
 	
 	public void reindex() {
