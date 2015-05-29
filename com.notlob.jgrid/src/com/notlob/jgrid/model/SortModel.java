@@ -22,7 +22,6 @@ public class SortModel<T> {
 	 */
 	void removeColumn(final Column column) {
 		sortedColumns.remove(column);
-		sequenceColumns();
 	}
 
 	public void setRowComparator(final Comparator<Row<T>> rowComparator) {
@@ -49,7 +48,12 @@ public class SortModel<T> {
 		//
 		if (!sortedColumns.contains(column)) {
 			sortedColumns.add(column);
-			sequenceColumns();// TODO: Not sure we even need to do this, until we persist the columns?
+			Collections.sort(sortedColumns, new Comparator<Column>() {
+				@Override
+				public int compare(Column o1, Column o2) {
+					return Integer.compare(o1.getSortSequence(), o2.getSortSequence());
+				}
+			});
 		}
 
 		//
@@ -86,13 +90,6 @@ public class SortModel<T> {
 				return SortDirection.ASC;
 		}
 		return null;
-	}
-
-	private void sequenceColumns() {
-		int index = 0;
-		for (final Column column : sortedColumns) {
-			column.setSortSequence(index++);
-		}
 	}
 
 	/**
