@@ -12,6 +12,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -19,14 +20,20 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import com.notlob.jgrid.Grid;
+import com.notlob.jgrid.Grid.SelectionStyle;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.SortDirection;
 import com.notlob.jgrid.model.filtering.Filter;
+import com.notlob.jgrid.renderer.GridRendererNew;
 import com.notlob.jgrid.styles.AlignmentStyle;
+import com.notlob.jgrid.styles.BorderStyle;
+import com.notlob.jgrid.styles.LineStyle;
+import com.notlob.jgrid.styles.StyleRegistry;
 
 /**
  * To run these examples you will have to export the com.notlob.jgrid project as a jar and add to the classpath.
@@ -41,12 +48,22 @@ public class Examples {
 	public static void main(String[] args) {
 		try {
 			//
+			// Create the domain model.
+			//
+			final List<Person> persons = createElements();
+			
+			//
 			// Shell layout.
 			//
-			final GridLayout shellLayout = new GridLayout(1, true);			
-			final Display display = new Display();
+			final GridLayout shellLayout = new GridLayout(1, true);
+			final Display display = new Display();				
 			final Shell shell = new Shell(display);
-			shell.setSize(400, 500);
+			
+			// TEMP
+			final Monitor[] monitors = display.getMonitors();
+			shell.setLocation(monitors[1].getBounds().x + 1000, monitors[1].getBounds().y + 50);	
+			
+			shell.setSize(700, 500);
 			shell.setLayout(shellLayout);
 			shell.setText("JGrid Examples");
 						
@@ -66,7 +83,7 @@ public class Examples {
 			//
 			// The mandatory things required for the JGrid to function are the content provider, label provider, one or more columns and one or more elements (rows of data).
 			//
-			grid.setContentProvider(new GridContentProvider());
+			grid.setContentProvider(new GridContentProvider(persons));
 			grid.setLabelProvider(new GridLabelProvider(grid, personImage));
 			grid.addColumns(createColumns());
 			grid.addElements(createElements());						
@@ -83,12 +100,13 @@ public class Examples {
 			//
 			// Various optional, behavioural settings.
 			//
-			grid.setEmptyMessage("There's no data");			
-			grid.setHighlightAnchorCellBorder(false);       // Draw a focus border in the current cell.
-			grid.setHighlightAnchorInHeaders(false);        // Change the row/column header for the current cell.
+			grid.setEmptyMessage("There's no data");
+			grid.setSelectionStyle(SelectionStyle.ROW_BASED);
+			grid.setHighlightAnchorCellBorder(true);        // Draw a focus border in the current cell.
+			grid.setHighlightAnchorInHeaders(true);         // Change the row/column header for the current cell.
 			grid.setHighlightHoveredRow(true);              // Highlight the row the mouse is over.
 			grid.setSelectGroupIfAllChildrenSelected(true); // Select the parent row of a group if all it's children are selected.
-			grid.setShowRowNumbers(false);                  // Toggles the visibility of row numbers.
+			grid.setShowRowNumbers(true);                   // Toggles the visibility of row numbers.
 			grid.setHideNoneHighlightedRows(false);         // See IHighlightingFilter - toggles whether a IHighlightingFilter 
 			                                                // hides non-matching elements (like a normal filter) or doesn't 
 			                                                // hide elements, but instead highlights matching elements.
@@ -100,7 +118,7 @@ public class Examples {
 			//grid.setGridRenderer(new GridRenderer<Person>(grid) {
 			//	// override paint<blah> methods.
 			//});
-			
+						
 			final Composite buttonComposite = new Composite(shell, SWT.NONE);
 			buttonComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 			
@@ -118,8 +136,8 @@ public class Examples {
 					//
 					grid.clearElements();
 					grid.ungroupBy(grid.getGroupByColumns());
-					grid.setContentProvider(new GridContentProvider()); // Normal - not grouped.
-					grid.addElements(createElements());
+					grid.setContentProvider(new GridContentProvider(persons)); // Normal - not grouped.
+					grid.addElements(persons);
 				}
 			});
 			
@@ -132,10 +150,10 @@ public class Examples {
 					// Reset the data and group it.
 					//
 					grid.clearElements();					
-					grid.setContentProvider(new GroupedGridContentProvider());
+					grid.setContentProvider(new GroupedGridContentProvider(persons));
 					grid.groupBy(Collections.singletonList(createColumns().get(1))); // Surname column. Use a new instance
 					                                                                 // as grouping makes a column invisible.
-					grid.addElements(createElements());	
+					grid.addElements(persons);	
 				}
 			});
 			

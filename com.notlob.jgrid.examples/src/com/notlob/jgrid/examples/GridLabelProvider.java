@@ -1,12 +1,16 @@
 package com.notlob.jgrid.examples;
 
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.providers.IGridLabelProvider;
+import com.notlob.jgrid.styles.BorderStyle;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.ContentStyle;
+import com.notlob.jgrid.styles.LineStyle;
+import com.notlob.jgrid.styles.StyleRegistry;
 
 /**
  * The label provider exposes formatted text, styling, images etc. for each cell in the grid.
@@ -22,13 +26,27 @@ public class GridLabelProvider implements IGridLabelProvider<Person> {
 	public GridLabelProvider(final Grid<Person> grid, final Image personImage) {
 		this.personImage = personImage;
 		
+		final StyleRegistry<Person> styleRegistry = grid.getStyleRegistry();
+//		styleRegistry.setCellSpacingHorizontal(1);
+//		styleRegistry.setCellSpacingVertical(1);
+		
+//		final BorderStyle outerBorder = new BorderStyle(2, LineStyle.SOLID, new RGB(0, 0, 255));
+//		styleRegistry.getDefaultStyle().setBorderOuterTop(outerBorder);
+//		styleRegistry.getDefaultStyle().setBorderOuterBottom(outerBorder);
+//		styleRegistry.getDefaultStyle().setBorderOuterLeft(outerBorder);
+//		styleRegistry.getDefaultStyle().setBorderOuterRight(outerBorder);
+		
+		styleRegistry.setBackgroundColour(new RGB(255, 0, 0));
+		
 		//
 		// You can override the styling in the grid. In this case we want the firstname column
 		// to include an icon as well as text - but you can override pretty much anything in 
 		// the cell (colours, fonts, borders, etc.). 
 		//
-		firstNameStyle = grid.getStyleRegistry().getDefaultStyle().copy();
+		firstNameStyle = styleRegistry.getDefaultStyle().copy();
 		firstNameStyle.setContentStyle(ContentStyle.IMAGE_THEN_TEXT);
+		
+
 	}
 	
 	@Override

@@ -5,7 +5,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import com.notlob.jgrid.Grid;
-import com.notlob.jgrid.renderer.GridRenderer;
 import com.notlob.jgrid.styles.CellStyle;
 
 /**
@@ -322,7 +321,7 @@ public class Viewport<T> {
 		//
 		if ((y >= 0) && (y <= height)) {		
 			final Rectangle viewportArea = getViewportArea(gc);
-			int columnHeaderX = viewportArea.x + GridRenderer.ROW_OFFSET;			
+			int columnHeaderX = viewportArea.x + gridModel.getStyleRegistry().getCellSpacingHorizontal();			
 	
 			for (int columnIndex=firstColumnIndex; columnIndex<lastColumnIndex; columnIndex++) {						
 				final Column column = gridModel.getColumns().get(columnIndex);

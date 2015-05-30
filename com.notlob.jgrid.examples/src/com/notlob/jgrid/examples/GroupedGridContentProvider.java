@@ -10,6 +10,10 @@ import java.util.List;
  */
 public class GroupedGridContentProvider extends GridContentProvider {
 	
+	public GroupedGridContentProvider(final List<Person> persons) {
+		super(persons);
+	}
+	
 	@Override
 	public List<Person> getChildren(Person person) {
 		if (person.getChildren() != null) {		

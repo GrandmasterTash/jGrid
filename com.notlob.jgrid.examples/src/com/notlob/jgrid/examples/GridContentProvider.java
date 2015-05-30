@@ -19,6 +19,12 @@ public class GridContentProvider implements IGridContentProvider<Person> {
 	public final static String COLUMN_ID__SURNAME = "surname";
 	public final static String COLUMN_ID__AGE = "age";
 	
+	private final List<Person> persons;
+	
+	public GridContentProvider(final List<Person> persons) {
+		this.persons = persons; 
+	}
+	
 	@Override
 	public List<Person> getChildren(Person person) {
 		return null;
@@ -56,6 +62,11 @@ public class GridContentProvider implements IGridContentProvider<Person> {
 	}
 	
 	@Override
-	public void setCollapsed(Person element, boolean collapsed) {
+	public void setCollapsed(Person person, boolean collapsed) {
+	}
+
+	@Override
+	public int getNaturalIndex(Person person) {
+		return persons.indexOf(person);
 	}
 }
