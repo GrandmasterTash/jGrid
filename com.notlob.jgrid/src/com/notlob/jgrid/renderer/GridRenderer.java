@@ -339,18 +339,22 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 				//
 				// Create a new GC to create an image of the column header in and back-up the actual GC.
 				//
+				final RenderContext imageRC = new RenderContext();
 				final GC imageGC = new GC(columnDragImage);
-				final GC oldGC = rc.getGC();
+				imageRC.setGC(imageGC);
 				
 				//
 				// Render the column header to the imageGC.
 				//
-				cellRenderer.paintCell(rc, dragImageBounds, column, gridModel.getColumnHeaderRow(), cellStyle);
+				imageRC.setRenderPass(RenderPass.BACKGROUND);
+				cellRenderer.paintCell(imageRC, dragImageBounds, column, gridModel.getColumnHeaderRow(), cellStyle);
+				
+				imageRC.setRenderPass(RenderPass.FOREGROUND);
+				cellRenderer.paintCell(imageRC, dragImageBounds, column, gridModel.getColumnHeaderRow(), cellStyle);
 				
 				//
-				// Restor the original GC and clean-up the image GC.
+				// Restore the original GC and clean-up the image GC.
 				//
-				rc.setGC(oldGC);
 				imageGC.dispose();
 			}
 			

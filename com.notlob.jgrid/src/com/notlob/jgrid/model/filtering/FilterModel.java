@@ -115,6 +115,8 @@ public class FilterModel<T> {
 	 * Run all rows through the current set of filters and hide/show the rows as appropriate.
 	 */
 	public void applyFilters() {
+		boolean selectionChanged = false;
+		
 		//
 		// Build a list of rows to hide that are shown.
 		//
@@ -143,6 +145,7 @@ public class FilterModel<T> {
 		}
 
 		for (final Row<T> row : rowsToHide) {
+			selectionChanged |= row.isSelected();
 			gridModel.hideRow(row);
 		}
 		
@@ -152,6 +155,10 @@ public class FilterModel<T> {
 		gridModel.reindex();
 		gridModel.fireRowCountChangedEvent();
 		gridModel.fireChangeEvent();
+		
+		if (selectionChanged) {
+			gridModel.fireSelectionChangedEvent();
+		}
 	}
 	
 	/**

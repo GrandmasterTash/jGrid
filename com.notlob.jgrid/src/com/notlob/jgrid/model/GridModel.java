@@ -784,7 +784,7 @@ public class GridModel<T> {
 		}
 	}
 	
-	void fireSelectionChangedEvent() {
+	public void fireSelectionChangedEvent() {
 		for (final IModelListener<T> listener : listeners) {
 			listener.selectionChanged();
 		}
