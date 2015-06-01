@@ -12,7 +12,6 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,11 +28,7 @@ import com.notlob.jgrid.Grid.SelectionStyle;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.SortDirection;
 import com.notlob.jgrid.model.filtering.Filter;
-import com.notlob.jgrid.renderer.GridRendererNew;
 import com.notlob.jgrid.styles.AlignmentStyle;
-import com.notlob.jgrid.styles.BorderStyle;
-import com.notlob.jgrid.styles.LineStyle;
-import com.notlob.jgrid.styles.StyleRegistry;
 
 /**
  * To run these examples you will have to export the com.notlob.jgrid project as a jar and add to the classpath.
@@ -58,10 +53,6 @@ public class Examples {
 			final GridLayout shellLayout = new GridLayout(1, true);
 			final Display display = new Display();				
 			final Shell shell = new Shell(display);
-			
-			// TEMP
-			final Monitor[] monitors = display.getMonitors();
-			shell.setLocation(monitors[1].getBounds().x + 1000, monitors[1].getBounds().y + 50);	
 			
 			shell.setSize(700, 500);
 			shell.setLayout(shellLayout);

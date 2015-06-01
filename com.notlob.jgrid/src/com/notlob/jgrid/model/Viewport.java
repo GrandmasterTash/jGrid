@@ -149,7 +149,7 @@ public class Viewport<T> {
 			final CellStyle cellStyle = gridModel.getStyleRegistry().getRowNumberStyle();
 			final Point extent = grid.getTextExtent(String.valueOf(gridModel.getRows().size() + 1), gc, cellStyle.getFontData());
 			final Column rowNumberColumn = gridModel.getRowNumberColumn();
-			rowNumberColumn.setWidth(cellStyle.getPaddingLeft() + extent.x + cellStyle.getPaddingRight());
+			rowNumberColumn.setWidth(cellStyle.getPaddingLeft() + extent.x + cellStyle.getPaddingRight() + (cellStyle.getBorderOuterLeft() == null ? 0 : cellStyle.getBorderOuterLeft().getWidth()));
 			
 			viewportArea.x += rowNumberColumn.getWidth(); 
 			viewportArea.width -= rowNumberColumn.getWidth();

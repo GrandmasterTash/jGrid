@@ -119,7 +119,7 @@ public class CellRenderer<T> extends Renderer<T> {
 			// Fill with no Gradient
 			//
 			gc.setBackground(getColour(background));
-			gc.fillRectangle(bounds.x, bounds.y, bounds.width + styleRegistry.getCellSpacingHorizontal(), bounds.height + styleRegistry.getCellSpacingVertical());
+			gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
 		} else {
 			//
@@ -128,11 +128,11 @@ public class CellRenderer<T> extends Renderer<T> {
 			final int halfHeight = bounds.height / 2;
 			gc.setForeground(getColour(backgroundGradient1));
 			gc.setBackground(getColour(background));
-			gc.fillGradientRectangle(bounds.x, bounds.y, bounds.width + styleRegistry.getCellSpacingHorizontal(), halfHeight, true);
+			gc.fillGradientRectangle(bounds.x, bounds.y, bounds.width, halfHeight, true);
 
 			gc.setForeground(getColour(background));
 			gc.setBackground(getColour(backgroundGradient2));
-			gc.fillGradientRectangle(bounds.x, bounds.y + halfHeight, bounds.width + styleRegistry.getCellSpacingHorizontal(), 1 + halfHeight + styleRegistry.getCellSpacingVertical(), true);
+			gc.fillGradientRectangle(bounds.x, bounds.y + halfHeight, bounds.width, 1 + halfHeight, true);
 		}
 	}
 	
@@ -196,10 +196,12 @@ public class CellRenderer<T> extends Renderer<T> {
 		//
 		// Note: This should only be used if content overlap is off.
 		//
-		innerBounds.x = bounds.x + cellStyle.getPaddingLeft();
-		innerBounds.y = bounds.y + cellStyle.getPaddingTop();
-		innerBounds.width = bounds.width - cellStyle.getPaddingLeft() - cellStyle.getPaddingRight();
-		innerBounds.height = bounds.height - cellStyle.getPaddingTop() - cellStyle.getPaddingBottom();
+		final int outerBorderLeftWidth = (cellStyle.getBorderOuterLeft() == null ? 0 :cellStyle.getBorderOuterLeft().getWidth());
+		final int outerBorderTopWidth = (cellStyle.getBorderOuterTop() == null ? 0 : cellStyle.getBorderOuterTop().getWidth());
+		innerBounds.x = bounds.x + cellStyle.getPaddingLeft() + outerBorderLeftWidth;
+		innerBounds.y = bounds.y + cellStyle.getPaddingTop() + outerBorderTopWidth;
+		innerBounds.width = bounds.width - cellStyle.getPaddingLeft() - cellStyle.getPaddingRight() - outerBorderLeftWidth;
+		innerBounds.height = bounds.height - cellStyle.getPaddingTop() - cellStyle.getPaddingBottom() - outerBorderTopWidth;
 
 		final Rectangle oldClipping = gc.getClipping();
 		gc.setClipping(innerBounds);

@@ -50,9 +50,6 @@ public class StyleRegistry<T> {
 	protected BorderStyle mainBorderTop;
 	protected BorderStyle mainBorderBottom;
 
-	protected final static int PADDING_TOP = 3;
-	protected final static int PADDING_BOTTOM = 3;
-
 	public StyleRegistry(final Grid<T> grid) {
 		this.grid = grid;
 		backgroundColour = new RGB(255, 255, 255);
@@ -71,10 +68,10 @@ public class StyleRegistry<T> {
 		defaultStyle.setBackgroundOpacity(255);
 		defaultStyle.setPaddingImageText(4);
 		defaultStyle.setPaddingInnerBorder(1);
-		defaultStyle.setPaddingTop(PADDING_TOP);
-		defaultStyle.setPaddingRight(3);
-		defaultStyle.setPaddingBottom(PADDING_BOTTOM);
-		defaultStyle.setPaddingLeft(3);
+		defaultStyle.setPaddingTop(2);
+		defaultStyle.setPaddingRight(2);
+		defaultStyle.setPaddingBottom(2);
+		defaultStyle.setPaddingLeft(2);
 
 		//
 		// Build a default header cell style.
@@ -89,8 +86,8 @@ public class StyleRegistry<T> {
 		headerStyle.setBackground(new RGB(230, 235, 243));
 		headerStyle.setBackgroundGradient2(new RGB(211, 219, 233));
 		headerStyle.setBackgroundAlternate(null);
-		headerStyle.setPaddingTop(4);
-		headerStyle.setPaddingBottom(4);
+		headerStyle.setPaddingTop(2);
+		headerStyle.setPaddingBottom(2);
 		headerStyle.setPaddingLeft(4);
 		headerStyle.setBorderOuterTop(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
 		headerStyle.setBorderOuterBottom(new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206)));
@@ -170,15 +167,19 @@ public class StyleRegistry<T> {
 		rowNumberStyle = headerStyle.copy();
 		rowNumberStyle.setContentStyle(ContentStyle.TEXT);
 		rowNumberStyle.setTextAlignment(AlignmentStyle.CENTER);
-		rowNumberStyle.setPaddingTop(PADDING_TOP);
-		rowNumberStyle.setPaddingBottom(PADDING_BOTTOM);
+		rowNumberStyle.setPaddingTop(2);
+		rowNumberStyle.setPaddingLeft(2);
+		rowNumberStyle.setPaddingBottom(2);
+		rowNumberStyle.setPaddingRight(2);
 		rowNumberStyle.setBackgroundGradient1(null);
 		rowNumberStyle.setBackgroundGradient2(null);
 
 		selectionRowNumberStyle = selectionHeaderStyle.copy();
 		selectionRowNumberStyle.setTextAlignment(AlignmentStyle.CENTER);
-		selectionRowNumberStyle.setPaddingTop(PADDING_TOP);
-		selectionRowNumberStyle.setPaddingBottom(PADDING_BOTTOM);
+		selectionRowNumberStyle.setPaddingTop(2);
+		selectionRowNumberStyle.setPaddingLeft(2);
+		selectionRowNumberStyle.setPaddingBottom(2);
+		selectionRowNumberStyle.setPaddingRight(2);
 
 		//
 		// Builds the corner cell style.

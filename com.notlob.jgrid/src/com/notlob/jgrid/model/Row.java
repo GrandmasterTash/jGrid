@@ -37,7 +37,7 @@ public class Row<T> {
 			}
 
 			gc.setFont(resourceManager.getFont(cellStyle.getFontData()));
-			height = cellStyle.getPaddingTop() + cellStyle.getPaddingBottom() + gc.getFontMetrics().getHeight();
+			height = 1 + cellStyle.getPaddingTop() + cellStyle.getPaddingBottom() + gc.getFontMetrics().getHeight();// + (cellStyle.getBorderOuterTop() == null ? 0 : cellStyle.getBorderOuterTop().getWidth());
 		}
 
 		return height;

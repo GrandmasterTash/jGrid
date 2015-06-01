@@ -279,7 +279,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		// Paint the main rows (including the row number column and the pinned columns).
 		//
 		rc.setAlternate(false);
-		rowBounds.y = viewportArea.y;
+		rowBounds.y = viewportArea.y + styleRegistry.getCellSpacingVertical();
 		
 		for (int rowIndex=viewport.getFirstRowIndex(); rowIndex<viewport.getLastVisibleRowIndex(); rowIndex++) {
 			row = gridModel.getRows().get(rowIndex);
