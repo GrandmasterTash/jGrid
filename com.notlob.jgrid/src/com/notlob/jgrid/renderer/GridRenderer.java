@@ -59,7 +59,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 
 	public GridRenderer(final Grid<T> grid) {
 		super(grid);
-		rc = new RenderContext();
+		rc = new RenderContext(grid);
 		cellRenderer = createCellRenderer();
 		rowRenderer = createRowRenderer();
 		groupRowRenderer = createGroupRowRenderer();
@@ -232,7 +232,15 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 				grid.getDisplay().timerExec(ANIMATION_INTERVAL, new Runnable() {
 					@Override
 					public void run() {
-						grid.redraw();
+						if (!grid.isDisposed()) {
+							for (Row<T> row : grid.getRows()) {
+								if (row.getFrame() != -1) {
+									row.setFrame(row.getFrame() + row.getAnimation().getIncrement());
+								}
+							}
+							
+							grid.redraw();
+						}
 					}
 				});
 			}
@@ -296,8 +304,18 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 				// Just paint the row like any normal row - with columns.
 				//
 				rowRenderer.paintRow(rc, rowBounds, row);
-			}				
-
+			}
+			
+			//
+			// Advance any row animation.
+			//
+			if (row.getAnimation() != null) {
+				row.getAnimation().postAnimate(rc, row);
+			}
+			
+			//
+			// Move the bounds down for the next row.
+			//
 			rowBounds.y += (rowBounds.height + styleRegistry.getCellSpacingVertical());
 
 			//
@@ -339,7 +357,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 				//
 				// Create a new GC to create an image of the column header in and back-up the actual GC.
 				//
-				final RenderContext imageRC = new RenderContext();
+				final RenderContext imageRC = new RenderContext(grid);
 				final GC imageGC = new GC(columnDragImage);
 				imageRC.setGC(imageGC);
 				

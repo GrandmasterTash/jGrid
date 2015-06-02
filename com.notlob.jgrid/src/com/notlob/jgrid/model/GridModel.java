@@ -536,8 +536,13 @@ public class GridModel<T> {
 		}
 	}
 
-	public void updateElements(final Collection<T> elements) {
+	/**
+	 * Returns the rows which are visible after the operation.
+	 */
+	public Collection<Row<T>> updateElements(final Collection<T> elements) {
 		int heightDelta = 0;
+		
+		final Collection<Row<T>> rowsShown = new ArrayList<Row<T>>();
 		
 		for (Object element : elements) {
 			final Row<T> row = rowsByElement.get(element);
@@ -547,6 +552,10 @@ public class GridModel<T> {
 				// Should the row be shown/hidden?
 				//
 				final boolean visible = filterModel.match(row);
+				
+				if (visible) {
+					rowsShown.add(row);
+				}
 				
 				if (visible && row.isVisible()) {
 					//
@@ -613,6 +622,8 @@ public class GridModel<T> {
 			fireElementsUpdatedEvent(elements);
 			fireChangeEvent();
 		}
+		
+		return rowsShown;
 	}
 	
 	/**

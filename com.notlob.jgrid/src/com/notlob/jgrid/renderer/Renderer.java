@@ -38,8 +38,7 @@ public abstract class Renderer<T> {
 	
 	// Animation frequency and duration (in 'frames').
 	public final static int ANIMATION_INTERVAL = 10;
-	public final static int ANIMATION_DURATION = 500;
-	
+		
 	protected enum RenderPass {
 		BACKGROUND,
 		FOREGROUND

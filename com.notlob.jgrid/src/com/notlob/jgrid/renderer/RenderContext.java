@@ -7,6 +7,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 
+import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.renderer.Renderer.RenderPass;
 
 /**
@@ -16,6 +17,8 @@ import com.notlob.jgrid.renderer.Renderer.RenderPass;
  *
  */
 public class RenderContext {
+	
+	protected final Grid<?> grid;
 	
 	// The current graphics context being used for the paint.
 	protected GC gc;
@@ -42,8 +45,13 @@ public class RenderContext {
 	// Cache the width of any text rendered by the font data.
 	protected final Map<FontData, Map<String, Point>> extentCache;
 		
-	public RenderContext() {
-		extentCache = new HashMap<>();
+	public RenderContext(final Grid<?> grid) {
+		this.grid = grid;
+		this.extentCache = new HashMap<>();
+	}
+	
+	public Grid<?> getGrid() {
+		return grid;
 	}
 	
 	public GC getGC() {

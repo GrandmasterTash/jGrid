@@ -36,6 +36,7 @@ import com.notlob.jgrid.providers.IGridContentProvider;
 import com.notlob.jgrid.providers.IGridLabelProvider;
 import com.notlob.jgrid.providers.IGridToolTipProvider;
 import com.notlob.jgrid.renderer.GridRenderer;
+import com.notlob.jgrid.renderer.animation.RowAnimation;
 import com.notlob.jgrid.styles.StyleRegistry;
 import com.notlob.jgrid.util.ResourceManager;
 
@@ -96,8 +97,11 @@ public class Grid<T> extends Composite {
 	private boolean highlightHoveredRow = true;
 	private boolean highlightAnchorInHeaders = true;
 	private boolean highlightAnchorCellBorder = true;
-	private boolean animateNewRows = false;	
 	private SelectionStyle selectionStyle = SelectionStyle.ROW_BASED;
+	
+	// Animate new/update rows?
+	private RowAnimation<T> newRowAnimiation = null;
+	private RowAnimation<T> updatedRowAnimiation = null;
 	
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
@@ -220,14 +224,24 @@ public class Grid<T> extends Composite {
 		return highlightAnchorCellBorder;
 	}
 	
-	public boolean isAnimateNewRows() {
+	public void setAnimateNewRows(final RowAnimation<T> rowAnimation) {
 		checkWidget();
-		return animateNewRows;
+		this.newRowAnimiation = rowAnimation;
 	}
 	
-	public void setAnimateNewRows(final boolean animateNewRows) {
+	public RowAnimation<T> getAnimiateNewRows() {
 		checkWidget();
-		this.animateNewRows = animateNewRows;
+		return newRowAnimiation;
+	}
+	
+	public void setAnimateUpdatedRows(final RowAnimation<T> rowAnimation) {
+		checkWidget();
+		this.updatedRowAnimiation = rowAnimation;
+	}
+	
+	public RowAnimation<T> getAnimiateUpdatedRows() {
+		checkWidget();
+		return updatedRowAnimiation;
 	}
 
 	public void setHighlightAnchorCellBorder(final boolean highlightAnchorCellBorder) {
@@ -363,24 +377,8 @@ public class Grid<T> extends Composite {
 	public void addElements(final Collection<T> elements) {
 		checkWidget();
 		
-		final boolean wasEmpty = gridModel.getRows().isEmpty();
 		final Collection<Row<T>> rowsAdded = gridModel.addElements(elements);
-		boolean animationRequired = false;
-		
-		//
-		// Begin animating any rows inserted into the viewport area.
-		//
-		if (animateNewRows && !wasEmpty) { 
-			for (Row<T> row : rowsAdded) {
-				if ((row.getRowIndex() >= viewport.getFirstRowIndex()) && (row.getRowIndex() <= viewport.getLastRowIndex())) {
-					row.setFrame(0);
-					animationRequired = true;
-				}
-			}
-		}
-		if (animationRequired) {
-			redraw();
-		}
+		animateIfRequired(rowsAdded, newRowAnimiation);
 	}
 
 	public void removeElements(final Collection<T> elements) {
@@ -388,9 +386,35 @@ public class Grid<T> extends Composite {
 		gridModel.removeElements(elements);
 	}
 
-	public void updateElements(final Collection<T> elements) {
+	public void updateElements(final Collection<T> elements, final boolean allowAnimation) {
 		checkWidget();
-		gridModel.updateElements(elements);
+		
+		final Collection<Row<T>> rowsUpdated = gridModel.updateElements(elements);
+		
+		if (allowAnimation) {
+			animateIfRequired(rowsUpdated, updatedRowAnimiation);
+		}
+	}
+	
+	private void animateIfRequired(final Collection<Row<T>> rows, final RowAnimation<T> animation) {
+		boolean animationRequired = false;
+		
+		//
+		// Begin animating any rows if configured to do so.
+		//
+		if (animation != null) { 
+			for (Row<T> row : rows) {
+				if (row.getAnimation() == null) {
+					row.setAnimation(animation);
+					row.setFrame(0);					
+					animationRequired = true;
+				}
+			}
+			
+			if (animationRequired) {
+				redraw();
+			}
+		}
 	}
 	
 	/**

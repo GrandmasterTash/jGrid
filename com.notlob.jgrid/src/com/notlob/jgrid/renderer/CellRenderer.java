@@ -70,7 +70,7 @@ public class CellRenderer<T> extends Renderer<T> {
 				//
 				// Paint the cell background.
 				//
-				paintCellBackground(rc, bounds, currentStyle);
+				paintCellBackground(rc, bounds, currentStyle, row);
 				
 			} else if (rc.getRenderPass() == RenderPass.FOREGROUND) {
 				//
@@ -79,7 +79,7 @@ public class CellRenderer<T> extends Renderer<T> {
 				paintCellContent(rc, bounds, column, row, currentStyle);
 				paintCellBorders(rc, bounds, currentStyle);
 			}
-
+			
 		} catch (final Throwable t) {
 			if (!rc.isErrorLogged()) {
 				//
@@ -106,7 +106,7 @@ public class CellRenderer<T> extends Renderer<T> {
 	 * Fill the cell background. Expand the area of the fill to include any cell spacing, otherwise strips are left
 	 * in the background colour of the grid.
 	 */
-	protected void paintCellBackground(final RenderContext rc, final Rectangle bounds, final CellStyle cellStyle) {
+	protected void paintCellBackground(final RenderContext rc, final Rectangle bounds, final CellStyle cellStyle, final Row<T> row) {
 		final GC gc = rc.getGC();
 		gc.setAlpha(cellStyle.getBackgroundOpacity());
 
@@ -114,11 +114,19 @@ public class CellRenderer<T> extends Renderer<T> {
 		final RGB backgroundGradient1 = (rc.isAlternate() && (cellStyle.getBackgroundAlternateGradient1() != null)) ? cellStyle.getBackgroundAlternateGradient1() : cellStyle.getBackgroundGradient1();
 		final RGB backgroundGradient2 = (rc.isAlternate() && (cellStyle.getBackgroundAlternateGradient2() != null)) ? cellStyle.getBackgroundAlternateGradient2() : cellStyle.getBackgroundGradient2();
 
+		//
+		// Get the background colour (or colours if there's a gradient).
+		//
 		if (backgroundGradient1 == null || backgroundGradient2 == null) {
 			//
 			// Fill with no Gradient
 			//
 			gc.setBackground(getColour(background));
+			
+			if ((row != null) && (row.getAnimation() != null)) {
+				row.getAnimation().pulseBackground(rc, row);
+			}
+			
 			gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
 		} else {
@@ -290,13 +298,8 @@ public class CellRenderer<T> extends Renderer<T> {
 			//
 			// Perform an animation on the row - if required. This can cause the text to bounce into view.
 			//			
-			int contentY = contentLocation.y;			
-			if (row != null && row != gridModel.getColumnHeaderRow() && row.getFrame() > -1 && row.getFrame() < ANIMATION_DURATION) {
-				contentLocation.y = (int) bounce(row.getFrame(), ANIMATION_DURATION, innerBounds.y - innerBounds.height, innerBounds.height);
-				row.setFrame(row.getFrame() + 1);
-				if (row.getFrame() > 0) {
-					rc.setAnimationPending(true);
-				}
+			if ((row != null) && (row != gridModel.getColumnHeaderRow()) && (row.getAnimation() != null)) {
+				row.getAnimation().animateText(rc, this, row);
 			}
 			
 			final boolean highlightFilterMatch = doesCellHaveStyleableFilterMatch(row, column);
@@ -316,9 +319,6 @@ public class CellRenderer<T> extends Renderer<T> {
 				gc.drawText(text, contentLocation.x, contentLocation.y, SWT.DRAW_TRANSPARENT);
 			}
 			
-			// If the animation has messed with this location - restore it.
-			contentLocation.y = contentY;
-	
 			if (widthCap > 0) {
 				innerBounds.width += widthCap;
 				gc.setClipping(innerBounds);
@@ -385,21 +385,11 @@ public class CellRenderer<T> extends Renderer<T> {
 		return null;
 	}
 	
-	/**
-	 * Easing method to bounds cell content.
-	 */
-	protected float bounce(float time, final float duration, final float start, final float destination) {
-		if ((time /= duration) < (1 / 2.75f)) {
-			return destination * (7.5625f * time * time) + start;
-			
-		} else if (time < (2 / 2.75f)) {
-			return destination * (7.5625f * (time -= (1.5f / 2.75f)) * time + .75f) + start;
-			
-		} else if (time < (2.5 / 2.75)) {
-			return destination * (7.5625f * (time -= (2.25f / 2.75f)) * time + .9375f) + start;
-			
-		} else {
-			return destination * (7.5625f * (time -= (2.625f / 2.75f)) * time + .984375f) + start;
-		}
+	public Point getContentLocation() {
+		return contentLocation;
+	}
+	
+	public Rectangle getInnerBounds() {
+		return innerBounds;
 	}
 }

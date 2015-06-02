@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import org.eclipse.swt.graphics.GC;
 
 import com.notlob.jgrid.model.filtering.IHighlightingFilter;
+import com.notlob.jgrid.renderer.animation.RowAnimation;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.util.ResourceManager;
 
@@ -20,6 +21,7 @@ public class Row<T> {
 	
 	// An animation frame counter.
 	private int frame;
+	private RowAnimation<T> animation;	
 
 	// If this row has matched a filter which highlights results, store the matches here.
 	private Collection<IHighlightingFilter> filterMatches;
@@ -37,6 +39,7 @@ public class Row<T> {
 			}
 
 			gc.setFont(resourceManager.getFont(cellStyle.getFontData()));
+			
 			// Include the padding and outer border.
 			height = cellStyle.getPaddingTop() + cellStyle.getPaddingBottom() + gc.getFontMetrics().getHeight() + (cellStyle.getBorderOuterTop() == null ? 0 : cellStyle.getBorderOuterTop().getWidth()) + (cellStyle.getBorderOuterBottom() == null ? 0 : 1);
 		}
@@ -107,6 +110,14 @@ public class Row<T> {
 	
 	public void setFrame(int frame) {
 		this.frame = frame;
+	}
+	
+	public RowAnimation<T> getAnimation() {
+		return animation;
+	}
+	
+	public void setAnimation(final RowAnimation<T> animation) {
+		this.animation = animation;
 	}
 
 	@Override
