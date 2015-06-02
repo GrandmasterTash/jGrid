@@ -279,9 +279,11 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		//
 		// Paint the column header row(s).
 		//
-		Row<T> row = gridModel.getColumnHeaderRow();
-		rowBounds.height = grid.getRowHeight(row);
-		rowRenderer.paintRow(rc, rowBounds, row);
+		if (grid.isShowColumnHeaders()) {
+			final Row<T> row = gridModel.getColumnHeaderRow();
+			rowBounds.height = grid.getRowHeight(row);
+			rowRenderer.paintRow(rc, rowBounds, row);
+		}
 		
 		//
 		// Paint the main rows (including the row number column and the pinned columns).
@@ -290,7 +292,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		rowBounds.y = viewportArea.y + styleRegistry.getCellSpacingVertical();
 		
 		for (int rowIndex=viewport.getFirstRowIndex(); rowIndex<viewport.getLastVisibleRowIndex(); rowIndex++) {
-			row = gridModel.getRows().get(rowIndex);
+			final Row<T> row = gridModel.getRows().get(rowIndex);
 			rowBounds.height = grid.getRowHeight(row);
 			
 			if (gridModel.isParentRow(row) && (grid.getGroupRenderStyle() == GroupRenderStyle.INLINE)) {
