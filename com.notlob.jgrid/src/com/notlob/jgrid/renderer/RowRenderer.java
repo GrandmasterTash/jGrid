@@ -105,27 +105,37 @@ public class RowRenderer<T> extends Renderer<T> {
 			// Render a column-reposition indicator if we're dragging columns around.
 			//
 			// TODO: Move code out of RowRenderer and into paintColumnDragImage?
-			if ((row == gridModel.getColumnHeaderRow()) && (rc.getRenderPass() == RenderPass.FOREGROUND) && (grid.getMouseHandler().getTargetColumn() != null)) {
+			if ((row == gridModel.getColumnHeaderRow()) && (rc.getRenderPass() == RenderPass.FOREGROUND) && (grid.getMouseHandler().getTargetColumn() != null)) {							
+				//
+				// Otherwise, move across the viewport until we get to the drag target column.
+				//
 				cellBounds.x = rowBounds.x;
 				
-				if (grid.getMouseHandler().getTargetColumn() == GridMouseHandler.LAST_COLUMN) {
-					//
-					// Edge-case, dragging to the end of the grid.
-					//
-					gc.drawImage(dropImage, rowBounds.x + rowBounds.width - (dropImage.getBounds().width / 2) + 1, 4);
-					
-				} else {
-					//
-					// Otherwise, move across the viewport until we get to the drag target column.
-					//
-					for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
-						final Column column = gridModel.getColumns().get(columnIndex);
-						if (column == grid.getMouseHandler().getTargetColumn()){ 
-							gc.drawImage(dropImage, cellBounds.x - (dropImage.getBounds().width / 2) + 1, 4);					
-						}
-						cellBounds.width = column.getWidth();
-						cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
+				//
+				// Offset by row number column width.
+				//
+				if (grid.isShowRowNumbers()) {
+					cellBounds.x += (gridModel.getRowNumberColumn().getWidth() + styleRegistry.getCellSpacingHorizontal());
+				}
+				
+				//
+				// Offset by pinned column widths.
+				//
+				for (Column pinnedColumn : gridModel.getPinnedColumns()) {
+					cellBounds.x += (pinnedColumn.getWidth() + styleRegistry.getCellSpacingHorizontal());
+				}
+				
+				for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
+					final Column column = gridModel.getColumns().get(columnIndex);
+					if (column == grid.getMouseHandler().getTargetColumn()){ 
+						gc.drawImage(dropImage, cellBounds.x - (dropImage.getBounds().width / 2) + 1, 4);					
 					}
+					cellBounds.width = column.getWidth();
+					cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
+				}
+				
+				if (grid.getMouseHandler().getTargetColumn() == GridMouseHandler.LAST_COLUMN) {
+					gc.drawImage(dropImage, cellBounds.x - (dropImage.getBounds().width / 2) + 1, 4);
 				}
 			}
 			
