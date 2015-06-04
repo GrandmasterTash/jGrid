@@ -18,7 +18,7 @@ public class CompositeCellStyle extends CellStyle {
 	
 	private final List<CellStyle> innerStyles;
 	
-	public CompositeCellStyle() {
+	CompositeCellStyle() {
 		innerStyles = new ArrayList<CellStyle>();
 	}
 	
@@ -26,6 +26,14 @@ public class CompositeCellStyle extends CellStyle {
 		if (innerStyle != null) {
 			innerStyles.add(innerStyle);
 		}
+	}
+	
+	public void addFirst(final CellStyle innerStyle) {
+		innerStyles.add(0, innerStyle);
+	}
+	
+	public void clear() {
+		innerStyles.clear();
 	}
 	
 	public boolean isEmpty() {

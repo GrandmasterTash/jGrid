@@ -13,7 +13,6 @@ import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.SortDirection;
 import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.CellStyle;
-import com.notlob.jgrid.styles.CompositeCellStyle;
 import com.notlob.jgrid.styles.ContentStyle;
 import com.notlob.jgrid.styles.LineStyle;
 
@@ -60,10 +59,8 @@ public class CellRenderer<T> extends Renderer<T> {
 			// If the cell has the anchor, use a composite style.
 			//
 			if (!rc.isPaintingPinned() && grid.isFocusControl() && grid.isHighlightAnchorCellBorder() && doesColumnHaveAnchor(column) && doesRowHaveAnchor(row)) {
-				final CompositeCellStyle compositeStyle = new CompositeCellStyle();
-				compositeStyle.add(styleRegistry.getAnchorStyle());
-				compositeStyle.add(cellStyle);
-				currentStyle = compositeStyle;
+				styleRegistry.getStyleCollector().addFirst(styleRegistry.getAnchorStyle());
+				currentStyle = styleRegistry.getStyleCollector().getCellStyle();
 			}			
 						
 			if (rc.getRenderPass() == RenderPass.BACKGROUND) {

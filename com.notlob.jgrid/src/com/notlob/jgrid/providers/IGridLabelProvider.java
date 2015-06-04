@@ -3,7 +3,7 @@ package com.notlob.jgrid.providers;
 import org.eclipse.swt.graphics.Image;
 
 import com.notlob.jgrid.model.Column;
-import com.notlob.jgrid.styles.CellStyle;
+import com.notlob.jgrid.styles.StyleCollector;
 
 public interface IGridLabelProvider<T> {
 
@@ -17,9 +17,9 @@ public interface IGridLabelProvider<T> {
 
 	Image getHeaderImage(final Column column);
 
-	CellStyle getCellStyle(final Column column, final T element);
+	void getCellStyle(final StyleCollector styleCollector, final Column column, final T element);
 
-	CellStyle getHeaderStyle(final Column column);
+	void getHeaderStyle(final StyleCollector styleCollector, final Column column);
 
 	int getDefaultRowHeight(final T element);
 

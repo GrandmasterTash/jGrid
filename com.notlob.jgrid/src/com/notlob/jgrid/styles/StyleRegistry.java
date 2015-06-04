@@ -11,6 +11,8 @@ import com.notlob.jgrid.model.Row;
 public class StyleRegistry<T> {
 	
 	private final Grid<T> grid;
+	
+	private final StyleCollector styleCollector;
 
 	protected RGB backgroundColour;
 	protected int cellSpacingVertical;
@@ -52,6 +54,7 @@ public class StyleRegistry<T> {
 
 	public StyleRegistry(final Grid<T> grid) {
 		this.grid = grid;
+		this.styleCollector = new StyleCollector();
 		backgroundColour = new RGB(255, 255, 255);
 		
 		//
@@ -204,6 +207,10 @@ public class StyleRegistry<T> {
 		filterMatchBackground = new RGB(198, 239, 206);
 	}
 	
+	public StyleCollector getStyleCollector() {
+		return styleCollector;
+	}
+	
 	protected FontData getDefaultFont() {
 		final String OS = System.getProperty("os.name");
 		
@@ -219,30 +226,37 @@ public class StyleRegistry<T> {
 	
 	public CellStyle getCellStyle(final Column column, final Row<T> row) {
 
+		styleCollector.clear();
+		
 		if (column != null) {
 			//
 			// See if there's a custom style first.
 			//
-			final CellStyle customStyle = (row == grid.getColumnHeaderRow()) ? grid.getLabelProvider().getHeaderStyle(column) : grid.getLabelProvider().getCellStyle(column, row.getElement());
-			if (customStyle != null) {
+			if (row == grid.getColumnHeaderRow()) {
+				grid.getLabelProvider().getHeaderStyle(styleCollector, column);
+			} else {
+				grid.getLabelProvider().getCellStyle(styleCollector, column, row.getElement());
+			}
+			
+			if (!styleCollector.isEmpty()) {
 				//
 				// If the row is selected, combine the style with the selection style.
 				//
 				if (row.isSelected()) {
-					final CompositeCellStyle compositeCellStyle = new CompositeCellStyle();
-					compositeCellStyle.add(selectionStyle);
-					compositeCellStyle.add(customStyle);
-					return compositeCellStyle;
+					styleCollector.addFirst(selectionStyle);
+					return styleCollector.getCellStyle();
 				}
-				
-				return customStyle;
 			}
 
 			//
 			// Check for a selected column header
 			//
 			if (grid.isFocusControl() && grid.isHighlightAnchorInHeaders() && (row == grid.getColumnHeaderRow())  && (column == grid.getGridModel().getSelectionModel().getAnchorColumn()) && !(grid.getGridRenderer().isPaintingPinned())) {
-				return selectionHeaderStyle;
+				styleCollector.add(selectionHeaderStyle);
+			}
+			
+			if (!styleCollector.isEmpty()) {
+				return styleCollector.getCellStyle();
 			}
 		}
 
@@ -252,17 +266,15 @@ public class StyleRegistry<T> {
 		// Check for a selected row.
 		//
 		if (row.isSelected()) {
-			final CompositeCellStyle compositeCellStyle = new CompositeCellStyle();			
-			
 			if (parentRow) {
-				compositeCellStyle.add(groupValueStyle);
-				compositeCellStyle.add(selectionGroupStyle);
+				styleCollector.add(groupValueStyle);
+				styleCollector.add(selectionGroupStyle);
 			} else {
-				compositeCellStyle.add(defaultStyle);
-				compositeCellStyle.add(selectionStyle);
+				styleCollector.add(defaultStyle);
+				styleCollector.add(selectionStyle);
 			}
 			
-			return compositeCellStyle;
+			return styleCollector.getCellStyle();
 		}
 
 		if (parentRow) {
