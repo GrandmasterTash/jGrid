@@ -45,12 +45,15 @@ public class GridModel<T> {
 	
 	// Pinned columns.
 	private final List<Column> pinnedColumns;
-
+	
 	// If we're grouping data by particular column(s).
 	private final List<Column> groupByColumns;
 	
 	// A column where row numbers are rendered.
 	private final Column rowNumberColumn;
+	
+	// A column where groups can be selected.
+	private final Column groupSelectorColumn;
 	
 	// The column headers are represented by this row.
 	private final Row<T> columnHeaderRow;
@@ -69,6 +72,9 @@ public class GridModel<T> {
 
 	// Show/hide the row numbers.
 	private boolean showRowNumbers = false;
+	
+	// Show/hide the group selector column.
+	private boolean showGroupSelector = false;
 	
 	// Show/hide the column headers.
 	private boolean showColumnHeaders = true;
@@ -105,6 +111,7 @@ public class GridModel<T> {
 		void columnMoved(final Column column);		
 		void columnSorted(final Column column);
 		void rowNumbersVisibilityChanged(final boolean visible);
+		void groupSelectorVisibilityChanged(final boolean visible);
 	}
 
 	public GridModel(final Grid<T> grid, final ResourceManager resourceManager, final GC gc) {
@@ -123,8 +130,10 @@ public class GridModel<T> {
 		selectionModel = new SelectionModel<T>(this);
 		sortModel = new SortModel<T>(this);
 		filterModel = new FilterModel<T>(this);
-		rowNumberColumn = new Column(null);
+		rowNumberColumn = new Column(null);		
 		columnHeaderRow = new Row<T>(null);
+		groupSelectorColumn = new Column(null);
+		groupSelectorColumn.setWidth(16);
 	}
 	
 	public void enableEvents(final boolean enable) {
@@ -198,6 +207,10 @@ public class GridModel<T> {
 	
 	public Column getRowNumberColumn() {
 		return rowNumberColumn;
+	}
+	
+	public Column getGroupSelectorColumn() {
+		return groupSelectorColumn;
 	}
 
 	/**
@@ -836,6 +849,12 @@ public class GridModel<T> {
 			listener.rowNumbersVisibilityChanged(visible);
 		}
 	}
+	
+	public void fireGroupSelectorVisibilityChanged(final boolean visible) {
+		for (final IModelListener<T> listener : listeners) {
+			listener.groupSelectorVisibilityChanged(visible);
+		}
+	}
 
 	public boolean isShowRowNumbers() {
 		return showRowNumbers;
@@ -845,6 +864,16 @@ public class GridModel<T> {
 		this.showRowNumbers = showRowNumbers;
 		fireChangeEvent();
 		fireRowNumbersVisibilityChanged(showRowNumbers);
+	}
+	
+	public boolean isShowGroupSelector() {
+		return showGroupSelector;
+	}
+	
+	public void setShowGroupSelector(final boolean showGroupSelector) {
+		this.showGroupSelector = showGroupSelector;
+		fireChangeEvent();
+		fireGroupSelectorVisibilityChanged(showGroupSelector);
 	}
 
 	public boolean isShowColumnHeaders() {
@@ -951,7 +980,7 @@ public class GridModel<T> {
 	public boolean isSameGroup(final Row<T> row1, final Row<T> row2) {
 		return (isGroupRow(row1) && isGroupRow(row2) && (getParentOrOwnElement(row1) == getParentOrOwnElement(row2)));
 	}
-
+	
 	/**
 	 * If the row is in a group return the entire group. Only the immediate group or below is returned.
 	 *

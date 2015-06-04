@@ -151,8 +151,17 @@ public class Viewport<T> {
 			final Column rowNumberColumn = gridModel.getRowNumberColumn();
 			rowNumberColumn.setWidth(cellStyle.getPaddingLeft() + extent.x + cellStyle.getPaddingRight() + (cellStyle.getBorderOuterLeft() == null ? 0 : cellStyle.getBorderOuterLeft().getWidth()));
 			
-			viewportArea.x += rowNumberColumn.getWidth(); 
-			viewportArea.width -= rowNumberColumn.getWidth();
+			viewportArea.x += (rowNumberColumn.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal()); 
+			viewportArea.width -= (rowNumberColumn.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
+		}
+		
+		//
+		// Shift the viewport right enough if there's a group selector column.
+		//
+		if (gridModel.isShowGroupSelector()) {
+			final Column groupSelectorColumn = gridModel.getGroupSelectorColumn();
+			viewportArea.x += (groupSelectorColumn.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal()); 
+			viewportArea.width -= (groupSelectorColumn.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
 		}
 		
 		//
@@ -255,10 +264,14 @@ public class Viewport<T> {
 			
 		} else {
 			//
-			// Look at pinned columns.
+			// Compensate for the row number and group selector columns.
 			//
 			currentX = gridModel.isShowRowNumbers() ? gridModel.getRowNumberColumn().getWidth() : 0;
+			currentX += gridModel.isShowGroupSelector() ? gridModel.getGroupSelectorColumn().getWidth() : 0;
 			
+			//
+			// Look at pinned columns.
+			//
 			for (Column column : gridModel.getPinnedColumns()) {
 				if ((x > currentX) && (x <= (currentX + column.getWidth()))) {
 					return gridModel.getColumns().indexOf(column);

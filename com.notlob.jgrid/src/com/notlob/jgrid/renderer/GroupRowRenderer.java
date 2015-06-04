@@ -136,6 +136,20 @@ public class GroupRowRenderer<T> extends Renderer<T> {
 			groupCellBounds.x += (groupCellBounds.width + styleRegistry.getCellSpacingHorizontal());
 		}
 		
+		if (grid.isShowGroupSelector()) {
+			//
+			// Group selector cell.
+			//
+			groupCellBounds.width = gridModel.getGroupSelectorColumn().getWidth();
+			
+			if (request.getOperation() == Operation.PAINT) {
+				final CellStyle cellStyle = styleRegistry.getDefaultStyle();
+				cellRenderer.paintCell(rc, groupCellBounds, gridModel.getGroupSelectorColumn(), row, cellStyle);
+			}
+			
+			groupCellBounds.x += (groupCellBounds.width + styleRegistry.getCellSpacingHorizontal());
+		}
+		
 		//
 		// Expand/collapse image.
 		//

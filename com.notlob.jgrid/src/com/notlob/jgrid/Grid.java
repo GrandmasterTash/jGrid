@@ -373,6 +373,11 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		return gridModel.getRowNumberColumn();
 	}
+	
+	public Column getGroupSelectorColumn() {
+		checkWidget();
+		return gridModel.getGroupSelectorColumn();
+	}
 
 	public void addElements(final Collection<T> elements) {
 		checkWidget();
@@ -679,7 +684,7 @@ public class Grid<T> extends Composite {
 	public Column getTrackedBodyColumn() {
 		checkWidget();		
 		final Column trackedColumn = mouseHandler.getColumn();		
-		return (trackedColumn == getRowNumberColumn()) ? null : trackedColumn;
+		return ( (trackedColumn == getRowNumberColumn()) || (trackedColumn == getGroupSelectorColumn())) ? null : trackedColumn;
 	}
 	
 	public Row<T> getTrackedBodyRow() {
@@ -794,7 +799,7 @@ public class Grid<T> extends Composite {
 	}
 	
 	/**
-	 * Gets the column at the control location, can include the row numbers column.
+	 * Gets the column at the control location, can include the row numbers column or the group selector.
 	 */
 	public Column getColumnAtXY(final int x, final int y) {
 		checkWidget();
@@ -804,7 +809,12 @@ public class Grid<T> extends Composite {
 		final int columnIndex = viewport.getColumnIndexByX(x, gc);
 		
 		if ((columnIndex == -1) && (x < viewport.getViewportArea(gc).x)) {
-			column = gridModel.getRowNumberColumn();
+			if (x < gridModel.getRowNumberColumn().getWidth() && gridModel.isShowRowNumbers()) {			
+				column = gridModel.getRowNumberColumn();
+				
+			} else if (gridModel.isShowGroupSelector()) {
+				column = gridModel.getGroupSelectorColumn();
+			}
 			
 		} else if (columnIndex != -1) {
 			column = gridModel.getColumns().get(columnIndex);
@@ -929,11 +939,21 @@ public class Grid<T> extends Composite {
 		redraw();
 	}
 
+	public boolean isShowGroupSelector() {
+		checkWidget();
+		return gridModel.isShowGroupSelector();
+	}
+	
+	public void setShowGroupSelector(final boolean show) {
+		checkWidget();
+		gridModel.setShowGroupSelector(show);
+	}
+	
 	public boolean isShowRowNumbers() {
 		checkWidget();
 		return gridModel.isShowRowNumbers();
 	}
-
+	
 	public void setShowRowNumbers(final boolean show) {
 		checkWidget();
 		gridModel.setShowRowNumbers(show);
@@ -1150,6 +1170,17 @@ public class Grid<T> extends Composite {
 			
 			for (final IGridListener<T> listener : listeners) {
 				listener.rowNumbersVisibilityChanged(visible);
+			}
+		}
+		
+		@Override
+		public void groupSelectorVisibilityChanged(boolean visible) {
+			if (isEventsSuppressed()) {
+				return;
+			}
+			
+			for (final IGridListener<T> listener : listeners) {
+				listener.groupSelectorVisibilityChanged(visible);
 			}
 		}
 	}

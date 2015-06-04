@@ -39,4 +39,6 @@ public interface IGridListener<T> {
 	void columnSorted(final Column column);
 	
 	void rowNumbersVisibilityChanged(final boolean visible);
+	
+	void groupSelectorVisibilityChanged(final boolean visible);
 }

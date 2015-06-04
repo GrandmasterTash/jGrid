@@ -71,4 +71,8 @@ public class GridAdapter<T> implements IGridListener<T> {
 	@Override
 	public void rowNumbersVisibilityChanged(boolean visible) {
 	}
+	
+	@Override
+	public void groupSelectorVisibilityChanged(boolean visible) {
+	}
 }

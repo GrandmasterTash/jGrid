@@ -334,6 +334,9 @@ public class CellRenderer<T> extends Renderer<T> {
 	public String getCellText(final Column column, final Row<T> row) {
 		if (column == gridModel.getRowNumberColumn()) {
 			return String.valueOf(row.getRowIndex() + 1);
+		
+		} else if (column == gridModel.getGroupSelectorColumn()) {
+			return "";
 
 		} else if (row == gridModel.getColumnHeaderRow()) {
 			return column.getCaption();
@@ -369,7 +372,7 @@ public class CellRenderer<T> extends Renderer<T> {
 				}
 			}
 
-		} else if (column == gridModel.getRowNumberColumn()) {
+		} else if ((column == gridModel.getRowNumberColumn()) || (column == gridModel.getGroupSelectorColumn())) {
 			 return null;
 			 
 		} else {

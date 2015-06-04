@@ -98,9 +98,19 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	}
 	
 	public Rectangle getExpandImageBounds(final GC gc, final Row<T> row) {
+		if (!gridModel.isParentRow(row)) {
+			return null;
+		}
+		
 		rc.setGC(gc);
-		setDefaultRowBounds(gc, row);		
-		return groupRowRenderer.getExpandImageBounds(rc, row, rowBounds);
+		setDefaultRowBounds(gc, row);
+		
+		if (grid.getGroupRenderStyle() == GroupRenderStyle.INLINE) {				
+			return groupRowRenderer.getExpandImageBounds(rc, row, rowBounds);
+			
+		} else {
+			return rowRenderer.getExpandImageBounds(rc, row, rowBounds);
+		}		
 	}
 	
 	protected void setDefaultRowBounds(final GC gc, final Row<T> row) {

@@ -1,5 +1,6 @@
 package com.notlob.jgrid.renderer;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -28,11 +29,14 @@ public class RowRenderer<T> extends Renderer<T> {
 	//	
 	protected final Rectangle cellBounds;
 	
+	protected final Rectangle groupSelectorBounds;
+	
 	public RowRenderer(final Grid<T> grid, final CellRenderer<T> cellRenderer) {
 		super(grid);
 		this.cellRenderer = cellRenderer;
 		dropImage = getImage("inwards_arrows.png");
 		cellBounds = new Rectangle(0, 0, 0, 0);
+		groupSelectorBounds = new Rectangle(0, 0, 0, 0);
 	}
 			
 	public void paintRow(final RenderContext rc, final Rectangle rowBounds, final Row<T> row) {
@@ -48,7 +52,7 @@ public class RowRenderer<T> extends Renderer<T> {
 			cellBounds.y = rowBounds.y;
 			cellBounds.height = rowBounds.height;
 
-			if (grid.isShowRowNumbers()) {
+			if (gridModel.isShowRowNumbers() || gridModel.isShowGroupSelector()) {
 				if (row == gridModel.getColumnHeaderRow()) {
 					//
 					// Paint the corner cell if needed.
@@ -59,7 +63,13 @@ public class RowRenderer<T> extends Renderer<T> {
 					//
 					// Paint row numbers if needed.
 					//
-					paintRowNumber(rc, row);
+					if (gridModel.isShowRowNumbers()) {
+						paintRowNumber(rc, row);
+					} 
+					
+					if (gridModel.isShowGroupSelector()) {
+						paintGroupSelector(rc, row);
+					}
 				}
 			}
 			
@@ -119,6 +129,13 @@ public class RowRenderer<T> extends Renderer<T> {
 				}
 				
 				//
+				// Offset by group selector width.
+				//
+				if (grid.isShowGroupSelector()) {
+					cellBounds.x += (gridModel.getGroupSelectorColumn().getWidth() + styleRegistry.getCellSpacingHorizontal());
+				}
+				
+				//
 				// Offset by pinned column widths.
 				//
 				for (Column pinnedColumn : gridModel.getPinnedColumns()) {
@@ -163,7 +180,7 @@ public class RowRenderer<T> extends Renderer<T> {
 		//
 		// Paint the background or borders.
 		//
-		cellBounds.width = gridModel.getRowNumberColumn().getWidth();
+		cellBounds.width = (gridModel.isShowRowNumbers() ? gridModel.getRowNumberColumn().getWidth() : 0) + (gridModel.isShowGroupSelector() ? gridModel.getGroupSelectorColumn().getWidth() : 0);
 		cellRenderer.paintCell(rc, cellBounds, gridModel.getRowNumberColumn(), gridModel.getColumnHeaderRow(), styleRegistry.getCornerStyle());
 		cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
 		
@@ -188,5 +205,122 @@ public class RowRenderer<T> extends Renderer<T> {
 		cellBounds.width = gridModel.getRowNumberColumn().getWidth();
 		cellRenderer.paintCell(rc, cellBounds, gridModel.getRowNumberColumn(), row, cellStyle);
 		cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
+	}
+	
+	/**
+	 * Paint a group selector cell for the specified row.
+	 */
+	protected void paintGroupSelector(final RenderContext rc, final Row<T> row) {		
+		//
+		// Get the normal row-number style or the selected style.
+		//
+//		final CellStyle cellStyle = styleRegistry.getRowNumberStyle();
+		final GC gc = rc.getGC();
+// TODO: Set-up a style for hovered, not hovered and selected.		
+		
+		//
+		// Ascertain if we're the first row in the group, in the middle or the last row).
+		//
+		final boolean isFirstInGroup = isFirstInGroup(row);
+		final boolean isLastInGroup = isLastInGroup(row);
+		
+		cellBounds.width = gridModel.getGroupSelectorColumn().getWidth();
+		shrinkRectangle(cellBounds, groupSelectorBounds, 1);
+		groupSelectorBounds.x += 1;
+		groupSelectorBounds.width -= 2;
+		setCorners(groupSelectorBounds, topLeft, topRight, bottomRight, bottomLeft);
+		
+// TODO: Use style....
+		gc.setLineWidth(1);
+		gc.setLineStyle(SWT.LINE_SOLID);
+		gc.setForeground(getColour(styleRegistry.getMainBorderTop().getColour()));
+		gc.setBackground(getColour(styleRegistry.getHeaderStyle().getBackground()));
+
+		if (isFirstInGroup || isLastInGroup) {
+			//
+			// Draw a filled rounded rectangle - we obiliterate either the top or bottom in a bit.
+			//
+			gc.fillRoundRectangle(groupSelectorBounds.x, groupSelectorBounds.y, groupSelectorBounds.width, groupSelectorBounds.height, 8, 8);
+			gc.drawRoundRectangle(groupSelectorBounds.x, groupSelectorBounds.y, groupSelectorBounds.width, groupSelectorBounds.height, 8, 8);
+			
+			if (isFirstInGroup && !isLastInGroup) {
+				//
+				// Wipe-out the bottom curves to to make it look like we continue onto the next row.
+				//
+				groupSelectorBounds.x += 1;
+				groupSelectorBounds.y += 8;
+				groupSelectorBounds.width -= 1;
+				gc.fillRectangle(groupSelectorBounds.x, groupSelectorBounds.y, groupSelectorBounds.width, groupSelectorBounds.height);
+				
+				groupSelectorBounds.x -= 1;
+				groupSelectorBounds.width += 1;
+				setCorners(groupSelectorBounds, topLeft, topRight, bottomRight, bottomLeft);
+				gc.drawLine(topLeft.x, topLeft.y, bottomLeft.x, bottomLeft.y);
+				gc.drawLine(topRight.x, topRight.y, bottomRight.x, bottomRight.y);
+			
+			} else if (!isFirstInGroup && isLastInGroup) {
+				//
+				// Wipe-out the top curves to look like we continue from the previous row.
+				//
+				groupSelectorBounds.x += 1;
+				groupSelectorBounds.height -= 8;
+				groupSelectorBounds.width -= 1;
+				gc.fillRectangle(groupSelectorBounds.x, groupSelectorBounds.y, groupSelectorBounds.width, groupSelectorBounds.height);
+				
+				groupSelectorBounds.x -= 1;
+				groupSelectorBounds.width += 1;
+				setCorners(groupSelectorBounds, topLeft, topRight, bottomRight, bottomLeft);
+				gc.drawLine(topLeft.x, topLeft.y, bottomLeft.x, bottomLeft.y);
+				gc.drawLine(topRight.x, topRight.y, bottomRight.x, bottomRight.y);								
+			}
+			
+			if (isLastInGroup) {
+				//
+				// Draw an expand / collapse image.
+				//
+// TODO: Use align on this rather than hardcoded offsets.				
+				final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? getImage("plus.png") : getImage("minus.png");
+				gc.drawImage(expandImage, groupSelectorBounds.x + 2, groupSelectorBounds.y + 4);
+			}
+			
+		} else {
+			groupSelectorBounds.y -= 2;
+			groupSelectorBounds.height += 6;
+			setCorners(groupSelectorBounds, topLeft, topRight, bottomRight, bottomLeft);
+			gc.fillRectangle(groupSelectorBounds.x, groupSelectorBounds.y, groupSelectorBounds.width, groupSelectorBounds.height);			
+			gc.drawLine(topLeft.x, topLeft.y, bottomLeft.x, bottomLeft.y);
+			gc.drawLine(topRight.x, topRight.y, bottomRight.x, bottomRight.y);
+		}
+		
+		cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
+	}
+	
+	/**
+	 * True if the next visible row above this one is in a different group - OR if this is the first visible row.
+	 */
+	public boolean isFirstInGroup(final Row<T> row) {
+		if (row.getRowIndex() == 0) {
+			return true;
+		}
+		return !gridModel.isSameGroup(row, gridModel.getRows().get(row.getRowIndex() - 1));
+	}
+	
+	public boolean isLastInGroup(final Row<T> row) {
+		if (row.getRowIndex() >= (gridModel.getRows().size() - 1)) {
+			return true;
+		}		
+		return !gridModel.isSameGroup(row, gridModel.getRows().get(row.getRowIndex() + 1));
+	}
+	
+	/**
+	 * Return the expand/collapse group row image bounds for the specified group row.
+	 */
+	public Rectangle getExpandImageBounds(final RenderContext rc, final Row<T> row, final Rectangle rowBounds) {
+		final int y = viewport.getRowViewportY(rc.getGC(), row);
+		final Image expandImage = grid.getContentProvider().isCollapsed(row.getElement()) ? getImage("plus.png") : getImage("minus.png");
+		final Rectangle bounds = new Rectangle(rowBounds.x, y, expandImage.getBounds().width, expandImage.getBounds().height);
+		bounds.x += (3 + (gridModel.isShowRowNumbers() ? (gridModel.getRowNumberColumn().getWidth() + styleRegistry.getCellSpacingHorizontal()) : 0));
+		bounds.y += 4;
+		return bounds;
 	}
 }
