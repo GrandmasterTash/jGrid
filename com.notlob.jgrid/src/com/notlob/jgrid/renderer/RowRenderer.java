@@ -284,7 +284,7 @@ public class RowRenderer<T> extends Renderer<T> {
 			}
 			
 		} else {
-			groupSelectorBounds.y -= 2;
+			groupSelectorBounds.y -= 0;
 			groupSelectorBounds.height += 6;
 			setCorners(groupSelectorBounds, topLeft, topRight, bottomRight, bottomLeft);
 			gc.fillRectangle(groupSelectorBounds.x, groupSelectorBounds.y, groupSelectorBounds.width, groupSelectorBounds.height);			
