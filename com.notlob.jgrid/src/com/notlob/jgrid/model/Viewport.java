@@ -255,7 +255,7 @@ public class Viewport<T> {
 			//
 			for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
 				final Column column = gridModel.getColumns().get(columnIndex);				
-				currentX += column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal();
+				currentX += getColumnWidth(currentX, column) + gridModel.getStyleRegistry().getCellSpacingHorizontal();
 				
 				if (x <= currentX) {
 					return columnIndex;
@@ -338,13 +338,14 @@ public class Viewport<T> {
 	
 			for (int columnIndex=firstColumnIndex; columnIndex<lastColumnIndex; columnIndex++) {						
 				final Column column = gridModel.getColumns().get(columnIndex);
+				final int columnWidth = getColumnWidth(columnHeaderX, column);
 				
 				//
 				// Note: We bump the columnHeaderX before the check for a resize and after for a reposition.
 				//
 				switch (operation) {
 					case RESIZE:
-						columnHeaderX += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
+						columnHeaderX += (columnWidth + gridModel.getStyleRegistry().getCellSpacingHorizontal());
 						
 						if ((x > (columnHeaderX - RESIZE_DEADZONE)) && (x < (columnHeaderX + RESIZE_DEADZONE))) {
 							return column;
@@ -356,7 +357,7 @@ public class Viewport<T> {
 							return column;
 						}
 						
-						columnHeaderX += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
+						columnHeaderX += (columnWidth + gridModel.getStyleRegistry().getCellSpacingHorizontal());
 						break;
 				}
 			}
@@ -495,6 +496,13 @@ public class Viewport<T> {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * The last column is 'stretchy' and runs to the end of the grid.
+	 */
+	public int getColumnWidth(final int columnX, final Column column) {
+		return (column == gridModel.getColumns().get(gridModel.getColumns().size() - 1)) ? (grid.getClientArea().width - columnX) : column.getWidth();
 	}
 
 	@Override

@@ -51,7 +51,7 @@ public class SelectionRenderer<T> extends Renderer<T> {
 			
 			if (selectionRegion.x != -1) {
 				selectionRegion.y = viewportArea.y;
-				selectionRegion.width = column.getWidth();
+				selectionRegion.width = viewport.getColumnWidth(selectionRegion.x, column);
 				selectionRegion.height = grid.getClientArea().height - viewportArea.y - 1;
 				
 				paintSelectionRegion(rc, selectionRegion, (viewport.getFirstRowIndex() == 0), true, true, true, styleRegistry.getSelectionRegionStyle());
@@ -81,7 +81,7 @@ public class SelectionRenderer<T> extends Renderer<T> {
 		rowLocation.y = viewportArea.y;
 		selectionRegion.x = -1;
 		selectionRegion.y = -1;
-		selectionRegion.width = viewport.getVisibleRowWidth(gc);
+		selectionRegion.width = grid.getClientArea().width - viewportArea.x - 1;
 		selectionRegion.height= -1;
 
 		//
