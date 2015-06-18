@@ -743,7 +743,7 @@ public class Grid<T> extends Composite {
 			final int rowHeight = getRowHeight(row);
 			
 			if (columnX != -1 && rowY != -1) {
-				return new Rectangle(columnX, rowY, column.getWidth(), rowHeight);	
+				return new Rectangle(columnX, rowY, viewport.getColumnWidth(columnX, column), rowHeight);	
 			}
 		}		
 		
