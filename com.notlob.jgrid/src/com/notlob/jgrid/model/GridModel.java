@@ -394,7 +394,7 @@ public class GridModel<T> {
 		//
 		// This check prevents dropping a column onto itself from causing the column to shuffle to the end of the grid.
 		//
-		if (insertBefore == null || columns.indexOf(insertBefore) != -1) {
+		if (insertBefore != null || columns.indexOf(insertBefore) != -1) {
 			//
 			// Move the column in the visible-only list of columns.
 			//

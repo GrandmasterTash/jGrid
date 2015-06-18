@@ -137,7 +137,7 @@ public class RowRenderer<T> extends Renderer<T> {
 	private void paintColumnDragImage(final RenderContext rc, final Rectangle rowBounds, final Row<T> row) {
 		final GC gc = rc.getGC();
 		
-		if ((row == gridModel.getColumnHeaderRow()) && (rc.getRenderPass() == RenderPass.FOREGROUND) && (grid.getMouseHandler().getTargetColumn() != null)) {							
+		if ((row == gridModel.getColumnHeaderRow()) && (rc.getRenderPass() == RenderPass.FOREGROUND) && (grid.getMouseHandler().getTargetColumn() != null)) {
 			//
 			// Otherwise, move across the viewport until we get to the drag target column.
 			//
@@ -169,7 +169,7 @@ public class RowRenderer<T> extends Renderer<T> {
 				if (column == grid.getMouseHandler().getTargetColumn()){ 
 					gc.drawImage(dropImage, cellBounds.x - (dropImage.getBounds().width / 2) + 1, 4);					
 				}
-				cellBounds.width = column.getWidth();
+				cellBounds.width = viewport.getColumnWidth(cellBounds.x, column);
 				cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
 			}
 			

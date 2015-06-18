@@ -344,6 +344,13 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			//
 			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 		}
+		
+		//
+		// Fix an issue where, when dragging a column, the mouse leaves the grid area, mouse up, then re-enters the grid area.
+		//
+		if (targetColumn == null) {
+			repositioning = null;
+		}
 	}
 	
 	// TODO: Move this into the grid so the scroll column and scroll row logic is together.
@@ -460,18 +467,10 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			// Reposition the column currently being dragged.
 			//
 			if (targetColumn != repositioning) {
-				if (targetColumn == LAST_COLUMN) {
-					//
-					// Edge-case, we're moving the column to the end of the grid.
-					//
-					gridModel.moveColumn(repositioning, null);
-					
-				} else {
-					//
-					// Move the column now.
-					//
-					gridModel.moveColumn(repositioning, targetColumn);
-				}
+				//
+				// Move the column now.
+				//
+				gridModel.moveColumn(repositioning, targetColumn);
 			}
 			
 			repositioning = null;
