@@ -777,7 +777,7 @@ public class Grid<T> extends Composite {
 			return null;
 		}
 		
-		return new Rectangle(x, 0, column.getWidth(), getRowHeight(gridModel.getColumnHeaderRow()));
+		return new Rectangle(x, 0, viewport.getColumnWidth(x, column), getRowHeight(gridModel.getColumnHeaderRow()));
 	}
 	
 	/**
