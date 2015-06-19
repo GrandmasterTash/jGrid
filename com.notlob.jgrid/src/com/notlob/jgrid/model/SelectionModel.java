@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.notlob.jgrid.Grid.SelectionStyle;
+
 public class SelectionModel<T> {
 
 	private final GridModel<T> gridModel;
@@ -16,6 +18,7 @@ public class SelectionModel<T> {
 	private Column lastParentAnchorColumn; // Gives some consistency to the position rather than snapping to the first column.
 	private boolean selectGroupIfAllChildrenSelected = true;
 	private boolean selectNextOnRemove = true;
+	private SelectionStyle selectionStyle = SelectionStyle.ROW_BASED;
 
 	public SelectionModel(final GridModel<T> gridModel) {
 		this.gridModel = gridModel;
@@ -36,6 +39,14 @@ public class SelectionModel<T> {
 	
 	public boolean isSelectNextOnRemove() {
 		return this.selectNextOnRemove;
+	}
+	
+	public SelectionStyle getSelectionStyle() {
+		return selectionStyle;
+	}
+	
+	public void setSelectionStyle(SelectionStyle selectionStyle) {
+		this.selectionStyle = selectionStyle;
 	}
 
 	public T getAnchorElement() {
@@ -89,6 +100,10 @@ public class SelectionModel<T> {
 	}
 
 	private void selectRow(final Row<T> row) {
+		if (selectionStyle == SelectionStyle.SINGLE_ROW_BASED) {
+			clear(false);
+		}
+		
 		if (row.isVisible()) {
 			row.setSelected(true);
 			selectedElements.add(row.getElement());
@@ -106,7 +121,9 @@ public class SelectionModel<T> {
 	}
 
 	public void selectAll() {
-		setSelectedRows(gridModel.getRows());
+		if (selectionStyle == SelectionStyle.ROW_BASED) {
+			setSelectedRows(gridModel.getRows());
+		}
 	}
 
 	public void clear(final boolean notify) {
@@ -182,7 +199,7 @@ public class SelectionModel<T> {
 	/**
 	 * Flips the selected state of the rows specified.
 	 */
-	public void toggleRowSelections(final List<Row<T>> rowsToToggle, final boolean includeGroup) {
+	public void toggleRowSelections(final List<Row<T>> rowsToToggle) {
 		boolean firstSelection = true;
 		
 		final List<Row<T>> fullListToToggle = new ArrayList<Row<T>>(rowsToToggle);		

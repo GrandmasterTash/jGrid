@@ -489,7 +489,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		if (e.button == 1 || e.button == 3) { // LEFT or RIGHT
 			if (e.count == 1) {
 				if ((column != null) && (column != gridModel.getGroupSelectorColumn()) && (column != gridModel.getRowNumberColumn()) && (e.y < viewport.getViewportArea(gc).y)) {
-					if (row == gridModel.getColumnHeaderRow() && e.button == 1) {
+					if (grid.isSortedEnabled() && (row == gridModel.getColumnHeaderRow()) && (e.button == 1)) {
 						//
 						// Column sorting.
 						//
@@ -516,7 +516,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						//return; // Don't exit here - allow the group to be selected if expanding.
 					}
 
-					if (alt && (groupColumn != null)) {
+					if (grid.isSortedEnabled() && alt && (groupColumn != null)) {
 						//
 						// Toggle the sort on the group column.
 						//
@@ -566,7 +566,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 						//
 						// Single row/group toggle.
 						//
-						gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row), true);
+						gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row));
 
 					} else if (!ctrl && shift) {
 						//

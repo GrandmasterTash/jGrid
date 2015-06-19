@@ -51,7 +51,8 @@ public class Grid<T> extends Composite {
 	// Affects the rending of the selection region rather than how the selection model works.
 	public enum SelectionStyle {
 		ROW_BASED,
-		COLUMN_BASED
+		COLUMN_BASED,
+		SINGLE_ROW_BASED
 	};
 	
 	public enum GroupRenderStyle {
@@ -97,8 +98,8 @@ public class Grid<T> extends Composite {
 	private boolean highlightHoveredRow = true;
 	private boolean highlightAnchorInHeaders = true;
 	private boolean highlightAnchorCellBorder = true;
-	private SelectionStyle selectionStyle = SelectionStyle.ROW_BASED;
-	
+	private boolean sortingEnabled = true;
+		
 	// Animate new/update rows?
 	private RowAnimation<T> newRowAnimiation = null;
 	private RowAnimation<T> updatedRowAnimiation = null;
@@ -271,12 +272,22 @@ public class Grid<T> extends Composite {
 	
 	public SelectionStyle getSelectionStyle() {
 		checkWidget();
-		return selectionStyle;
+		return gridModel.getSelectionModel().getSelectionStyle();
 	}
 	
 	public void setSelectionStyle(SelectionStyle selectionStyle) {
 		checkWidget();
-		this.selectionStyle = selectionStyle;
+		gridModel.getSelectionModel().setSelectionStyle(selectionStyle);
+	}
+	
+	public boolean isSortedEnabled() {
+		checkWidget();
+		return sortingEnabled;
+	}
+	
+	public void setSortedEnabled(final boolean sortingEnabled) {
+		checkWidget();
+		this.sortingEnabled = sortingEnabled;
 	}
 
 	public GroupRenderStyle getGroupRenderStyle() {
