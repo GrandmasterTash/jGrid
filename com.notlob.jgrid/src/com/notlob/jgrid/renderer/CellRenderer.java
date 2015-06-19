@@ -208,9 +208,6 @@ public class CellRenderer<T> extends Renderer<T> {
 		innerBounds.width = bounds.width - cellStyle.getPaddingLeft() - cellStyle.getPaddingRight() - outerBorderLeftWidth;
 		innerBounds.height = bounds.height - cellStyle.getPaddingTop() - cellStyle.getPaddingBottom() - outerBorderTopWidth;
 
-		final Rectangle oldClipping = gc.getClipping();
-		gc.setClipping(innerBounds);
-		
 		//
 		// Render cell image BEFORE text..
 		//
@@ -222,7 +219,10 @@ public class CellRenderer<T> extends Renderer<T> {
 		// Render cell text.
 		//
 		if (cellStyle.getContentStyle() != ContentStyle.IMAGE) {
+			final Rectangle oldClipping = gc.getClipping();
+			gc.setClipping(innerBounds);
 			paintCellText(rc, column, row, cellStyle);
+			gc.setClipping(oldClipping);
 		}
 
 		//
@@ -231,11 +231,7 @@ public class CellRenderer<T> extends Renderer<T> {
 		if ((row != null) && (cellStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE)) {
 			paintCellImage(rc, column, row, cellStyle);
 		}
-
-		//
-		// Restore the clipping.
-		//
-		gc.setClipping(oldClipping);
+		
 	}
 	
 	/**
