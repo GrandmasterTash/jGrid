@@ -1,5 +1,6 @@
 package com.notlob.jgrid.model;
 
+import java.text.Collator;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -162,8 +163,8 @@ public class Column {
 			if (o2 == null) {
 				return 1;
 			}
-
-			return String.valueOf(o1).compareTo(String.valueOf(o2));
+			
+			return Collator.getInstance().compare(String.valueOf(o1), String.valueOf(o2));
 		}
 	}
 }
