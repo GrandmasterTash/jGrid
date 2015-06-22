@@ -103,7 +103,7 @@ public class CellRenderer<T> extends Renderer<T> {
 	 * Fill the cell background. Expand the area of the fill to include any cell spacing, otherwise strips are left
 	 * in the background colour of the grid.
 	 */
-	protected void paintCellBackground(final RenderContext rc, final Rectangle bounds, final CellStyle cellStyle, final Row<T> row) {
+	protected void paintCellBackground(final RenderContext rc, final Rectangle bounds, final CellStyle cellStyle, final Row<T> row) throws Exception {
 		final GC gc = rc.getGC();
 		gc.setAlpha(cellStyle.getBackgroundOpacity());
 
@@ -144,7 +144,7 @@ public class CellRenderer<T> extends Renderer<T> {
 	/**
 	 * Paint the outer then inner borders of the cell.
 	 */
-	protected void paintCellBorders(final RenderContext rc, final Rectangle bounds, final CellStyle cellStyle) {
+	protected void paintCellBorders(final RenderContext rc, final Rectangle bounds, final CellStyle cellStyle) throws Exception {
 		final GC gc = rc.getGC();
 		gc.setAlpha(cellStyle.getForegroundOpacity());
 		
@@ -181,7 +181,7 @@ public class CellRenderer<T> extends Renderer<T> {
 	/**
 	 * Paint cell's image and text within the bounds specified using the style specified.
 	 */
-	protected void paintCellContent(final RenderContext rc, final Rectangle bounds, final Column column, final Row<T> row, final CellStyle cellStyle) {
+	protected void paintCellContent(final RenderContext rc, final Rectangle bounds, final Column column, final Row<T> row, final CellStyle cellStyle) throws Exception {
 		
 		//
 		// The corner cell has no content.
@@ -238,7 +238,7 @@ public class CellRenderer<T> extends Renderer<T> {
 	 * Paints the image for the cell (if there is one) regardless of whether we're painting it before (to the left of) 
 	 * or after (to the right of) the cell's text (if any).
 	 */
-	protected void paintCellImage(final RenderContext rc, final Column column, final Row<T> row, final CellStyle cellStyle) {
+	protected void paintCellImage(final RenderContext rc, final Column column, final Row<T> row, final CellStyle cellStyle) throws Exception {
 		final Image image = getCellImage(column, row);
 
 		if (image != null) {
@@ -263,7 +263,7 @@ public class CellRenderer<T> extends Renderer<T> {
 	/**
 	 * Paints the cell text (and animates if required).
 	 */
-	protected void paintCellText(final RenderContext rc, final Column column, final Row<T> row, final CellStyle cellStyle) {
+	protected void paintCellText(final RenderContext rc, final Column column, final Row<T> row, final CellStyle cellStyle) throws Exception {
 		final String text = getCellText(column, row);
 		
 		if (text != null && !text.isEmpty()) {
