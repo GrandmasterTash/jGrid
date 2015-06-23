@@ -334,10 +334,21 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			// If there's a next row, and it's in the same group, don't flip the alternate background.
 			//
 			final int nextIndex = rowIndex + 1;
-			if (!((nextIndex < viewport.getLastRowIndex()) && (nextIndex < gridModel.getRows().size()) && (gridModel.isSameGroup(row, gridModel.getRows().get(nextIndex))))) {
-				rc.setAlternate(!rc.isAlternate());
+			if ((nextIndex < viewport.getLastVisibleRowIndex()) && (nextIndex < gridModel.getRows().size())) {
+				final Row<T> nextRow = gridModel.getRows().get(nextIndex); 
+				
+				if (shouldAlternateBackground(row, nextRow)) {
+					rc.setAlternate(!rc.isAlternate());
+				}
 			}
 		}		
+	}
+	
+	/**
+	 * Return true if the background colour of the row should alternate (assuming the style is configured.).
+	 */
+	protected boolean shouldAlternateBackground(final Row<T> currentRow, final Row<T> nextRow) {
+		return (!(gridModel.isSameGroup(currentRow, nextRow)));
 	}
 	
 	/**
