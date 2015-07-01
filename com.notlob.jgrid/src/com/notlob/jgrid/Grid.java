@@ -1057,6 +1057,8 @@ public class Grid<T> extends Composite {
 	}
 	
 	private class GridModelListener implements GridModel.IModelListener<T> {
+		private boolean firstEvent = true;
+		
 		/**
 		 * A structural or data change that requires a full invalidate then redraw.
 		 */		
@@ -1091,7 +1093,15 @@ public class Grid<T> extends Composite {
 
 				// TODO: Ensure we're not still past the maximum.
 				
-			} else {
+				if (firstEvent) {
+					//
+					// If there's no scrollbar rendered yet, we must do a full recalc to see if it's needed.
+					//
+					invalidateComputedArea();
+					updateScrollbars();
+				}
+				
+			} else {				
 				//
 				// If there's no scrollbar rendered yet, we must do a full recalc to see if it's needed.
 				//
@@ -1099,7 +1109,9 @@ public class Grid<T> extends Composite {
 				updateScrollbars();
 			}
 			
-			redraw();			
+			redraw();	
+			
+			firstEvent = false;
 		}
 		
 		@Override
