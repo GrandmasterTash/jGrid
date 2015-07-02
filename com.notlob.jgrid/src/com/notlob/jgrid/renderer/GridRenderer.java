@@ -303,6 +303,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		
 		for (int rowIndex=viewport.getFirstRowIndex(); rowIndex<viewport.getLastVisibleRowIndex(); rowIndex++) {
 			final Row<T> row = gridModel.getRows().get(rowIndex);
+			rc.setAlternate(row.isAlternateBackground());
 			rowBounds.height = grid.getRowHeight(row);
 			
 			if (gridModel.isParentRow(row) && (grid.getGroupRenderStyle() == GroupRenderStyle.INLINE)) {
@@ -333,23 +334,24 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			//
 			// If there's a next row, and it's in the same group, don't flip the alternate background.
 			//
-			final int nextIndex = rowIndex + 1;
-			if ((nextIndex < viewport.getLastVisibleRowIndex()) && (nextIndex < gridModel.getRows().size())) {
-				final Row<T> nextRow = gridModel.getRows().get(nextIndex); 
-				
-				if (shouldAlternateBackground(row, nextRow)) {
-					rc.setAlternate(!rc.isAlternate());
-				}
-			}
+//			final int nextIndex = rowIndex + 1;
+//			if ((nextIndex < viewport.getLastVisibleRowIndex()) && (nextIndex < gridModel.getRows().size())) {
+//				final Row<T> nextRow = gridModel.getRows().get(nextIndex);
+//				rc.setAlternate(row.isAlternateBackground());
+//				
+//				if (grid.getLabelProvider().shouldAlternateBackground(row, nextRow)) {
+//					rc.setAlternate(!rc.isAlternate());
+//				}
+//			}
 		}		
 	}
 	
-	/**
-	 * Return true if the background colour of the row should alternate (assuming the style is configured.).
-	 */
-	protected boolean shouldAlternateBackground(final Row<T> currentRow, final Row<T> nextRow) {
-		return (!(gridModel.isSameGroup(currentRow, nextRow)));
-	}
+//	/**
+//	 * Return true if the background colour of the row should alternate (assuming the style is configured.).
+//	 */
+//	protected boolean shouldAlternateBackground(final Row<T> currentRow, final Row<T> nextRow) {
+//		return (!(gridModel.isSameGroup(currentRow, nextRow)));
+//	}
 	
 	/**
 	 * If there's a column being repositioned with the mouse, render a 'drag image' representing the column

@@ -3,6 +3,7 @@ package com.notlob.jgrid.providers;
 import org.eclipse.swt.graphics.Image;
 
 import com.notlob.jgrid.model.Column;
+import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.styles.StyleCollector;
 
 public interface IGridLabelProvider<T> {
@@ -22,5 +23,7 @@ public interface IGridLabelProvider<T> {
 	void getHeaderStyle(final StyleCollector styleCollector, final Column column);
 
 	int getDefaultRowHeight(final T element);
+	
+	boolean shouldAlternateBackground(final Row<T> previousRow, final Row<T> currentRow);
 
 }

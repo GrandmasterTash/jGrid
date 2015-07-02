@@ -15,6 +15,7 @@ public class Row<T> {
 	private boolean visible;
 	private boolean selected;
 	private boolean pinned;
+	private boolean alternateBackground;
 	private int height;
 	private int rowIndex = -1; // Allows updateElements to be implemented without an indexOf.
 	private final T element;
@@ -87,6 +88,14 @@ public class Row<T> {
 	void setPinned(final boolean pinned) {
 		this.pinned = pinned;
 	}
+	
+	public boolean isAlternateBackground() {
+		return this.alternateBackground;
+	}
+	
+	public void setAlternateBackground(final boolean alternateBackground) {
+		this.alternateBackground = alternateBackground;
+	}
 
 	public void addFilterMatch(final IHighlightingFilter filter) {
 		if (this.filterMatches == null) {
@@ -122,6 +131,6 @@ public class Row<T> {
 
 	@Override
 	public String toString() {
-		return String.format("Row : Selected [%s] Height [%s] Pinned [%s] : %s", selected, height, pinned, element);
+		return String.format("Row : Selected [%s] Height [%s] Pinned [%s] Alternate [%s] : %s", selected, height, pinned, alternateBackground, element);
 	}
 }

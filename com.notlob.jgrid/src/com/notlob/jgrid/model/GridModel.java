@@ -593,6 +593,15 @@ public class GridModel<T> {
 						row.setRowIndex(newExpectedIndex);
 					}
 					
+					//
+					// Check if the row's height is accurate.
+					//
+					final int oldHeight = getRowHeight(row);
+					row.setHeight(-1);
+					final int newHeight = getRowHeight(row);
+					
+					heightDelta += newHeight - oldHeight;
+					
 				} else if (visible && !row.isVisible()) {
 					//
 					// Reveal the row.
@@ -674,6 +683,12 @@ public class GridModel<T> {
 			int rowIndex = 0;
 			for (Row<T> row : rows) {
 				row.setRowIndex(rowIndex++);
+				
+				if (rowIndex == 1) {
+					row.setAlternateBackground(false);
+				} else {
+					row.setAlternateBackground(labelProvider.shouldAlternateBackground(rows.get(rowIndex-2), row));
+				}
 			}
 		}
 	}
