@@ -118,6 +118,13 @@ public class Viewport<T> {
 		if ((getFirstColumnIndex() == -1) && (getLastColumnIndex() != -1)) {
 			setFirstColumnIndex(getLastColumnIndex());
 		}
+		
+		//
+		// If we're showing a mega-tall row that's taller than the grid.
+		//
+		if ((getFirstRowIndex() == -1) && (getLastRowIndex() != -1)) {
+			setFirstRowIndex(getLastRowIndex());
+		}
 	}
 
 	/**
