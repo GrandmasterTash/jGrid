@@ -560,10 +560,9 @@ public class GridModel<T> {
 	 */
 	public Collection<Row<T>> updateElements(final Collection<T> elements) {
 		int heightDelta = 0;
-		
 		final Collection<Row<T>> rowsShown = new ArrayList<Row<T>>();
 		
-		for (Object element : elements) {
+		for (T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
 			
 			if (row != null) {
@@ -597,7 +596,7 @@ public class GridModel<T> {
 					// Check if the row's height is accurate.
 					//
 					final int oldHeight = getRowHeight(row);
-					row.setHeight(-1);
+					row.setHeight(labelProvider.getDefaultRowHeight(element));
 					final int newHeight = getRowHeight(row);
 					
 					heightDelta += newHeight - oldHeight;
