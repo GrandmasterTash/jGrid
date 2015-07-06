@@ -423,6 +423,10 @@ public class Viewport<T> {
 		int currentY = viewportArea.y;
 
 		for (int rowIndex=getFirstRowIndex(); rowIndex<getLastRowIndex(); rowIndex++) {
+			if ((rowIndex < 0) || (rowIndex >= gridModel.getRows().size())) {
+				return -1;
+			}
+			
 			final Row<T> currentRow = gridModel.getRows().get(rowIndex);
 
 			if (currentRow == row) {
@@ -457,6 +461,9 @@ public class Viewport<T> {
 	 */
 	public void reveal(final GC gc, final Column column, final Row<T> row) {
 
+		invalidate();
+		calculateVisibleCellRange(gc);
+		
 		final int rowIndex = row.getRowIndex();
 		final int columnIndex = gridModel.getColumns().indexOf(column);
 
