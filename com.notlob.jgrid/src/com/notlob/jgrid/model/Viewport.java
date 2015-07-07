@@ -510,6 +510,9 @@ public class Viewport<T> {
 				}
 			}
 		}
+		
+		invalidate();
+		grid.redraw();
 	}
 	
 	/**

@@ -992,7 +992,7 @@ public class Grid<T> extends Composite {
 
 	public void reveal(final T element) {
 		checkWidget();
-		final Column column = gridModel.getColumns().get(0);		
+		final Column column = gridModel.getColumns().get(0);
 		viewport.reveal(gc, column, gridModel.getRow(element));
 	}
 	
