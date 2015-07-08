@@ -251,7 +251,7 @@ public class StyleRegistry<T> {
 			//
 			// Check for a selected column header
 			//
-			if (grid.isFocusControl() && grid.isHighlightAnchorInHeaders() && (row == grid.getColumnHeaderRow())  && (column == grid.getGridModel().getSelectionModel().getAnchorColumn()) && !(grid.getGridRenderer().isPaintingPinned())) {
+			if (/*grid.isFocusControl() && */grid.isHighlightAnchorInHeaders() && (row == grid.getColumnHeaderRow())  && (column == grid.getGridModel().getSelectionModel().getAnchorColumn()) && !(grid.getGridRenderer().isPaintingPinned())) {
 				styleCollector.add(selectionHeaderStyle);
 			}
 			
