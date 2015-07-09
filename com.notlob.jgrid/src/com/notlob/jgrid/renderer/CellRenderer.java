@@ -67,14 +67,14 @@ public class CellRenderer<T> extends Renderer<T> {
 				//
 				// Paint the cell background.
 				//
-				paintCellBackground(rc, bounds, currentStyle, row);
+				paintCellBackground(rc, bounds, currentStyle, column, row);
 				
 			} else if (rc.getRenderPass() == RenderPass.FOREGROUND) {
 				//
 				// Paint cell content.
 				//
 				paintCellContent(rc, bounds, column, row, currentStyle);
-				paintCellBorders(rc, bounds, currentStyle);
+				paintCellBorders(rc, bounds, column, row, currentStyle);
 			}
 			
 		} catch (final Throwable t) {
@@ -103,7 +103,7 @@ public class CellRenderer<T> extends Renderer<T> {
 	 * Fill the cell background. Expand the area of the fill to include any cell spacing, otherwise strips are left
 	 * in the background colour of the grid.
 	 */
-	protected void paintCellBackground(final RenderContext rc, final Rectangle bounds, final CellStyle cellStyle, final Row<T> row) throws Exception {
+	protected void paintCellBackground(final RenderContext rc, final Rectangle bounds, final CellStyle cellStyle, final Column column, final Row<T> row) throws Exception {
 		final GC gc = rc.getGC();
 		gc.setAlpha(cellStyle.getBackgroundOpacity());
 
@@ -144,7 +144,7 @@ public class CellRenderer<T> extends Renderer<T> {
 	/**
 	 * Paint the outer then inner borders of the cell.
 	 */
-	protected void paintCellBorders(final RenderContext rc, final Rectangle bounds, final CellStyle cellStyle) throws Exception {
+	protected void paintCellBorders(final RenderContext rc, final Rectangle bounds, final Column column, final Row<T> row, final CellStyle cellStyle) throws Exception {
 		final GC gc = rc.getGC();
 		gc.setAlpha(cellStyle.getForegroundOpacity());
 		
