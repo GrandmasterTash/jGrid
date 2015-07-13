@@ -52,6 +52,7 @@ public class Grid<T> extends Composite {
 	public enum SelectionStyle {
 		ROW_BASED,
 		COLUMN_BASED,
+		SINGL_CELL_BASED,
 		SINGLE_ROW_BASED
 	};
 	

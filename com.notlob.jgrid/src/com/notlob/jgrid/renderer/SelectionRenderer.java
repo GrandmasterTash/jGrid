@@ -5,7 +5,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import com.notlob.jgrid.Grid;
-import com.notlob.jgrid.Grid.SelectionStyle;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.styles.RegionStyle;
@@ -32,10 +31,17 @@ public class SelectionRenderer<T> extends Renderer<T> {
 	}
 	
 	public void paintSelectionRegion(final RenderContext rc) {
-		if (grid.getSelectionStyle() == SelectionStyle.COLUMN_BASED) {
-			paintColumnBasedSelection(rc);
-		} else {
-			paintRowBasedSelection(rc);
+		switch (grid.getSelectionStyle()) {
+			case COLUMN_BASED:
+				paintColumnBasedSelection(rc);
+				break;
+
+			case SINGL_CELL_BASED:
+				paintCellBasedSelection(rc);
+				break;
+				
+			default:
+				paintRowBasedSelection(rc);
 		}
 	}
 
@@ -65,6 +71,47 @@ public class SelectionRenderer<T> extends Renderer<T> {
 		}		
 	}
 
+	/**
+	 * Paint a selection region in the column and row containing the anchor.
+	 */
+	protected void paintCellBasedSelection(final RenderContext rc) {
+		final Rectangle viewportArea = viewport.getViewportArea(rc.getGC());
+		final Column anchorColumn = grid.getAnchorColumn();
+		final T element = grid.getAnchorElement();
+		
+		rowLocation.x = viewportArea.x;
+		rowLocation.y = viewportArea.y;
+		selectionRegion.x = rowLocation.x;
+		selectionRegion.y = -1;
+		selectionRegion.width = -1;
+		selectionRegion.height= -1;
+		
+		if (anchorColumn != null) {						
+			for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastColumnIndex(); columnIndex++) {
+				final Column column = gridModel.getColumns().get(columnIndex);
+				
+				if (column == anchorColumn) {
+					for (int rowIndex=viewport.getFirstRowIndex(); rowIndex<viewport.getLastVisibleRowIndex(); rowIndex++) {
+						final Row<T> row = gridModel.getRows().get(rowIndex);
+	
+						if (row.getElement() == element) {
+							selectionRegion.y = rowLocation.y;
+							selectionRegion.height = grid.getRowHeight(row);
+							selectionRegion.width = viewport.getColumnWidth(selectionRegion.x, anchorColumn);
+					
+							paintSelectionRegion(rc, selectionRegion, true, true, true, true, styleRegistry.getSelectionRegionStyle());
+							return;
+						}
+						
+						rowLocation.y += (grid.getRowHeight(row) + styleRegistry.getCellSpacingVertical());
+					}
+				}
+				
+				selectionRegion.x += viewport.getColumnWidth(selectionRegion.x, column);
+			}
+		}
+	}
+	
 	/**
 	 * Paint the selection region's background OR the selection region's borders (depending on the render pass)
 	 */
