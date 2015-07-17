@@ -42,12 +42,16 @@ public class RenderContext {
 	// True if one or more rows has not finished it's throb animation.
 	protected boolean animationPending;
 	
+	// Used by the text-wrapping calculation in a COMPUTE_SIZE pass to grow the row if required. 
+	protected Integer computedHeightDelta;
+	
 	// Cache the width of any text rendered by the font data.
 	protected final Map<FontData, Map<String, Point>> extentCache;
 		
 	public RenderContext(final Grid<?> grid) {
 		this.grid = grid;
 		this.extentCache = new HashMap<>();
+		this.computedHeightDelta = null;
 	}
 	
 	public Grid<?> getGrid() {
@@ -112,5 +116,13 @@ public class RenderContext {
 
 	public Map<FontData, Map<String, Point>> getExtentCache() {
 		return extentCache;
+	}
+	
+	public Integer getComputedHeightDelta() {
+		return computedHeightDelta;
+	}
+	
+	public void setComputedHeightDelta(final Integer computedHeightDelta) {
+		this.computedHeightDelta = computedHeightDelta;
 	}
 }

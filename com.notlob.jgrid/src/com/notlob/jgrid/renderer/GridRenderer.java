@@ -177,6 +177,13 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 				// Calculate the viewport ranges.
 				//
 				viewport.calculateVisibleCellRange(gc);
+				
+				//
+				// Give renderers an opportunity to alter bounds. For example, wrapped cell content may have to
+				// grow the row height.
+				//
+				rc.setRenderPass(RenderPass.COMPUTE_SIZE);
+				paintRows(rc);
 
 				//
 				// Paint the grid and cell backgrounds.
@@ -304,6 +311,14 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		for (int rowIndex=viewport.getFirstRowIndex(); rowIndex<viewport.getLastVisibleRowIndex(); rowIndex++) {
 			final Row<T> row = gridModel.getRows().get(rowIndex);
 			rc.setAlternate(row.isAlternateBackground());
+			
+			//
+			// Initialise the row height used for the wrapped cell calculation.
+			//
+			if (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) {
+				rc.setComputedHeightDelta(null);
+			}
+			
 			rowBounds.height = grid.getRowHeight(row);
 			
 			if (gridModel.isParentRow(row) && (grid.getGroupRenderStyle() == GroupRenderStyle.INLINE)) {
@@ -327,31 +342,26 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			}
 			
 			//
+			// Adjust the row height after any cell-wrapping calculations.
+			//
+			if ((rc.getRenderPass() == RenderPass.COMPUTE_SIZE) && (rc.getComputedHeightDelta() != null)) {
+				final int newHeight = grid.getRowHeight(row) + rc.getComputedHeightDelta();
+				if (newHeight > 0) {
+//					System.out.println(String.format("height [%s] applying delta [%s] new-height [%s]", grid.getRowHeight(row), rc.getComputedHeightDelta(), newHeight));
+					row.setHeight(newHeight);
+//				} else {
+//					System.out.println(String.format("IGNORED height [%s] applying delta [%s] new-height [%s]", grid.getRowHeight(row), rc.getComputedHeightDelta(), newHeight));
+				}
+				
+				rc.setComputedHeightDelta(null);
+			}
+			
+			//
 			// Move the bounds down for the next row.
 			//
 			rowBounds.y += (rowBounds.height + styleRegistry.getCellSpacingVertical());
-
-			//
-			// If there's a next row, and it's in the same group, don't flip the alternate background.
-			//
-//			final int nextIndex = rowIndex + 1;
-//			if ((nextIndex < viewport.getLastVisibleRowIndex()) && (nextIndex < gridModel.getRows().size())) {
-//				final Row<T> nextRow = gridModel.getRows().get(nextIndex);
-//				rc.setAlternate(row.isAlternateBackground());
-//				
-//				if (grid.getLabelProvider().shouldAlternateBackground(row, nextRow)) {
-//					rc.setAlternate(!rc.isAlternate());
-//				}
-//			}
 		}		
 	}
-	
-//	/**
-//	 * Return true if the background colour of the row should alternate (assuming the style is configured.).
-//	 */
-//	protected boolean shouldAlternateBackground(final Row<T> currentRow, final Row<T> nextRow) {
-//		return (!(gridModel.isSameGroup(currentRow, nextRow)));
-//	}
 	
 	/**
 	 * If there's a column being repositioned with the mouse, render a 'drag image' representing the column

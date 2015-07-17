@@ -18,6 +18,7 @@ public class Column {
 	private int sortSequence;
 	private boolean visible;
 	private boolean pinned;
+	private boolean wrap;
 	private AlignmentStyle textAlignment;
 	private AlignmentStyle imageAlignment;
 
@@ -31,6 +32,7 @@ public class Column {
 		this.comparator = new DefaultComparator();
 		this.visible = true;
 		this.pinned = false;
+		this.wrap = false;
 	}
 
 	@Override
@@ -44,6 +46,7 @@ public class Column {
 		sb.append(String.format(" [%s]", pinned ? "pinned" : "not pinned"));
 		sb.append(String.format(" Sort [%s, %s]", sortDirection, sortSequence));
 		sb.append(String.format(" Text-Align [%s] Image-Align [%s]", textAlignment, imageAlignment));
+		sb.append(String.format(" Wrap-Text [%s]", wrap));
 
 		return sb.toString();
 	}
@@ -106,6 +109,14 @@ public class Column {
 	
 	public void setPinned(final boolean pinned) {
 		this.pinned = pinned;
+	}
+	
+	public boolean isWrap() {
+		return wrap;
+	}
+	
+	public void setWrap(final boolean wrap) {
+		this.wrap = wrap;
 	}
 	
 	public AlignmentStyle getTextAlignment() {

@@ -40,6 +40,7 @@ public abstract class Renderer<T> {
 	public final static int ANIMATION_INTERVAL = 10;
 		
 	protected enum RenderPass {
+		COMPUTE_SIZE,
 		BACKGROUND,
 		FOREGROUND
 	}
@@ -147,6 +148,30 @@ public abstract class Renderer<T> {
 		newBounds.y = originalBounds.y + delta;
 		newBounds.width = originalBounds.width - (delta * 2);
 		newBounds.height = originalBounds.height - (delta * 2);
+	}
+	
+	/**
+	 * Get the SWT alignment direction from a jgrid one.
+	 */
+	protected int convertAlignmentToSwt(final AlignmentStyle alignment) {
+		switch (alignment) {
+			case BOTTOM_LEFT:
+			case LEFT_CENTER:
+			case TOP_LEFT:
+				return SWT.LEFT;
+			
+			case BOTTOM_CENTER:
+			case CENTER:
+			case TOP_CENTER:
+				return SWT.CENTER;
+				
+			case BOTTOM_RIGHT:
+			case RIGHT_CENTER:
+			case TOP_RIGHT:
+				return SWT.RIGHT;
+		}
+		
+		return SWT.LEFT;
 	}
 	
 	/**

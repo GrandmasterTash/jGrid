@@ -33,19 +33,29 @@ public class Row<T> {
 		frame = -1; // No animation.
 	}
 
+	/**
+	 * You should use grid.getRowHeight not this.
+	 */
 	int getHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
 		if (height == -1) {
-			if (gc == null) {
-				return 0;
-			}
-
-			gc.setFont(resourceManager.getFont(cellStyle.getFontData()));
-			
-			// Include the padding and outer border.
-			height = cellStyle.getPaddingTop() + cellStyle.getPaddingBottom() + gc.getFontMetrics().getHeight() + (cellStyle.getBorderOuterTop() == null ? 0 : cellStyle.getBorderOuterTop().getWidth()) + (cellStyle.getBorderOuterBottom() == null ? 0 : 1);
+			height = getDefaultHeight(resourceManager, gc, cellStyle);
 		}
 
 		return height;
+	}
+	
+	/**
+	 * The initial starting height for the row - NOT the current height.
+	 */
+	public int getDefaultHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
+		if (gc == null) {
+			return 0;
+		}
+
+		gc.setFont(resourceManager.getFont(cellStyle.getFontData()));
+		
+		// Include the padding and outer border.
+		return cellStyle.getPaddingTop() + cellStyle.getPaddingBottom() + gc.getFontMetrics().getHeight() + (cellStyle.getBorderOuterTop() == null ? 0 : cellStyle.getBorderOuterTop().getWidth()) + (cellStyle.getBorderOuterBottom() == null ? 0 : 1);
 	}
 
 	public void setHeight(final int height) {

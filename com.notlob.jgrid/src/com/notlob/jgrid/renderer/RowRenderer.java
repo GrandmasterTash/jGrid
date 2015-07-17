@@ -44,14 +44,12 @@ public class RowRenderer<T> extends Renderer<T> {
 			final GC gc = rc.getGC();
 			
 			//
-			// Paint the row background
+			// Initialise the cell bounds.
 			//
-			// TODO: This once we've fixed spacing and outer borders.
-	
 			cellBounds.x = rowBounds.x;
 			cellBounds.y = rowBounds.y;
 			cellBounds.height = rowBounds.height;
-
+			
 			if (gridModel.isShowRowNumbers() || gridModel.isShowGroupSelector()) {
 				if (row == gridModel.getColumnHeaderRow()) {
 					//
@@ -92,27 +90,11 @@ public class RowRenderer<T> extends Renderer<T> {
 				setCorners(cellBounds, topLeft, topRight, bottomRight, bottomLeft);
 				paintBorderLine(gc, styleRegistry.getHeaderStyle().getBorderOuterBottom(), topLeft, bottomLeft);
 			}
-	
+			
 			//
 			// Now paint every cell in the row.
 			//
-			for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
-				final Column column = gridModel.getColumns().get(columnIndex);
-				final CellStyle cellStyle = styleRegistry.getCellStyle(column, row);
-	
-				//
-				// Don't paint a column header grip on the last column.
-				//
-				rc.setDontPaintGrip(columnIndex == (gridModel.getColumns().size() - 1));
-				
-				//
-				// Paint the cell now.
-				//
-				cellBounds.width = viewport.getColumnWidth(cellBounds.x, column);
-				cellRenderer.paintCell(rc, cellBounds, column, row, cellStyle);
-				cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
-				rc.setDontPaintGrip(false);
-			}
+			paintBodyCells(rc, row);
 	
 			//
 			// Render a column-reposition indicator if we're dragging columns around.
@@ -128,6 +110,29 @@ public class RowRenderer<T> extends Renderer<T> {
 				t.printStackTrace(System.err);
 				rc.setErrorLogged(true);
 			}
+		}
+	}
+
+	/**
+	 * Paint the main body cells for the row.
+	 */
+	protected void paintBodyCells(final RenderContext rc, final Row<T> row) {
+		for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
+			final Column column = gridModel.getColumns().get(columnIndex);
+			final CellStyle cellStyle = styleRegistry.getCellStyle(column, row);
+
+			//
+			// Don't paint a column header grip on the last column.
+			//
+			rc.setDontPaintGrip(columnIndex == (gridModel.getColumns().size() - 1));
+			
+			//
+			// Paint the cell now.
+			//
+			cellBounds.width = viewport.getColumnWidth(cellBounds.x, column);
+			cellRenderer.paintCell(rc, cellBounds, column, row, cellStyle);
+			cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
+			rc.setDontPaintGrip(false);
 		}
 	}
 
@@ -225,9 +230,7 @@ public class RowRenderer<T> extends Renderer<T> {
 		//
 		// Get the normal row-number style or the selected style.
 		//
-//		final CellStyle cellStyle = styleRegistry.getRowNumberStyle();
 		final GC gc = rc.getGC();
-// TODO: Set-up a style for hovered, not hovered and selected.		
 		
 		//
 		// Ascertain if we're the first row in the group, in the middle or the last row).
@@ -241,7 +244,6 @@ public class RowRenderer<T> extends Renderer<T> {
 		groupSelectorBounds.width -= 2;
 		setCorners(groupSelectorBounds, topLeft, topRight, bottomRight, bottomLeft);
 		
-// TODO: Use style....
 		gc.setLineWidth(1);
 		gc.setLineStyle(SWT.LINE_SOLID);
 		gc.setForeground(getColour(styleRegistry.getMainBorderTop().getColour()));

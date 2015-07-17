@@ -1,11 +1,14 @@
 package com.notlob.jgrid.renderer;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.TextLayout;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
@@ -35,13 +38,22 @@ public class CellRenderer<T> extends Renderer<T> {
 	protected final Rectangle innerBounds;
 	
 	// Used to align an image and/or text within the innerBounds.
-	protected final Point contentLocation;	
+	protected final Point contentLocation;
+	
+	protected final TextLayout textLayout;
 	
 	public CellRenderer(final Grid<T> grid) {
 		super(grid);
 		errorImage = getImage("cell_error.gif");			
 		contentLocation = new Point(0, 0);
 		innerBounds = new Rectangle(0, 0, 0, 0);
+		textLayout = new TextLayout(grid.getDisplay());
+		grid.addDisposeListener(new DisposeListener() {
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				textLayout.dispose();
+			}
+		});
 	}
 	
 	/**
@@ -62,19 +74,28 @@ public class CellRenderer<T> extends Renderer<T> {
 				styleRegistry.getStyleCollector().addFirst(styleRegistry.getAnchorStyle());
 				currentStyle = styleRegistry.getStyleCollector().getCellStyle();
 			}			
-						
-			if (rc.getRenderPass() == RenderPass.BACKGROUND) {
-				//
-				// Paint the cell background.
-				//
-				paintCellBackground(rc, bounds, currentStyle, column, row);
-				
-			} else if (rc.getRenderPass() == RenderPass.FOREGROUND) {
-				//
-				// Paint cell content.
-				//
-				paintCellContent(rc, bounds, column, row, currentStyle);
-				paintCellBorders(rc, bounds, column, row, currentStyle);
+			
+			switch (rc.getRenderPass()) {
+				case BACKGROUND:
+					//
+					// Paint the cell background.
+					//
+					paintCellBackground(rc, bounds, currentStyle, column, row);
+					break;
+					
+				case FOREGROUND:
+					//
+					// Paint cell content
+					//
+					paintCellContent(rc, bounds, column, row, currentStyle);
+					paintCellBorders(rc, bounds, column, row, currentStyle);
+					break;
+					
+				case COMPUTE_SIZE:
+					//
+					// Calculate the cell/row size.
+					//
+					paintCellContent(rc, bounds, column, row, currentStyle);
 			}
 			
 		} catch (final Throwable t) {
@@ -251,7 +272,10 @@ public class CellRenderer<T> extends Renderer<T> {
 			// Align/position and render the image.
 			//
 			align(image.getBounds().width, image.getBounds().height, innerBounds, contentLocation, imageAlignment);
-			rc.getGC().drawImage(image, contentLocation.x, contentLocation.y);
+			
+			if (rc.getRenderPass() == RenderPass.FOREGROUND) {
+				rc.getGC().drawImage(image, contentLocation.x, contentLocation.y);
+			}
 
 			if (!cellStyle.isAllowContentOverlap()) {
 				innerBounds.x += (image.getBounds().width + cellStyle.getPaddingImageText());
@@ -282,34 +306,84 @@ public class CellRenderer<T> extends Renderer<T> {
 				}
 			}
 	
-			final Point textExtent = getTextExtent(text, rc, cellStyle.getFontData());
-			final int width = Math.min(textExtent.x, (innerBounds.width - widthCap));
-			final int height = Math.min(textExtent.y, innerBounds.height);
-			final AlignmentStyle textAlignment = (cellStyle.getTextAlignment() == null) ? (column.getTextAlignment() == null ? AlignmentStyle.LEFT_CENTER : column.getTextAlignment()) : cellStyle.getTextAlignment();
-			align(width, height, innerBounds, contentLocation, textAlignment);
-	
-			//
-			// Perform an animation on the row - if required. This can cause the text to bounce into view.
-			//			
-			if ((row != null) && (row != gridModel.getColumnHeaderRow()) && (row.getAnimation() != null)) {
-				row.getAnimation().animateText(rc, this, row);
-			}
-			
 			final boolean highlightFilterMatch = doesCellHaveStyleableFilterMatch(row, column);
-			if (highlightFilterMatch) {
+			final AlignmentStyle textAlignment = (cellStyle.getTextAlignment() == null) ? (column.getTextAlignment() == null ? AlignmentStyle.LEFT_CENTER : column.getTextAlignment()) : cellStyle.getTextAlignment();
+			int width;
+			int height;
+			
+			if (column.isWrap() && (row != grid.getColumnHeaderRow())) {
 				//
-				// Use text highlighting if there's a FilterMatchRange in this column (and it's trackable).
+				// Use a wrapping method of rendering the text.
 				//
-				gc.setBackground(getColour(styleRegistry.getFilterMatchBackground()));
-				gc.setForeground(getColour(styleRegistry.getFilterMatchForeground()));
-				gc.drawText(text, contentLocation.x, contentLocation.y);
-	
+				textLayout.setText(text);				
+				textLayout.setAlignment(convertAlignmentToSwt(textAlignment));
+				textLayout.setFont(getFont(cellStyle.getFontData()));
+				
+				//
+				// Edge-case, don't use available width for the last column if it's less that it's defined width.
+				//
+				final boolean lastColumn = (column == gridModel.getColumns().get(gridModel.getColumns().size() - 1));
+				textLayout.setWidth(lastColumn ? (Math.max(column.getWidth(), innerBounds.width)) : innerBounds.width);
+				
+				if (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) {
+					computeRowSize(rc, column, textLayout.getBounds().height, innerBounds.height);
+				}
+				
+				width = textLayout.getBounds().width;
+				height = textLayout.getBounds().height;
+				align(width, height, innerBounds, contentLocation, textAlignment);
+				
+				if (rc.getRenderPass() == RenderPass.FOREGROUND) {
+					if (highlightFilterMatch) {
+						//
+						// Use text highlighting if there's a FilterMatchRange in this column (and it's trackable).
+						//
+						gc.setBackground(getColour(styleRegistry.getFilterMatchBackground()));
+						gc.setForeground(getColour(styleRegistry.getFilterMatchForeground()));
+						textLayout.draw(gc, contentLocation.x, contentLocation.y);
+			
+					} else {
+						//
+						// Use normal colours if we're not highlighting a filter result.
+						//
+						gc.setForeground(getColour(cellStyle.getForeground()));
+						textLayout.draw(gc, contentLocation.x, contentLocation.y);
+					}
+				}
+				
 			} else {
 				//
-				// Use normal colours if we're not highlighting a filter result.
+				// Use a non-wrapping method of rendering the text.
 				//
-				gc.setForeground(getColour(cellStyle.getForeground()));
-				gc.drawText(text, contentLocation.x, contentLocation.y, SWT.DRAW_TRANSPARENT);
+				final Point textExtent = getTextExtent(text, rc, cellStyle.getFontData());
+				width = Math.min(textExtent.x, (innerBounds.width - widthCap));
+				height = Math.min(textExtent.y, innerBounds.height);	
+				align(width, height, innerBounds, contentLocation, textAlignment);
+				
+				if (rc.getRenderPass() == RenderPass.FOREGROUND) {
+					//
+					// Perform an animation on the row - if required. This can cause the text to bounce into view.
+					//			
+					if ((row != null) && (row != gridModel.getColumnHeaderRow()) && (row.getAnimation() != null)) {
+						row.getAnimation().animateText(rc, this, row);
+					}
+					
+					if (highlightFilterMatch) {
+						//
+						// Use text highlighting if there's a FilterMatchRange in this column (and it's trackable).
+						//
+						gc.setBackground(getColour(styleRegistry.getFilterMatchBackground()));
+						gc.setForeground(getColour(styleRegistry.getFilterMatchForeground()));
+						gc.drawText(text, contentLocation.x, contentLocation.y);
+			
+					} else {
+						//
+						// Use normal colours if we're not highlighting a filter result.
+						//
+						gc.setForeground(getColour(cellStyle.getForeground()));
+						gc.drawText(text, contentLocation.x, contentLocation.y, SWT.DRAW_TRANSPARENT);
+					}
+				}
 			}
 			
 			if (widthCap > 0) {
@@ -320,6 +394,67 @@ public class CellRenderer<T> extends Renderer<T> {
 			if (!cellStyle.isAllowContentOverlap()) {
 				innerBounds.x += (width + cellStyle.getPaddingImageText());
 				innerBounds.width -= (height + cellStyle.getPaddingImageText());
+			}
+		}
+	}
+	
+	/**
+	 * Figure out if we need to shrink of grow the row height based on 
+	 *   a) previous cell's calculations for this row
+	 *   b) this cell's content.
+	 */
+	protected void computeRowSize(final RenderContext rc, final Column column, final int desiredHeight, final int currentHeight) {
+		//
+		// If we're computing size, this is our chance to alter the row height if the text wraps.
+		//
+		final int delta = (desiredHeight - currentHeight);
+		
+//		System.out.println(String.format("Column [%s] desired-height [%s] current-height [%s] delta [%s] computed [%s]", 
+//				column.getCaption(), 
+//				desiredHeight, 
+//				currentHeight, 
+//				delta, 
+//				rc.getComputedHeightDelta()));
+		
+		if (rc.getComputedHeightDelta() == null) {
+			//
+			// If we want to shrink or grow the row and nothing else does (yet), then store the delta. 
+			//
+			rc.setComputedHeightDelta(delta);
+		
+		} else {
+			//
+			// If something else also wants to alter the height we must battle-it out.
+			//
+			if (rc.getComputedHeightDelta() >= 0) {
+				if (delta > 0) {
+					//
+					// Something else also wants to grow the row, so grow it be the larger of
+					// the two values - to ensure text is still visible.
+					//									
+					rc.setComputedHeightDelta(Math.max(rc.getComputedHeightDelta(), delta));
+					
+				} else {
+					//
+					// If something else wants to grow the row and we want to shrink it - 
+					// do nothing.
+					//
+				}								
+				
+			} else {
+				if (delta >= 0) {
+					//
+					// If something else wants to shrink the row, whilst we want to grow it, we win.
+					//
+					rc.setComputedHeightDelta(delta);
+					
+				} else {
+					//
+					// Something else also wants to shrink the row, so shrink it by the smaller of
+					// the two values - to ensure text is still visible.
+					//
+					rc.setComputedHeightDelta(Math.min(rc.getComputedHeightDelta(), delta));
+				}
 			}
 		}
 	}
