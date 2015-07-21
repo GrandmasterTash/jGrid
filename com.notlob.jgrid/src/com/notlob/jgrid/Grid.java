@@ -897,18 +897,20 @@ public class Grid<T> extends Composite {
 
 	public void updateScrollbars() {
 		viewport.invalidate();
-		viewport.calculateVisibleCellRange(gc);
+		viewport.calculateVisibleCellRange(gc);		
 		
-		updateScrollbar(getVerticalBar(), 20, viewport.getHeightInRows(), getRows().size(), 1);
+		updateScrollbar(getVerticalBar(), 1, viewport.getHeightInRows(), getRows().size(), 1);		
 		updateScrollbar(getHorizontalBar(), 1, viewport.getWidthInColumns(), getColumns().size(), 1);
 	}
 
 	private void updateScrollbar(final ScrollBar scrollBar, final int thumb, final int visible, final int maximum, final int increment) {		
 		scrollBar.setMaximum(maximum);
-		scrollBar.setThumb(thumb);
+		scrollBar.setThumb(Math.min(thumb, maximum));
 		scrollBar.setPageIncrement(Math.min(visible, scrollBar.getMaximum()));
 		scrollBar.setIncrement(increment);
 		scrollBar.setVisible((maximum > visible) && (visible > 0));
+		scrollBar.setEnabled(scrollBar.isVisible());
+//		System.out.println(String.format("Vert Scroll - thumb [%s] pageIncr [%s] maximum [%s] visible [%s] widgetVis [%s]", scrollBar.getThumb(), scrollBar.getPageIncrement(), scrollBar.getMaximum(), visible, scrollBar.isVisible()));
 	}
 
 	private void invalidateComputedArea() {
@@ -1010,8 +1012,11 @@ public class Grid<T> extends Composite {
 	private class ScrollListener extends SelectionAdapter {
 		@Override
 		public void widgetSelected(final SelectionEvent e) {
-			viewport.invalidate();
-			redraw();
+//			final ScrollBar scrollBar = (ScrollBar) e.widget;
+//			if (scrollBar.isVisible()) {
+				viewport.invalidate();
+				redraw();
+//			}
 		}
 	}
 

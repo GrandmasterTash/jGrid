@@ -256,6 +256,10 @@ public class Viewport<T> {
 	 * Return how many columns are currently visible.
 	 */
 	public int getWidthInColumns() {
+		if ((getFirstColumnIndex() == -1) || (getLastColumnIndex() == -1)) {
+			return 0;
+		}
+		
 		final int columns = getLastColumnIndex() - getFirstColumnIndex();
 		
 		if (columns == 0 && (getFirstColumnIndex() != -1 || getLastColumnIndex() != -1)) {
@@ -272,6 +276,10 @@ public class Viewport<T> {
 	 * Return how many rows are currently visible.
 	 */
 	public int getHeightInRows() {
+		if ((getFirstRowIndex() == -1) || (getLastRowIndex() == -1)) {
+			return 0;
+		}
+		
 		final int rows = getLastRowIndex() - getFirstRowIndex();
 		
 		if (rows == 0 && (getFirstRowIndex() != -1 || getLastRowIndex() != -1)) {
