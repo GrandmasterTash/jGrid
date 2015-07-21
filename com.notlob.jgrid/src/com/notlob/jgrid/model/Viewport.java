@@ -256,14 +256,32 @@ public class Viewport<T> {
 	 * Return how many columns are currently visible.
 	 */
 	public int getWidthInColumns() {
-		return getLastColumnIndex() - getFirstColumnIndex();
+		final int columns = getLastColumnIndex() - getFirstColumnIndex();
+		
+		if (columns == 0 && (getFirstColumnIndex() != -1 || getLastColumnIndex() != -1)) {
+			//
+			// Edge case where there's a single column that's wider than the grid.
+			//
+			return 1;
+		}
+		
+		return columns;
 	}
 	
 	/**
 	 * Return how many rows are currently visible.
 	 */
 	public int getHeightInRows() {
-		return getLastRowIndex() - getFirstRowIndex();
+		final int rows = getLastRowIndex() - getFirstRowIndex();
+		
+		if (rows == 0 && (getFirstRowIndex() != -1 || getLastRowIndex() != -1)) {
+			//
+			// An edge case where there's a single row that's taller than the grid.
+			//
+			return 1;	
+		}
+		
+		return rows;
 	}
 
 	/**
@@ -438,7 +456,7 @@ public class Viewport<T> {
 		final Rectangle viewportArea = getViewportArea(gc);
 		int currentY = viewportArea.y;
 
-		for (int rowIndex=getFirstRowIndex(); rowIndex<getLastRowIndex(); rowIndex++) {
+		for (int rowIndex=getFirstRowIndex(); rowIndex<=getLastRowIndex(); rowIndex++) {
 			if ((rowIndex < 0) || (rowIndex >= gridModel.getRows().size())) {
 				return -1;
 			}

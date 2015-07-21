@@ -899,14 +899,14 @@ public class Grid<T> extends Composite {
 		viewport.invalidate();
 		viewport.calculateVisibleCellRange(gc);
 		
-		updateScrollbar(getVerticalBar(), viewport.getHeightInRows(), getRows().size(), 1);
-		updateScrollbar(getHorizontalBar(), viewport.getWidthInColumns(), getColumns().size(), 1);
+		updateScrollbar(getVerticalBar(), 20, viewport.getHeightInRows(), getRows().size(), 1);
+		updateScrollbar(getHorizontalBar(), 1, viewport.getWidthInColumns(), getColumns().size(), 1);
 	}
 
-	private void updateScrollbar(final ScrollBar scrollBar, final int visible, final int maximum, final int increment) {		
+	private void updateScrollbar(final ScrollBar scrollBar, final int thumb, final int visible, final int maximum, final int increment) {		
 		scrollBar.setMaximum(maximum);
-		scrollBar.setThumb(visible);
-		scrollBar.setPageIncrement(Math.min(scrollBar.getThumb(), scrollBar.getMaximum()));
+		scrollBar.setThumb(thumb);
+		scrollBar.setPageIncrement(Math.min(visible, scrollBar.getMaximum()));
 		scrollBar.setIncrement(increment);
 		scrollBar.setVisible((maximum > visible) && (visible > 0));
 	}
