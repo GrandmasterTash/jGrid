@@ -908,7 +908,7 @@ public class Grid<T> extends Composite {
 		scrollBar.setThumb(visible);
 		scrollBar.setPageIncrement(Math.min(scrollBar.getThumb(), scrollBar.getMaximum()));
 		scrollBar.setIncrement(increment);
-		scrollBar.setVisible(maximum > visible);
+		scrollBar.setVisible((maximum > visible) && (visible > 0));
 	}
 
 	private void invalidateComputedArea() {
