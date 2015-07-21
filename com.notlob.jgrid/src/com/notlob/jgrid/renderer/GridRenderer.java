@@ -261,6 +261,11 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 					}
 				});
 			}
+			
+			//
+			// A COMPUTE_SIZE pass can cause the number of rows in the viewport to change.
+			//
+			grid.updateScrollbars();
 
 		} catch (final Throwable t) {
 			if (!rc.isErrorLogged()) {

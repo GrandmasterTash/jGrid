@@ -46,9 +46,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	// Used for an edge-case when dragging a column to the end of the grid.
 	public final static Column LAST_COLUMN = new Column("LAST.COLUMN");
 	
-	// Distance in pixels the scroll bar is moved each time during a column drag.
-	private final static int DRAG_SCROLL_DISTANCE = 10;
-
 	// Track if the mouse is over a row/column.
 	private Row<T> row = null; // TODO: Rename hovered_....
 	private Column column = null;
@@ -293,7 +290,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				grid.getDisplay().syncExec(new Runnable() {					
 					@Override
 					public void run() {
-						grid.getHorizontalBar().setSelection(Math.min(grid.getHorizontalBar().getMaximum(), grid.getHorizontalBar().getSelection() + DRAG_SCROLL_DISTANCE));				
+						grid.getHorizontalBar().setSelection(Math.min(grid.getHorizontalBar().getMaximum(), grid.getHorizontalBar().getSelection() + 1));				
 						gridModel.fireChangeEvent();
 						if (isScrollRightNeeded()) {
 							grid.getDisplay().timerExec(100, this);
@@ -308,7 +305,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				grid.getDisplay().syncExec(new Runnable() {					
 					@Override
 					public void run() {
-						grid.getHorizontalBar().setSelection(Math.max(grid.getHorizontalBar().getMinimum(), grid.getHorizontalBar().getSelection() - DRAG_SCROLL_DISTANCE));				
+						grid.getHorizontalBar().setSelection(Math.max(grid.getHorizontalBar().getMinimum(), grid.getHorizontalBar().getSelection() - 1));				
 						gridModel.fireChangeEvent();
 						if (isScrollLeftNeeded()) {
 							grid.getDisplay().timerExec(100, this);

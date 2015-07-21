@@ -57,23 +57,22 @@ public class Viewport<T> {
 		}
 
 		final Rectangle viewportArea = getViewportArea(gc);
+		
 		final int originX = grid.getHorizontalBar().getSelection();
 		final int originY = grid.getVerticalBar().getSelection();
+		setFirstRowIndex(originY);
+		setFirstColumnIndex(originX);
 
 		//
 		// Get the first and last visible rows.
 		//
 		int y = 0;
-		for (int rowIndex=0; rowIndex<gridModel.getRows().size(); rowIndex++) {
+		for (int rowIndex=originY; rowIndex<gridModel.getRows().size(); rowIndex++) {
 			final Row<T> row = gridModel.getRows().get(rowIndex);
-
-			if (y >= originY && getFirstRowIndex() == -1) {
-				setFirstRowIndex(rowIndex);
-			}
 
 			y += grid.getRowHeight(row);
 
-			if ((y > (originY + viewportArea.height)) && (getLastRowIndex() == -1)) {
+			if ((y > viewportArea.height) && (getLastRowIndex() == -1)) {
 				setLastRowIndex(rowIndex);
 				break;
 			}
@@ -90,17 +89,13 @@ public class Viewport<T> {
 		// Get the first and last visible columns.
 		//
 		int x = 0;
-		for (int columnIndex=0; columnIndex<gridModel.getColumns().size(); columnIndex++) {
+		for (int columnIndex=originX; columnIndex<gridModel.getColumns().size(); columnIndex++) {
 			final Column column = gridModel.getColumns().get(columnIndex);
-
-			if (x >= originX && getFirstColumnIndex() == -1) {
-				setFirstColumnIndex(columnIndex);
-			}
 
 			x += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
 
-			if ((x > (originX + viewportArea.width)) && (getLastColumnIndex() == -1)) {
-				setLastColumnIndex(++columnIndex);
+			if ((x > viewportArea.width) && (getLastColumnIndex() == -1)) {
+				setLastColumnIndex(columnIndex);
 				break;
 			}
 		}
@@ -248,6 +243,20 @@ public class Viewport<T> {
 
 	private void setLastColumnIndex(final int lastColumnIndex) {
 		this.lastColumnIndex = lastColumnIndex;
+	}
+	
+	/**
+	 * Return how many columns are currently visible.
+	 */
+	public int getWidthInColumns() {
+		return getLastColumnIndex() - getFirstColumnIndex();
+	}
+	
+	/**
+	 * Return how many rows are currently visible.
+	 */
+	public int getHeightInRows() {
+		return getLastRowIndex() - getFirstRowIndex();
 	}
 
 	/**
@@ -460,56 +469,12 @@ public class Viewport<T> {
 	 * Ensures the cell specified is visible in the viewport.
 	 */
 	public void reveal(final GC gc, final Column column, final Row<T> row) {
-
-		invalidate();
-		calculateVisibleCellRange(gc);
 		
 		final int rowIndex = row.getRowIndex();
 		final int columnIndex = gridModel.getColumns().indexOf(column);
-
-		//
-		// Check which direction we need to scroll vertically and horizontally and by how many rows and columns.
-		//
-		final int vDelta = (rowIndex < firstRowIndex) ? -1 : ((rowIndex > (lastRowIndex-1)) ? 1 : 0);
-		final int hDelta = (columnIndex < firstColumnIndex) ? -1 : ((columnIndex > (lastColumnIndex-1)) ? 1 : 0);
-		if (hDelta != 0) {
-			//
-			// Last column edge case - select max scroll.
-			//
-			if (columnIndex == (gridModel.getColumns().size()-1)) {
-				grid.getHorizontalBar().setSelection(grid.getHorizontalBar().getMaximum());
-
-			} else {
-				final Column scrollToColumn = gridModel.getColumns().get(columnIndex);
-
-				if (hDelta < 0) {
-					grid.getHorizontalBar().setSelection(getColumnX(scrollToColumn));
-				} else {
-					grid.getHorizontalBar().setSelection(((getColumnX(scrollToColumn) + scrollToColumn.getWidth()) - viewportArea.width));
-				}
-			}
-		}
-
-		if (vDelta != 0) {
-			//
-			// Last row edge case - select max scroll.
-			//
-			if (rowIndex == (gridModel.getRows().size()-1)) {
-				grid.getVerticalBar().setSelection(grid.getVerticalBar().getMaximum());
-
-			} else {
-				//
-				// Cap the index incase rows are being removed.
-				//
-				final Row<T> scrollToRow = gridModel.getRows().get(Math.min((rowIndex + 1), (gridModel.getRows().size() - 1)));
-
-				if (vDelta < 0) {
-					grid.getVerticalBar().setSelection(getRowY(gc, scrollToRow) - grid.getRowHeight(scrollToRow));
-				} else {
-					grid.getVerticalBar().setSelection((getRowY(gc, scrollToRow) - viewportArea.height));
-				}
-			}
-		}
+		
+		grid.getVerticalBar().setSelection(rowIndex);
+		grid.getHorizontalBar().setSelection(columnIndex);
 		
 		invalidate();
 		grid.redraw();

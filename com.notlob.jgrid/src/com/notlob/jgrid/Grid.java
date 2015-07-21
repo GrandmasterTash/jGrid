@@ -836,8 +836,7 @@ public class Grid<T> extends Composite {
 	}
 	
 	/**
-	 * Scrolls the grid up or down during a drag-drop operation, if the coordinates of the thing being dragged
-	 * should trigger it.
+	 * Scrolls the grid up or down during a drag-drop operation, if the coordinates of the thing being dragged should trigger it.
 	 */
 	public boolean scrollRowIfNeeded(final int x, final int y) {
 		checkWidget();
@@ -850,13 +849,13 @@ public class Grid<T> extends Composite {
 			//
 			// Do we need to scroll up?
 			//
-			vDelta = getRowHeight(gridModel.getRows().get(rowIndex - 1)) * -1;
+			vDelta = -1;
 			
 		} else if ((rowIndex < gridModel.getRows().size()-1) && (rowIndex >= viewport.getLastRowIndex())) {
 			//
 			// Do we need to scroll down?
 			//
-			vDelta = getRowHeight(gridModel.getRows().get(rowIndex + 1));
+			vDelta = 1;
 		}
 		
 		//System.out.println(String.format("scrollIfNeeded: firstRowIndex [%s] lastRowIndex [%s] hoveredRowIndex [%s] vDelta [%s]", viewport.getFirstRowIndex(), viewport.getLastRowIndex(), gridModel.getRows().indexOf(row), vDelta));
@@ -896,21 +895,15 @@ public class Grid<T> extends Composite {
 		gridModel.fireColumnResizedEvent(column);
 	}
 
-	private void updateScrollbars() {
+	public void updateScrollbars() {
 		viewport.invalidate();
-
-		final Point computedArea = getComputedArea();
-		final Rectangle viewportArea = viewport.getViewportArea(gc);
 		viewport.calculateVisibleCellRange(gc);
-
-		final int nextRowHeight = (viewport.getLastRowIndex() >= 0 && (viewport.getLastRowIndex() + 1) < gridModel.getRows().size()) ? getRowHeight(gridModel.getRows().get(viewport.getLastRowIndex())) : 0;
-		final int nextColumnWidth = (viewport.getLastColumnIndex() >= 0 && (viewport.getLastColumnIndex() + 1) < gridModel.getColumns().size()) ? gridModel.getColumns().get(viewport.getLastColumnIndex()).getWidth() : 0;
-
-		updateScrollbar(getVerticalBar(), viewportArea.height, computedArea.y, nextRowHeight);
-		updateScrollbar(getHorizontalBar(), viewportArea.width, computedArea.x, nextColumnWidth);
+		
+		updateScrollbar(getVerticalBar(), viewport.getHeightInRows(), getRows().size(), 1);
+		updateScrollbar(getHorizontalBar(), viewport.getWidthInColumns(), getColumns().size(), 1);
 	}
 
-	private void updateScrollbar(final ScrollBar scrollBar, final int visible, final int maximum, final int increment) {
+	private void updateScrollbar(final ScrollBar scrollBar, final int visible, final int maximum, final int increment) {		
 		scrollBar.setMaximum(maximum);
 		scrollBar.setThumb(visible);
 		scrollBar.setPageIncrement(Math.min(scrollBar.getThumb(), scrollBar.getMaximum()));
@@ -1056,7 +1049,7 @@ public class Grid<T> extends Composite {
 	}
 	
 	private class GridModelListener implements GridModel.IModelListener<T> {
-		private boolean firstEvent = true;
+//		private boolean firstEvent = true;
 		
 		/**
 		 * A structural or data change that requires a full invalidate then redraw.
@@ -1083,34 +1076,6 @@ public class Grid<T> extends Composite {
 		
 		@Override
 		public void heightChanged(int delta) {
-			if (isEventsSuppressed()) {
-				return;
-			}
-			
-			if (getVerticalBar().isVisible()) {
-				getVerticalBar().setMaximum(getVerticalBar().getMaximum() + delta);
-
-				// TODO: Ensure we're not still past the maximum.
-				
-				if (firstEvent) {
-					//
-					// If there's no scrollbar rendered yet, we must do a full recalc to see if it's needed.
-					//
-					invalidateComputedArea();
-					updateScrollbars();
-				}
-				
-			} else {				
-				//
-				// If there's no scrollbar rendered yet, we must do a full recalc to see if it's needed.
-				//
-				invalidateComputedArea();
-				updateScrollbars();
-			}
-			
-			redraw();	
-			
-			firstEvent = false;
 		}
 		
 		@Override
@@ -1118,6 +1083,8 @@ public class Grid<T> extends Composite {
 			if (isEventsSuppressed()) {
 				return;
 			}
+			
+			updateScrollbars();
 			
 			for (final IGridListener<T> listener : listeners) {
 				listener.rowCountChanged();
