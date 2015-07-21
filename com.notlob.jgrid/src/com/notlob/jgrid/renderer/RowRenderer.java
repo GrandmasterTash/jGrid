@@ -315,6 +315,11 @@ public class RowRenderer<T> extends Renderer<T> {
 		if (row.getRowIndex() == 0) {
 			return true;
 		}
+		
+		if (row.getRowIndex() < 0 || row.getRowIndex() >= gridModel.getRows().size()) {
+			return false;
+		}
+		
 		return !gridModel.isSameGroup(row, gridModel.getRows().get(row.getRowIndex() - 1));
 	}
 	
@@ -322,6 +327,11 @@ public class RowRenderer<T> extends Renderer<T> {
 		if (row.getRowIndex() >= (gridModel.getRows().size() - 1)) {
 			return true;
 		}		
+		
+		if (row.getRowIndex() < 0 || row.getRowIndex() >= gridModel.getRows().size()) {
+			return false;
+		}
+		
 		return !gridModel.isSameGroup(row, gridModel.getRows().get(row.getRowIndex() + 1));
 	}
 	

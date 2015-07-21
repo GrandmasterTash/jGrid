@@ -60,24 +60,26 @@ public class Viewport<T> {
 		
 		final int originX = grid.getHorizontalBar().getSelection();
 		final int originY = grid.getVerticalBar().getSelection();
-		setFirstRowIndex(originY);
-		setFirstColumnIndex(originX);
+		
+		if (!grid.getRows().isEmpty()) {
+			setFirstRowIndex(originY);
 
-		//
-		// Get the first and last visible rows.
-		//
-		int y = 0;
-		for (int rowIndex=originY; rowIndex<gridModel.getRows().size(); rowIndex++) {
-			final Row<T> row = gridModel.getRows().get(rowIndex);
-
-			y += grid.getRowHeight(row);
-
-			if ((y > viewportArea.height) && (getLastRowIndex() == -1)) {
-				setLastRowIndex(rowIndex);
-				break;
+			//
+			// Get the first and last visible rows.
+			//
+			int y = 0;
+			for (int rowIndex=originY; rowIndex<gridModel.getRows().size(); rowIndex++) {
+				final Row<T> row = gridModel.getRows().get(rowIndex);
+	
+				y += grid.getRowHeight(row);
+	
+				if ((y > viewportArea.height) && (getLastRowIndex() == -1)) {
+					setLastRowIndex(rowIndex);
+					break;
+				}
 			}
 		}
-
+		
 		//
 		// If all rows fit in the screen, cap it.
 		//
@@ -85,18 +87,23 @@ public class Viewport<T> {
 			setLastRowIndex(gridModel.getRows().size());
 		}
 
-		//
-		// Get the first and last visible columns.
-		//
-		int x = 0;
-		for (int columnIndex=originX; columnIndex<gridModel.getColumns().size(); columnIndex++) {
-			final Column column = gridModel.getColumns().get(columnIndex);
-
-			x += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
-
-			if ((x > viewportArea.width) && (getLastColumnIndex() == -1)) {
-				setLastColumnIndex(columnIndex);
-				break;
+		
+		if (!grid.getColumns().isEmpty()) {
+			setFirstColumnIndex(originX);
+		
+			//
+			// Get the first and last visible columns.
+			//
+			int x = 0;
+			for (int columnIndex=originX; columnIndex<gridModel.getColumns().size(); columnIndex++) {
+				final Column column = gridModel.getColumns().get(columnIndex);
+	
+				x += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
+	
+				if ((x > viewportArea.width) && (getLastColumnIndex() == -1)) {
+					setLastColumnIndex(columnIndex);
+					break;
+				}
 			}
 		}
 
