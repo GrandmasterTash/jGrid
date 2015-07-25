@@ -71,7 +71,7 @@ public class Viewport<T> {
 			for (int rowIndex=originY; rowIndex<gridModel.getRows().size(); rowIndex++) {
 				final Row<T> row = gridModel.getRows().get(rowIndex);
 	
-				y += grid.getRowHeight(row);
+				y += (grid.getRowHeight(row) + gridModel.getStyleRegistry().getCellSpacingVertical());
 	
 				if ((y > viewportArea.height) && (getLastRowIndex() == -1)) {
 					setLastRowIndex(rowIndex);
@@ -290,6 +290,62 @@ public class Viewport<T> {
 		}
 		
 		return rows;
+	}
+	
+	/**
+	 * Return how many rows fit on the last page of the viewport.
+	 */
+	public int getRowCountLastPage(final GC gc) {		
+		final Rectangle viewportArea = getViewportArea(gc);
+		
+		int rowCount = 0;
+		if (!grid.getRows().isEmpty()) {
+			//
+			// Work from the last row - towards the first, trying to fit them into the viewport. 
+			//
+			int y = 0;
+			for (int rowIndex=(gridModel.getRows().size()-1); rowIndex>=0; rowIndex--) {
+				final Row<T> row = gridModel.getRows().get(rowIndex);
+	
+				y += (grid.getRowHeight(row) + gridModel.getStyleRegistry().getCellSpacingVertical());
+	
+				if ((y <= viewportArea.height)) {
+					rowCount++;
+				} else {
+					break;
+				}
+			}
+		}
+		
+		return rowCount;
+	}
+	
+	/**
+	 * Return how many column fit on the last page of the viewport.
+	 */
+	public int getColumnCountLastPage(final GC gc) {		
+		final Rectangle viewportArea = getViewportArea(gc);
+
+		int columnCount = 0;
+		if (!grid.getColumns().isEmpty()) {
+			//
+			// Work from the last column - towards the first, trying to fit them into the viewport. 
+			//
+			int x = 0;
+			for (int columnIndex=(gridModel.getColumns().size()-1); columnIndex>=0; columnIndex--) {
+				final Column column = gridModel.getColumns().get(columnIndex);
+	
+				x += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
+	
+				if ((x <= viewportArea.width)) {
+					columnCount++;
+				} else {
+					break;
+				}
+			}
+		}
+		
+		return columnCount;
 	}
 
 	/**

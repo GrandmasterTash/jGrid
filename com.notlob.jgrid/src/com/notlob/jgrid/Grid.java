@@ -899,18 +899,30 @@ public class Grid<T> extends Composite {
 		viewport.invalidate();
 		viewport.calculateVisibleCellRange(gc);		
 		
-		updateScrollbar(getVerticalBar(), 1, viewport.getHeightInRows(), getRows().size(), 1);		
-		updateScrollbar(getHorizontalBar(), 1, viewport.getWidthInColumns(), getColumns().size(), 1);
+		updateScrollbar(getVerticalBar(), 1, 1, viewport.getHeightInRows(), getRows().size(), (viewport.getRowCountLastPage(gc)));		
+		updateScrollbar(getHorizontalBar(), 1, 1, viewport.getWidthInColumns(), getColumns().size(), viewport.getColumnCountLastPage(gc));
 	}
 
-	private void updateScrollbar(final ScrollBar scrollBar, final int thumb, final int visible, final int maximum, final int increment) {		
-		scrollBar.setMaximum(maximum);
-		scrollBar.setThumb(Math.min(thumb, maximum));
+	private void updateScrollbar(final ScrollBar scrollBar, final int increment, final int thumb, final int visible, final int maximum, final int lastPageSize) {
+		final int capped = maximum - (lastPageSize - 1);
+		scrollBar.setMaximum(capped);
+		scrollBar.setThumb(Math.min(thumb, capped));
 		scrollBar.setPageIncrement(Math.min(visible, scrollBar.getMaximum()));
 		scrollBar.setIncrement(increment);
-		scrollBar.setVisible((maximum > visible) && (visible > 0));
+		scrollBar.setVisible((capped > 0) && (visible > 0) && (capped != 1));
 		scrollBar.setEnabled(scrollBar.isVisible());
-//		System.out.println(String.format("Vert Scroll - thumb [%s] pageIncr [%s] maximum [%s] visible [%s] widgetVis [%s]", scrollBar.getThumb(), scrollBar.getPageIncrement(), scrollBar.getMaximum(), visible, scrollBar.isVisible()));
+		
+//		System.out.println(String.format("Vert Scroll - thumb [%s/%s] increment [%s/%s] page [%s] visible-rows [%s] maximum [%s/%s] last-page [%s] visible [%s]", 
+//				thumb, 
+//				scrollBar.getThumb(), 
+//				increment, 
+//				scrollBar.getIncrement(),
+//				scrollBar.getPageIncrement(),
+//				visible, 
+//				maximum,
+//				scrollBar.getMaximum(),
+//				lastPageSize,
+//				scrollBar.isVisible()));
 	}
 
 	private void invalidateComputedArea() {
