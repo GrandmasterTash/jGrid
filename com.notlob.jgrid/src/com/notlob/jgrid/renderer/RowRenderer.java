@@ -117,7 +117,14 @@ public class RowRenderer<T> extends Renderer<T> {
 	 * Paint the main body cells for the row.
 	 */
 	protected void paintBodyCells(final RenderContext rc, final Row<T> row) {
-		for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
+		//
+		// If we're computing the row size, we need to consider every cell in the row, not just the visible cells.
+		// If not, the rows can shift heights as the grid scrolls from left-to-right.
+		//
+		final int firstIndex = (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) ? 0 : viewport.getFirstColumnIndex();
+		final int lastIndex = (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) ? (grid.getColumns().size()-1) : viewport.getLastVisibleColumnIndex();
+		
+		for (int columnIndex=firstIndex; columnIndex<lastIndex; columnIndex++) {
 			final Column column = gridModel.getColumns().get(columnIndex);
 			final CellStyle cellStyle = styleRegistry.getCellStyle(column, row);
 

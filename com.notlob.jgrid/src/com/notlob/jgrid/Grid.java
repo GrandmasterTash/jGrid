@@ -1024,11 +1024,8 @@ public class Grid<T> extends Composite {
 	private class ScrollListener extends SelectionAdapter {
 		@Override
 		public void widgetSelected(final SelectionEvent e) {
-//			final ScrollBar scrollBar = (ScrollBar) e.widget;
-//			if (scrollBar.isVisible()) {
-				viewport.invalidate();
-				redraw();
-//			}
+			viewport.invalidate();
+			redraw();
 		}
 	}
 
@@ -1066,7 +1063,6 @@ public class Grid<T> extends Composite {
 	}
 	
 	private class GridModelListener implements GridModel.IModelListener<T> {
-//		private boolean firstEvent = true;
 		
 		/**
 		 * A structural or data change that requires a full invalidate then redraw.
