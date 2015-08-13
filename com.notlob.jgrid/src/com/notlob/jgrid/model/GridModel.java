@@ -531,7 +531,7 @@ public class GridModel<T> {
 		if (selectionModel.isSelectNextOnRemove() && (lastSelectedIndex != -1) && (selectionModel.getSelectedElements().isEmpty())) {
 			final int nextIndex = lastSelectedIndex - elements.size() + 1;
 			
-			if ((nextIndex >= 0) && (nextIndex <= (rows.size()))) {
+			if ((nextIndex >= 0) && (nextIndex <= (rows.size()) && !rows.isEmpty())) {
 				final Row<T> row = rows.get(Math.min(nextIndex, rows.size() - 1));
 				final List<Row<T>> rowsToSelect = isGroupRow(row) ? getWholeGroup(row) : Collections.singletonList(row); 
 				selectionModel.setSelectedRows(rowsToSelect);
