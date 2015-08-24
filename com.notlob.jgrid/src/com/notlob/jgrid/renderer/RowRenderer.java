@@ -122,7 +122,7 @@ public class RowRenderer<T> extends Renderer<T> {
 		// If not, the rows can shift heights as the grid scrolls from left-to-right.
 		//
 		final int firstIndex = (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) ? 0 : viewport.getFirstColumnIndex();
-		final int lastIndex = (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) ? (grid.getColumns().size()-1) : viewport.getLastVisibleColumnIndex();
+		final int lastIndex = (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) ? grid.getColumns().size() : viewport.getLastVisibleColumnIndex();
 		
 		for (int columnIndex=firstIndex; columnIndex<lastIndex; columnIndex++) {
 			final Column column = gridModel.getColumns().get(columnIndex);
