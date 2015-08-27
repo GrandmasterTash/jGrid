@@ -138,6 +138,14 @@ public class GridKeyboardHandler<T> implements KeyListener {
 				}
 				break;
 				
+			case SWT.TAB:
+				if( shift ) {
+					grid.traverse(SWT.TRAVERSE_TAB_PREVIOUS);
+				} else {
+					grid.traverse(SWT.TRAVERSE_TAB_NEXT);					
+				}
+				break;
+				
 			case SWT.ESC:
 				escapePressed = true;
 				break;
