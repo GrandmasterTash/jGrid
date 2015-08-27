@@ -18,6 +18,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
@@ -945,6 +946,45 @@ public class Grid<T> extends Composite {
 		}
 
 		return computedArea;
+	}
+	
+	@Override
+	public boolean isFocusControl() {
+		
+		// If we are outright the focus control just return true
+		final boolean isFocusControl = super.isFocusControl();
+		if( isFocusControl ) {
+			return true;
+		}
+		
+		// If we're not the focus control, check to see if one of our 
+		// child controls is. This is to handle inline editors etc.
+		final Control control = getDisplay().getFocusControl();
+		if( isChild(control, getChildren()) ) {
+			return true;
+		}
+		
+		return isFocusControl;
+	}
+	
+	/**
+	 * Recursively checks to see if the specified child lives somewhere under
+	 * this grid
+	 * 
+	 * @param childToFind
+	 * @param children
+	 * @return
+	 */
+	private boolean isChild(Control childToFind, Control[] children) {
+		for( Control child : children ) {
+			if( child == childToFind ) {
+				return true;
+			}
+			if( child instanceof Composite ) {
+				return isChild(childToFind, ((Composite)child).getChildren());
+			}
+		}
+		return false;
 	}
 
 	public String getEmptyMessage() {

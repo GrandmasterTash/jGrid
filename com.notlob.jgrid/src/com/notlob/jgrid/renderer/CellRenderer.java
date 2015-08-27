@@ -70,7 +70,7 @@ public class CellRenderer<T> extends Renderer<T> {
 			//
 			// If the cell has the anchor, use a composite style.
 			//
-			if (!rc.isPaintingPinned() /*&& grid.isFocusControl() */&& grid.isHighlightAnchorCellBorder() && doesColumnHaveAnchor(column) && doesRowHaveAnchor(row)) {
+			if (!rc.isPaintingPinned() && grid.isFocusControl() && grid.isHighlightAnchorCellBorder() && doesColumnHaveAnchor(column) && doesRowHaveAnchor(row)) {
 				styleRegistry.getStyleCollector().addFirst(styleRegistry.getAnchorStyle());
 				currentStyle = styleRegistry.getStyleCollector().getCellStyle();
 			}			
