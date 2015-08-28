@@ -99,7 +99,7 @@ public class SelectionRenderer<T> extends Renderer<T> {
 							selectionRegion.height = grid.getRowHeight(row);
 							selectionRegion.width = viewport.getColumnWidth(selectionRegion.x, anchorColumn);
 					
-							paintSelectionRegion(rc, selectionRegion, true, true, true, true, styleRegistry.getSelectionRegionStyle());
+							paintSelectionRegion(rc, selectionRegion, true, true, true, true, getSelectionRegionStyle());
 							return;
 						}
 						
@@ -163,7 +163,7 @@ public class SelectionRenderer<T> extends Renderer<T> {
 				//
 				// This is the next row after a selection region. We now need to paint the region.
 				//
-				paintSelectionRegion(rc, selectionRegion, paintTopEdge, paintRightEdge, true, paintLeftEdge, styleRegistry.getSelectionRegionStyle());
+				paintSelectionRegion(rc, selectionRegion, paintTopEdge, paintRightEdge, true, paintLeftEdge, getSelectionRegionStyle());
 			}
 
 			if (grid.isHighlightHoveredRow() && !row.isSelected() && (row == grid.getMouseHandler().getRow())) {
@@ -189,7 +189,7 @@ public class SelectionRenderer<T> extends Renderer<T> {
 			// If the next row beyond the viewport exists and is selected, don't draw the bottom
 			//
 			paintBottomEdge = !(((viewport.getLastRowIndex() + 1) < gridModel.getRows().size()) && (gridModel.getRows().get(viewport.getLastRowIndex() + 1).isSelected()));
-			paintSelectionRegion(rc, selectionRegion, paintTopEdge, paintRightEdge, paintBottomEdge, paintLeftEdge, styleRegistry.getSelectionRegionStyle());
+			paintSelectionRegion(rc, selectionRegion, paintTopEdge, paintRightEdge, paintBottomEdge, paintLeftEdge, getSelectionRegionStyle());
 		}
 	}
 
@@ -247,5 +247,9 @@ public class SelectionRenderer<T> extends Renderer<T> {
 				paintBorderLine(gc, regionStyle.getBorder(), bottomLeft, topLeft);
 			}
 		}
+	}
+	
+	private RegionStyle getSelectionRegionStyle() {
+		return (grid.isFocusControl() || styleRegistry.getNotActiveSelectionRegionStyle() == null) ? styleRegistry.getSelectionRegionStyle() : styleRegistry.getNotActiveSelectionRegionStyle();
 	}
 }

@@ -11,6 +11,17 @@ public class RegionStyle {
 	private int foregroundOpacity;
 	private int backgroundOpacity;
 
+	public RegionStyle copy() {
+		final RegionStyle copy = new RegionStyle();
+		copy.border = BorderStyle.copy(border);
+		copy.background = background;
+		copy.backgroundGradient1 = backgroundGradient1;
+		copy.backgroundGradient2 = backgroundGradient2;
+		copy.foregroundOpacity = foregroundOpacity;
+		copy.backgroundOpacity = backgroundOpacity;
+		return copy;
+	}
+	
 	public BorderStyle getBorder() {
 		return border;
 	}

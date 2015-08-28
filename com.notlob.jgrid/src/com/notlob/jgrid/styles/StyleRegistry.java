@@ -40,6 +40,7 @@ public class StyleRegistry<T> {
 	protected CellStyle selectionRowNumberStyle;
 	protected CellStyle anchorStyle;
 	protected RegionStyle selectionRegionStyle;
+	protected RegionStyle notActiveSelectionRegionStyle;
 
 	// Hover styles.
 	protected RegionStyle hoverRegionStyle;
@@ -150,7 +151,7 @@ public class StyleRegistry<T> {
 		selectionRegionStyle.setBackgroundGradient2(new RGB(255, 213, 141));
 		selectionRegionStyle.setForegroundOpacity(200);
 		selectionRegionStyle.setBackgroundOpacity(120);
-
+		
 		//
 		// Mouse hover region style.
 		//
@@ -350,6 +351,14 @@ public class StyleRegistry<T> {
 	
 	public void setSelectionRegionStyle(RegionStyle selectionRegionStyle) {
 		this.selectionRegionStyle = selectionRegionStyle;
+	}
+	
+	public RegionStyle getNotActiveSelectionRegionStyle() {
+		return notActiveSelectionRegionStyle;
+	}
+	
+	public void setNotActiveSelectionRegionStyle(RegionStyle notActiveSelectionRegionStyle) {
+		this.notActiveSelectionRegionStyle = notActiveSelectionRegionStyle;
 	}
 
 	public CellStyle getSelectionHeaderStyle() {
