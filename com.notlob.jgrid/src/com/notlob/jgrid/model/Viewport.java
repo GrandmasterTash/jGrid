@@ -567,6 +567,7 @@ public class Viewport<T> {
 		
 		invalidate();
 		grid.redraw();
+		grid.update();
 	}
 	
 	/**

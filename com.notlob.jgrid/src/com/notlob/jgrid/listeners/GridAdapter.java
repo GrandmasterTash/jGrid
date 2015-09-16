@@ -75,4 +75,8 @@ public class GridAdapter<T> implements IGridListener<T> {
 	@Override
 	public void groupSelectorVisibilityChanged(boolean visible) {
 	}
+	
+	@Override
+	public void cellRevealed(final Column column, final T element) {	
+	}
 }

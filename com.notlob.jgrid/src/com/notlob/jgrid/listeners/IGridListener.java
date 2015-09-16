@@ -41,4 +41,7 @@ public interface IGridListener<T> {
 	void rowNumbersVisibilityChanged(final boolean visible);
 	
 	void groupSelectorVisibilityChanged(final boolean visible);
+	
+	void cellRevealed(final Column column, T element);
+	
 }

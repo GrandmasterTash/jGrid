@@ -1042,14 +1042,23 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		final Column column = gridModel.getColumns().get(0);
 		viewport.reveal(gc, column, gridModel.getRow(element));
+		
+		fireRevealListeners(column, element);
 	}
 	
 	public void reveal(final Column column, final T element) {
 		checkWidget();
 		viewport.reveal(gc, column, gridModel.getRow(element));
-		redraw();
+		
+		fireRevealListeners(column, element);
 	}
 	
+	protected void fireRevealListeners(Column column, T element) {
+		for( IGridListener<T> listener : listeners ) {
+			listener.cellRevealed(column, element);
+		}
+	}
+
 	public void invalidateRowHeights() {
 		checkWidget();
 		
