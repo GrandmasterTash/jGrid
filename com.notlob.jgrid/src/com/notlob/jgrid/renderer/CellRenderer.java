@@ -453,7 +453,7 @@ public class CellRenderer<T> extends Renderer<T> {
 					// Something else also wants to shrink the row, so shrink it by the smaller of
 					// the two values - to ensure text is still visible.
 					//
-					rc.setComputedHeightDelta(Math.min(rc.getComputedHeightDelta(), delta));
+					rc.setComputedHeightDelta(Math.max(rc.getComputedHeightDelta(), delta));
 				}
 			}
 		}
