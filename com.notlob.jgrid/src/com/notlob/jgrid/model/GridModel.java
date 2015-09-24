@@ -325,8 +325,9 @@ public class GridModel<T> {
 				throw new IllegalArgumentException(String.format("Duplicate column id %s", column.getColumnId()));
 			}
 		}
-
+		
 		allColumns.add(column);
+		column.setGrid(grid);
 
 		if (column.getSortDirection() != SortDirection.NONE) {
 			getSortModel().sort(column, false, true, false);
@@ -359,6 +360,7 @@ public class GridModel<T> {
 	}
 
 	private void removeColumn(final Column column) {
+		column.setGrid(null);
 		sortModel.removeColumn(column);
 		allColumns.remove(column);
 		columns.remove(column);
@@ -638,6 +640,11 @@ public class GridModel<T> {
 		// Reseed the row-indexes if there's been any move or show/hiding.
 		//
 		reindex();
+		
+		//
+		// Invalidate cached column minimum widths.
+		//
+		invalidateMinColumnWidths();
 
 		//
 		// If the height of the rows has changed, adjust the grid's scroll-bars.
@@ -691,6 +698,12 @@ public class GridModel<T> {
 					row.setAlternateBackground(labelProvider.shouldAlternateBackground(rows.get(rowIndex-2), row));
 				}
 			}
+		}
+	}
+	
+	public void invalidateMinColumnWidths() {
+		for (Column column : allColumns) {
+			column.invalidateMinimumContentWidth();
 		}
 	}
 

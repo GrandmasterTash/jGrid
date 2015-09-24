@@ -5,6 +5,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.graphics.GC;
+
+import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.styles.AlignmentStyle;
 
 @SuppressWarnings("rawtypes")
@@ -21,6 +26,10 @@ public class Column {
 	private boolean wrap;
 	private AlignmentStyle textAlignment;
 	private AlignmentStyle imageAlignment;
+	
+	private Grid<?> grid;
+	private GC gc;
+	private int minimumContentWidth = -1;
 
 	// Arbitrary things can be tagged onto a column by key.
 	private Map<String, Object> dataByKey;
@@ -50,7 +59,26 @@ public class Column {
 
 		return sb.toString();
 	}
-
+	
+	/**
+	 * The grid is needed to calculate the content width of elastic columns (the last ones).
+	 */
+	void setGrid(final Grid<?> grid) {
+		this.grid = grid;
+		
+		if (grid != null) {
+			this.grid.addDisposeListener(new DisposeListener() {
+				@Override
+				public void widgetDisposed(DisposeEvent e) {
+					if (gc != null) {
+						gc.dispose();
+						gc = null;
+					}
+				}
+			});
+		}
+	}
+	
 	public void setCaption(final String caption) {
 		this.caption = caption;
 	}
@@ -64,11 +92,38 @@ public class Column {
 	}
 
 	public int getWidth() {
+		//
+		// Edge-case (Literally) -> If we're un-wrapped and we're the last column, our width is our content's width. 
+		//
+		if (!wrap && isLastColumn() && (grid != null) && (grid.getLabelProvider() != null)) {
+			width = getMiniumContentWidth();
+		}
+		
 		return width;
 	}
 
 	public void setWidth(final int width) {
 		this.width = width;
+	}
+	
+	private boolean isLastColumn() {
+		return (grid != null) && (grid.getColumns().get(grid.getColumns().size() - 1) == this);
+	}
+	
+	private int getMiniumContentWidth() {
+		if (minimumContentWidth == -1) {		
+			if (gc == null) {
+				gc = new GC(grid);
+			}
+			
+			minimumContentWidth = grid.getGridRenderer().getMinimumWidth(gc, this);
+		}
+		
+		return minimumContentWidth;
+	}
+	
+	void invalidateMinimumContentWidth() {
+		this.minimumContentWidth = -1;
 	}
 
 	public Comparator getComparator() {
@@ -117,6 +172,11 @@ public class Column {
 	
 	public void setWrap(final boolean wrap) {
 		this.wrap = wrap;
+		
+		if (isLastColumn() && wrap) {
+			width = 10; // Some arbitrarily small value - so it begins wrapping again.
+		}
+		invalidateMinimumContentWidth();
 	}
 	
 	public AlignmentStyle getTextAlignment() {
