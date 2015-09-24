@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 
 import org.eclipse.swt.graphics.GC;
 
+import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.filtering.IHighlightingFilter;
 import com.notlob.jgrid.renderer.animation.RowAnimation;
 import com.notlob.jgrid.styles.CellStyle;
@@ -36,9 +37,19 @@ public class Row<T> {
 	/**
 	 * You should use grid.getRowHeight not this.
 	 */
-	int getHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
+	int getHeight(final Grid<T> grid, final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
 		if (height == -1) {
+			//
+			// Set the initial height based on current values.
+			//
 			height = getDefaultHeight(resourceManager, gc, cellStyle);
+			
+			//
+			// Now adjust this for word wrapping.
+			//
+			if (!grid.getGridModel().isHeaderRow(this)) {
+				height = grid.getGridRenderer().computeRowHeight(gc, this);
+			}
 		}
 
 		return height;

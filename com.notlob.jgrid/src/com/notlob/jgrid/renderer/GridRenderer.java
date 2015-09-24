@@ -355,7 +355,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 //					System.out.println(String.format("height [%s] applying delta [%s] new-height [%s]", grid.getRowHeight(row), rc.getComputedHeightDelta(), newHeight));
 					row.setHeight(newHeight);
 //				} else {
-//					System.out.println(String.format("IGNORED height [%s] applying delta [%s] new-height [%s]", grid.getRowHeight(row), rc.getComputedHeightDelta(), newHeight));
+//						System.out.println(String.format("IGNORED height [%s] applying delta [%s] new-height [%s]", grid.getRowHeight(row), rc.getComputedHeightDelta(), newHeight));
 				}
 				
 				rc.setComputedHeightDelta(null);
@@ -366,6 +366,41 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			//
 			rowBounds.y += (rowBounds.height + styleRegistry.getCellSpacingVertical());
 		}		
+	}
+	
+	/**
+	 * Perform a COMPUTE_SIZE paint pass on just the specified row - to calculate it's row height (factoring-in wrapped cell text).
+	 */
+	public int computeRowHeight(final GC gc, final Row<T> row) {
+		rc.setGC(gc);
+		rc.setRenderPass(RenderPass.COMPUTE_SIZE);
+		rc.setComputedHeightDelta(null);
+		
+		//
+		// Set-up the initial row's bounds.
+		//
+		rowBounds.x = 0;//styleRegistry.getCellSpacingHorizontal();
+		rowBounds.y = 0;//styleRegistry.getCellSpacingVertical();
+		rowBounds.width = grid.getClientArea().width - grid.getClientArea().x;
+		rowBounds.height = grid.getRowHeight(row); // Default or current.
+		
+		if (gridModel.isParentRow(row) && (grid.getGroupRenderStyle() == GroupRenderStyle.INLINE)) {
+			groupRowRenderer.paintRow(rc, rowBounds, row);
+			
+		} else {
+			rowRenderer.paintRow(rc, rowBounds, row);
+		}
+
+		//
+		// Adjust the row height after any cell-wrapping calculations.
+		//
+		if ((rc.getRenderPass() == RenderPass.COMPUTE_SIZE) && (rc.getComputedHeightDelta() != null)) {
+			final int newHeight = grid.getRowHeight(row) + rc.getComputedHeightDelta();
+			rc.setComputedHeightDelta(null);
+			return newHeight;
+		}
+		
+		return rowBounds.height;
 	}
 	
 	/**

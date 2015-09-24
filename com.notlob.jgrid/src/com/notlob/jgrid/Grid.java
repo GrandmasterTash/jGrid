@@ -43,12 +43,6 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class Grid<T> extends Composite {
 		
-	// TODO: Focus select style / un-focus select style.	
-	// TODO: Keep selection in viewport.
-	// TODO: try..catch around all calls to listeners...
-	// TODO: Partially filtered groups.
-	// TODO: Javadoc.
-
 	// Affects the rending of the selection region rather than how the selection model works.
 	public enum SelectionStyle {
 		ROW_BASED,
@@ -394,7 +388,6 @@ public class Grid<T> extends Composite {
 
 	public void addElements(final Collection<T> elements) {
 		checkWidget();
-		
 		final Collection<Row<T>> rowsAdded = gridModel.addElements(elements);
 		animateIfRequired(rowsAdded, newRowAnimiation);
 	}
@@ -913,7 +906,8 @@ public class Grid<T> extends Composite {
 		scrollBar.setVisible((capped > 0) && (visible > 0) && (capped != 1));
 		scrollBar.setEnabled(scrollBar.isVisible());
 		
-//		System.out.println(String.format("Vert Scroll - thumb [%s/%s] increment [%s/%s] page [%s] visible-rows [%s] maximum [%s/%s] last-page [%s] visible [%s]", 
+//		System.out.println(String.format("Vert Scroll - selection [%s] thumb [%s/%s] increment [%s/%s] page [%s] visible-rows [%s] maximum [%s/%s] last-page [%s] visible [%s]", 
+//				scrollBar.getSelection(),
 //				thumb, 
 //				scrollBar.getThumb(), 
 //				increment, 

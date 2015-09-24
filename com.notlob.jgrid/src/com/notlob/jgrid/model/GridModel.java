@@ -27,6 +27,8 @@ import com.notlob.jgrid.util.ResourceManager;
  */
 public class GridModel<T> {
 
+	private final Grid<T> grid;
+	
 	// Visible columns and rows.
 	private final List<Row<T>> rows;
 	private final List<Column> columns;
@@ -115,6 +117,7 @@ public class GridModel<T> {
 	}
 
 	public GridModel(final Grid<T> grid, final ResourceManager resourceManager, final GC gc) {
+		this.grid = grid;
 		this.resourceManager = resourceManager;
 		this.gc = gc; 
 		rows = new ArrayList<>();
@@ -455,7 +458,6 @@ public class GridModel<T> {
 			// Add a row for the element.
 			//
 			final Row<T> row = new Row<T>(element);
-			row.setHeight(labelProvider.getDefaultRowHeight(element));
 			
 			if (addRow(row)) {
 				heightDelta += getRowHeight(row);
@@ -935,7 +937,7 @@ public class GridModel<T> {
 
 	public int getRowHeight(final Row<T> row) {
 		final CellStyle cellStyle = (row == columnHeaderRow) ? styleRegistry.getHeaderStyle() : styleRegistry.getDefaultStyle();
-		return row.getHeight(resourceManager, gc, cellStyle);
+		return row.getHeight(grid, resourceManager, gc, cellStyle);
 	}
 
 	/**

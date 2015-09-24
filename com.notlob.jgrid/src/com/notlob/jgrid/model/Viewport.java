@@ -306,7 +306,6 @@ public class Viewport<T> {
 			int y = 0;
 			for (int rowIndex=(gridModel.getRows().size()-1); rowIndex>=0; rowIndex--) {
 				final Row<T> row = gridModel.getRows().get(rowIndex);
-	
 				y += (grid.getRowHeight(row) + gridModel.getStyleRegistry().getCellSpacingVertical());
 	
 				if ((y <= viewportArea.height)) {
@@ -558,14 +557,15 @@ public class Viewport<T> {
 	 * Ensures the cell specified is visible in the viewport.
 	 */
 	public void reveal(final GC gc, final Column column, final Row<T> row) {
-		
 		final int rowIndex = row.getRowIndex();
 		final int columnIndex = gridModel.getColumns().indexOf(column);
+		final int max = grid.getVerticalBar().getMaximum();
+		final int capped = Math.min(rowIndex, max);
 		
-		grid.getVerticalBar().setSelection(rowIndex);
-		grid.getHorizontalBar().setSelection(columnIndex);
-		
+		grid.getVerticalBar().setSelection(capped);
+		grid.getHorizontalBar().setSelection(columnIndex);		
 		invalidate();
+		
 		grid.redraw();
 		grid.update();
 	}
