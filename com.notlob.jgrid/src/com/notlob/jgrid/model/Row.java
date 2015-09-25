@@ -38,29 +38,43 @@ public class Row<T> {
 	 * You should use grid.getRowHeight not this.
 	 */
 	int getHeight(final Grid<T> grid, final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
+		//
+		// If we've got no height set - calculate an initial stating height.
+		//
 		if (height == -1) {
-			//
-			// Set the initial height based on current values.
-			//
-			height = getDefaultHeight(resourceManager, gc, cellStyle);
-			
-			//
-			// Now adjust this for word wrapping.
-			//
-			if (!grid.getGridModel().isHeaderRow(this)) {
-				height = grid.getGridRenderer().computeRowHeight(gc, this);
+			if (grid.getClientArea().width == 1 && grid.getClientArea().height == 1) {
+				//
+				// If the grid isn't yet rendered - use the label provider to get a starting point.
+				//
+				height = grid.getLabelProvider().getDefaultRowHeight(element);				
+				
+			} else {
+				//
+				// Set the initial height based on current values.
+				//
+				height = getDefaultHeight(resourceManager, gc, cellStyle);
+				
+				//
+				// Adjust the height using the word-wrapping logic.
+				//
+				if (!grid.getGridModel().isHeaderRow(this)) {
+					height = grid.getGridRenderer().computeRowHeight(gc, this);
+				}
 			}
 		}
-
+		
 		return height;
 	}
 	
 	/**
 	 * The initial starting height for the row - NOT the current height.
 	 */
-	public int getDefaultHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
+	private int getDefaultHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
 		if (gc == null) {
-			return 0;
+			//
+			// This shouldn't happen (and doesn't).
+			//
+			return 20;
 		}
 
 		gc.setFont(resourceManager.getFont(cellStyle.getFontData()));

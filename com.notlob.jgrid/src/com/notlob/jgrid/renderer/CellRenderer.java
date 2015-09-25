@@ -323,7 +323,7 @@ public class CellRenderer<T> extends Renderer<T> {
 				// Edge-case, don't use available width for the last column if it's less that it's defined width.
 				//
 				final boolean lastColumn = (column == gridModel.getColumns().get(gridModel.getColumns().size() - 1));
-				textLayout.setWidth(lastColumn ? (Math.max(column.getWidth(), innerBounds.width)) : innerBounds.width);
+				textLayout.setWidth(lastColumn ? (Math.max(Math.max(1, column.getWidth()), innerBounds.width)) : innerBounds.width);
 				
 				if (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) {
 					computeRowSize(rc, column, row, textLayout.getBounds().height, innerBounds.height);

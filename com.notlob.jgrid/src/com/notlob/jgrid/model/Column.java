@@ -30,6 +30,10 @@ public class Column {
 	private Grid<?> grid;
 	private GC gc;
 	private int minimumContentWidth = -1;
+	
+	// An arbitrarily small value to set the last (stretchy) column as - if we left this as a higher value, the viewport would
+	// draw horizontal scrollbars when it shouldn't.
+	private final static int LAST_COLUMN_WRAPPED_WIDTH = 10; 
 
 	// Arbitrary things can be tagged onto a column by key.
 	private Map<String, Object> dataByKey;
@@ -92,11 +96,20 @@ public class Column {
 	}
 
 	public int getWidth() {
-		//
-		// Edge-case (Literally) -> If we're un-wrapped and we're the last column, our width is our content's width. 
-		//
-		if (!wrap && isLastColumn() && (grid != null) && (grid.getLabelProvider() != null)) {
-			width = getMiniumContentWidth();
+		if (isLastColumn()) {
+			if (!wrap && (grid != null) && (grid.getLabelProvider() != null)) {
+				//
+				// Edge-case (literally) - if we're un-wrapped and we're the last column, we'll keep our width the same as our 
+				// content's width.
+				//
+				width = getMiniumContentWidth();
+				
+			} else if (wrap) {
+				//
+				// If we're the last column and we're wrapped, set the width to tiny value to ensure the h-scrollbar doesn't show.
+				//
+				width = LAST_COLUMN_WRAPPED_WIDTH;
+			}
 		}
 		
 		return width;
@@ -106,7 +119,7 @@ public class Column {
 		this.width = width;
 	}
 	
-	private boolean isLastColumn() {
+	public boolean isLastColumn() {
 		return (grid != null) && (grid.getColumns().get(grid.getColumns().size() - 1) == this);
 	}
 	
@@ -172,10 +185,6 @@ public class Column {
 	
 	public void setWrap(final boolean wrap) {
 		this.wrap = wrap;
-		
-		if (isLastColumn() && wrap) {
-			width = 10; // Some arbitrarily small value - so it begins wrapping again.
-		}
 		invalidateMinimumContentWidth();
 	}
 	
