@@ -297,7 +297,7 @@ public class Viewport<T> {
 	 */
 	public int getRowCountLastPage(final GC gc) {		
 		if (!grid.getRows().isEmpty()) {
-			return getRowsToFitAbove(gc, (gridModel.getRows().get(gridModel.getRows().size()-1)));
+			return getRowsToFitAbove(gc, (gridModel.getRows().size()-1));
 		}
 		
 		return 0;
@@ -306,7 +306,7 @@ public class Viewport<T> {
 	/**
 	 * Return the number of rows that will fit in the viewport if the specified row is to be the last shown row.
 	 */
-	private int getRowsToFitAbove(final GC gc, final Row<T> startingRow) {
+	private int getRowsToFitAbove(final GC gc, final int startingRowIndex) {
 		final Rectangle viewportArea = getViewportArea(gc);
 		
 		int rowCount = 0;
@@ -315,7 +315,7 @@ public class Viewport<T> {
 			// Work from the last row - towards the first, trying to fit them into the viewport. 
 			//
 			int y = 0;
-			for (int rowIndex=(startingRow.getRowIndex()); rowIndex>=0; rowIndex--) {
+			for (int rowIndex=startingRowIndex; rowIndex>=0; rowIndex--) {
 				final Row<T> row = gridModel.getRows().get(rowIndex);
 				y += (grid.getRowHeight(row) + gridModel.getStyleRegistry().getCellSpacingVertical());
 	
@@ -588,7 +588,7 @@ public class Viewport<T> {
 	 * Ensures the cell specified is visible in the viewport.
 	 */
 	public void reveal(final GC gc, final Column column, final Row<T> row) {
-		final int rowIndex = row.getRowIndex();
+		final int rowIndex = gridModel.getRows().indexOf(row);
 		final int columnIndex = gridModel.getColumns().indexOf(column);
 		final int max = grid.getVerticalBar().getMaximum();
 		final int capped = Math.min(rowIndex, max);
@@ -603,7 +603,7 @@ public class Viewport<T> {
 				// Scrolling down to make the row visible requires us to get the row to be the last row in the viewport. To do this,
 				// we have to do a little walk up from the row - calculating how many rows will fit into the page.
 				//
-				grid.getVerticalBar().setSelection(row.getRowIndex() - (getRowsToFitAbove(gc, row) - 1));
+				grid.getVerticalBar().setSelection(row.getRowIndex() - (getRowsToFitAbove(gc, rowIndex) - 1));
 			}
 			
 			selectionChanged = true;
