@@ -5,7 +5,6 @@ import java.util.LinkedHashSet;
 
 import org.eclipse.swt.graphics.GC;
 
-import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.filtering.IHighlightingFilter;
 import com.notlob.jgrid.renderer.animation.RowAnimation;
 import com.notlob.jgrid.styles.CellStyle;
@@ -37,44 +36,20 @@ public class Row<T> {
 	/**
 	 * You should use grid.getRowHeight not this.
 	 */
-	int getHeight(final Grid<T> grid, final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
-		//
-		// If we've got no height set - calculate an initial stating height.
-		//
+	int getHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
 		if (height == -1) {
-			if (grid.getClientArea().width == 1 && grid.getClientArea().height == 1) {
-				//
-				// If the grid isn't yet rendered - use the label provider to get a starting point.
-				//
-				height = grid.getLabelProvider().getDefaultRowHeight(element);				
-				
-			} else {
-				//
-				// Set the initial height based on current values.
-				//
-				height = getDefaultHeight(resourceManager, gc, cellStyle);
-				
-				//
-				// Adjust the height using the word-wrapping logic.
-				//
-				if (!grid.getGridModel().isHeaderRow(this)) {
-					height = grid.getGridRenderer().computeRowHeight(gc, this);
-				}
-			}
+			height = getDefaultHeight(resourceManager, gc, cellStyle);
 		}
-		
+
 		return height;
 	}
 	
 	/**
 	 * The initial starting height for the row - NOT the current height.
 	 */
-	private int getDefaultHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
+	public int getDefaultHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
 		if (gc == null) {
-			//
-			// This shouldn't happen (and doesn't).
-			//
-			return 20;
+			return 0;
 		}
 
 		gc.setFont(resourceManager.getFont(cellStyle.getFontData()));

@@ -323,10 +323,10 @@ public class CellRenderer<T> extends Renderer<T> {
 				// Edge-case, don't use available width for the last column if it's less that it's defined width.
 				//
 				final boolean lastColumn = (column == gridModel.getColumns().get(gridModel.getColumns().size() - 1));
-				textLayout.setWidth(lastColumn ? (Math.max(Math.max(1, column.getWidth()), innerBounds.width)) : innerBounds.width);
+				textLayout.setWidth(lastColumn ? (Math.max(column.getWidth(), innerBounds.width)) : innerBounds.width);
 				
 				if (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) {
-					computeRowSize(rc, column, row, textLayout.getBounds().height, innerBounds.height);
+					computeRowSize(rc, column, textLayout.getBounds().height, innerBounds.height);
 				}
 				
 				width = textLayout.getBounds().width;
@@ -403,7 +403,7 @@ public class CellRenderer<T> extends Renderer<T> {
 	 *   a) previous cell's calculations for this row
 	 *   b) this cell's content.
 	 */
-	protected void computeRowSize(final RenderContext rc, final Column column, final Row<T> row, final int desiredHeight, final int currentHeight) {
+	protected void computeRowSize(final RenderContext rc, final Column column, final int desiredHeight, final int currentHeight) {
 		//
 		// If we're computing size, this is our chance to alter the row height if the text wraps.
 		//
@@ -415,15 +415,12 @@ public class CellRenderer<T> extends Renderer<T> {
 //				currentHeight, 
 //				delta, 
 //				rc.getComputedHeightDelta()));
-//		
-//		String mode = null;
 		
 		if (rc.getComputedHeightDelta() == null) {
 			//
 			// If we want to shrink or grow the row and nothing else does (yet), then store the delta. 
 			//
 			rc.setComputedHeightDelta(delta);
-//			mode = "FIRST-STRIKE";
 		
 		} else {
 			//
@@ -436,7 +433,6 @@ public class CellRenderer<T> extends Renderer<T> {
 					// the two values - to ensure text is still visible.
 					//									
 					rc.setComputedHeightDelta(Math.max(rc.getComputedHeightDelta(), delta));
-//					mode = "FIGHT-TO-GROW";
 					
 				} else {
 					//
@@ -451,7 +447,6 @@ public class CellRenderer<T> extends Renderer<T> {
 					// If something else wants to shrink the row, whilst we want to grow it, we win.
 					//
 					rc.setComputedHeightDelta(delta);
-//					mode = "GROW-BEATS-SHRINK";
 					
 				} else {
 					//
@@ -462,11 +457,6 @@ public class CellRenderer<T> extends Renderer<T> {
 				}
 			}
 		}
-		
-//		if (mode != null) {
-//			final String text = getCellText(column, row);
-//			System.out.println(String.format("Compute Height : Column [%s] Row [%s] Text [%s] Desired [%s] Current [%s] Stored-Delta [%s] Computed-Delta [%s] : %s", column.getColumnId(), row.getRowIndex(), text, desiredHeight, currentHeight, rc.getComputedHeightDelta(), delta, mode));
-//		}
 	}
 	
 	/**

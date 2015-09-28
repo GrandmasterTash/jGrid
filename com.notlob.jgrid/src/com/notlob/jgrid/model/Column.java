@@ -5,11 +5,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.graphics.GC;
-
-import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.styles.AlignmentStyle;
 
 @SuppressWarnings("rawtypes")
@@ -26,14 +21,6 @@ public class Column {
 	private boolean wrap;
 	private AlignmentStyle textAlignment;
 	private AlignmentStyle imageAlignment;
-	
-	private Grid<?> grid;
-	private GC gc;
-	private int minimumContentWidth = -1;
-	
-	// An arbitrarily small value to set the last (stretchy) column as - if we left this as a higher value, the viewport would
-	// draw horizontal scrollbars when it shouldn't.
-	private final static int LAST_COLUMN_WRAPPED_WIDTH = 10; 
 
 	// Arbitrary things can be tagged onto a column by key.
 	private Map<String, Object> dataByKey;
@@ -63,26 +50,7 @@ public class Column {
 
 		return sb.toString();
 	}
-	
-	/**
-	 * The grid is needed to calculate the content width of elastic columns (the last ones).
-	 */
-	void setGrid(final Grid<?> grid) {
-		this.grid = grid;
-		
-		if (grid != null) {
-			this.grid.addDisposeListener(new DisposeListener() {
-				@Override
-				public void widgetDisposed(DisposeEvent e) {
-					if (gc != null) {
-						gc.dispose();
-						gc = null;
-					}
-				}
-			});
-		}
-	}
-	
+
 	public void setCaption(final String caption) {
 		this.caption = caption;
 	}
@@ -96,47 +64,11 @@ public class Column {
 	}
 
 	public int getWidth() {
-		if (isLastColumn()) {
-			if (!wrap && (grid != null) && (grid.getLabelProvider() != null)) {
-				//
-				// Edge-case (literally) - if we're un-wrapped and we're the last column, we'll keep our width the same as our 
-				// content's width.
-				//
-				width = getMiniumContentWidth();
-				
-			} else if (wrap) {
-				//
-				// If we're the last column and we're wrapped, set the width to tiny value to ensure the h-scrollbar doesn't show.
-				//
-				width = LAST_COLUMN_WRAPPED_WIDTH;
-			}
-		}
-		
 		return width;
 	}
 
 	public void setWidth(final int width) {
 		this.width = width;
-	}
-	
-	public boolean isLastColumn() {
-		return (grid != null) && (grid.getColumns().get(grid.getColumns().size() - 1) == this);
-	}
-	
-	private int getMiniumContentWidth() {
-		if (minimumContentWidth == -1) {		
-			if (gc == null) {
-				gc = new GC(grid);
-			}
-			
-			minimumContentWidth = grid.getGridRenderer().getMinimumWidth(gc, this);
-		}
-		
-		return minimumContentWidth;
-	}
-	
-	void invalidateMinimumContentWidth() {
-		this.minimumContentWidth = -1;
 	}
 
 	public Comparator getComparator() {
@@ -185,7 +117,6 @@ public class Column {
 	
 	public void setWrap(final boolean wrap) {
 		this.wrap = wrap;
-		invalidateMinimumContentWidth();
 	}
 	
 	public AlignmentStyle getTextAlignment() {
