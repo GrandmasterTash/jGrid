@@ -6,7 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.notlob.jgrid.Activator
 Bundle-Vendor: Stefan Bolton
 Require-Bundle: org.eclipse.swt
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.notlob.jgrid,
  com.notlob.jgrid.listeners,
