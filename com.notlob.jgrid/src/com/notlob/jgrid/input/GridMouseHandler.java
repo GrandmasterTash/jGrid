@@ -160,6 +160,8 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	public void mouseExit(final MouseEvent e) {
 		if (grid.getToolTipProvider() != null) {
 			grid.getToolTipProvider().hide();
+		} else {
+			toolTip.setVisible(false);
 		}
 	}
 
@@ -230,7 +232,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			grid.getToolTipProvider().hide();
 		} else {
 			toolTip.setVisible(false);
-		}		
+		}
 		
 		shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
 		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
