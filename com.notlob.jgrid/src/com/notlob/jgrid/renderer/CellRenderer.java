@@ -381,7 +381,7 @@ public class CellRenderer<T> extends Renderer<T> {
 						// Use normal colours if we're not highlighting a filter result.
 						//
 						gc.setForeground(getColour(cellStyle.getForeground()));
-						gc.drawText(text, contentLocation.x, contentLocation.y, SWT.DRAW_TRANSPARENT);
+						gc.drawText(text, contentLocation.x, contentLocation.y, SWT.DRAW_DELIMITER | SWT.DRAW_TAB | SWT.DRAW_TRANSPARENT);
 					}
 				}
 			}
