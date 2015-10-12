@@ -22,6 +22,11 @@ public class SortModel<T> {
 	 */
 	void removeColumn(final Column column) {
 		sortedColumns.remove(column);
+		
+		int sequence = 0;
+		for (Column existing : sortedColumns) {
+			existing.setSortSequence(sequence++);
+		}
 	}
 
 	public void setRowComparator(final Comparator<Row<T>> rowComparator) {
@@ -39,6 +44,9 @@ public class SortModel<T> {
 
 		if (!append) {
 			clearInternal();
+			
+		} else {
+			column.setSortSequence(sortedColumns.size());
 		}
 
 		column.setSortDirection(sortDirection);
