@@ -24,34 +24,45 @@ import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.Viewport;
 
+/**
+ * The main entry-point for mouse activity in the grid.
+ * 
+ * @author sbolton
+ *
+ * @param <T>
+ */
 public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListener, MouseTrackListener/*, MouseWheelListener*/ {
 
-	private final Grid<T> grid;
-	private final GridModel<T> gridModel;
-	private final Viewport<T> viewport;
-	private final Collection<IGridListener<T>> listeners;
-	private final GC gc;
-	private final ToolTip toolTip;
+	protected final Grid<T> grid;
+	protected final GridModel<T> gridModel;
+	protected final Viewport<T> viewport;
+	protected final Collection<IGridListener<T>> listeners;
+	protected final GC gc;
+	protected final ToolTip toolTip;
 
 	// Track if any mouse button is in the down position.
-	private boolean mouseDown;
-	private boolean shift; // Tracked in mouseMove and mouseUp.
-	private boolean ctrl;
-	private boolean alt;
-	private Column resizing;	
-	private Column repositioning;
-	private Column repositioningDetect;
-	private Column targetColumn;	// Repositioning target.
+	protected boolean mouseDown;
+	protected boolean shift; // Tracked in mouseMove and mouseUp.
+	protected boolean ctrl;
+	protected boolean alt;
+	protected Column resizing;	
+	protected Column repositioning;
+	protected Column repositioningDetect;
+	protected Column targetColumn;	// Repositioning target.
 	
 	// Used for an edge-case when dragging a column to the end of the grid.
-	public final static Column LAST_COLUMN = new Column("LAST.COLUMN");
+	public final static Column LAST_COLUMN = new Column("LAST.COLUMN");	
+	private final static int LEFT_MOUSE_BUTTON = 1;
+	private final static int RIGHT_MOUSE_BUTTON = 3;
+	private final static int TOOLTIP_DELAY = 4;  // ms
+	private final static int SCROLL_DELAY = 100; // ms
 	
 	// Track if the mouse is over a row/column.
-	private Row<T> row = null; // TODO: Rename hovered_....
-	private Column column = null;
-	private Column groupColumn = null;  // << Mouse is over a group field header.
-	private Column groupValue = null;	// << Mouse is over a group field value not the header;
-
+	protected Row<T> row = null;
+	protected Column column = null;
+	protected Column groupColumn = null;  // << Mouse is over a group field header.
+	protected Column groupValue = null;	  // << Mouse is over a group field value not the header;
+	
 	public GridMouseHandler(final Grid<T> grid, final GC gc, final Collection<IGridListener<T>> listeners, final ToolTip toolTip) {
 		this.grid = grid;
 		this.gridModel = grid.getGridModel();
@@ -61,22 +72,484 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		this.gc = gc;
 	}
 
+	@Override
+	public void mouseEnter(final MouseEvent e) {
+	}
+
+	@Override
+	public void mouseExit(final MouseEvent e) {
+		try {
+			hideTooltip();
+			
+		} catch (final Throwable t) {
+			System.err.println(t);
+		}
+	}
+
+	@Override
+	public void mouseHover(final MouseEvent e) {
+		try {
+			showToolTipIfRequired(e.x, e.y);
+			
+		} catch (final Throwable t) {
+			System.err.println(t);
+		}
+	}
+	
+	@Override
+	public void mouseMove(final MouseEvent e) {
+		try {
+			//
+			// Track the modifiers
+			//
+			shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
+			ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
+			alt = (e.stateMask & SWT.ALT) == SWT.ALT;
+			targetColumn = null;
+			
+			hideTooltip();
+			
+			if (resizing != null) {
+				resizeColumn(e.x);			
+	
+			} else if (repositioningDetect != null) {
+				checkForColumnMove(e.x);
+				
+				if (isScrollRightNeeded()) {
+					scrollRight();
+					
+				} else if (isScrollLeftNeeded()) {
+					scrollLeft();
+					
+				} else {
+					//
+					// Cause the drop-image to be rendered.
+					//
+					grid.redraw();
+				}
+				
+			} else if (trackCell(e.x, e.y)) {
+				//
+				// Repaint the grid to show the new hovered row.
+				//
+				grid.redraw();
+			}
+			
+			updateCursor(e.x, e.y);
+	
+			//
+			// Fix an issue where, when dragging a column, the mouse leaves the grid area, mouse up, then re-enters the grid area.
+			//
+			if (targetColumn == null) {
+				repositioning = null;
+			}
+			
+		} catch (final Throwable t) {
+			System.err.println(t);
+		}
+	}
+	
+	@Override
+	public void mouseDown(final MouseEvent e) {
+		try {
+			if (e.button == LEFT_MOUSE_BUTTON) {			
+				mouseDown = true;
+				
+				//
+				// See if the mouse is near a column header boundary. If so, begin a resize drag.
+				//
+				resizing = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.RESIZE);
+				
+				//
+				// If we're not resizing, maybe we're dragging a column?
+				//
+				if (resizing == null) {
+					repositioningDetect = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.REPOSITION);
+				}
+				
+			} else if (e.button == RIGHT_MOUSE_BUTTON) {
+				//
+				// Keep the tracked cell up-to-date.
+				//
+				trackCell(e.x, e.y);
+	
+				//
+				// Move the anchor to the thing under the mouse.
+				//
+				if ((row != null) && (row != gridModel.getColumnHeaderRow())) {
+					if (!row.isSelected()) {
+						gridModel.getSelectionModel().setSelectedRows(Collections.singletonList(row));
+					}
+					
+					gridModel.getSelectionModel().setAnchorElement(row.getElement());
+				}
+				
+				if ((column != null) && (column != gridModel.getGroupSelectorColumn()) && (column != gridModel.getRowNumberColumn())) {
+					gridModel.getSelectionModel().setAnchorColumn(column);
+				}			
+			}
+			
+		} catch (final Throwable t) {
+			System.err.println(t);
+		}
+	}
+
+	@Override
+	public void mouseUp(final MouseEvent e) {
+		try {		
+			if (!mouseDown) {
+				return;
+			}
+			
+			mouseDown = false;
+			repositioningDetect = null;
+	
+			if (grid.getKeyboardHandler().isEscapePressed()) {
+				//
+				// If ESC is pressed whilst resizing a column or repositioning a column, abort it.
+				//
+				if (resizing != null) {
+					resizing = null;
+					grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+				}
+				
+				if (repositioning != null) {
+					repositioning = null;
+					targetColumn = null;
+				}
+				
+				return;
+			}
+			
+			//
+			// If the event is outside the widget bounds - ignore it.
+			//
+			if (!grid.getClientArea().contains(e.x, e.y)) {
+				return;
+			}
+			
+			//
+			// Get the event details.
+			//		
+			shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
+			ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
+			alt = (e.stateMask & SWT.ALT) == SWT.ALT;
+			
+			if (!grid.isFocusControl()) {
+				//
+				// Ensure the grid has the focus.
+				//
+				grid.setFocus();
+			}
+			
+			if (handleColumnResized(e.count)) {
+				return;
+			}		
+			
+			if (handleColumnRepositioned()) {
+				return;
+			}
+			
+			//
+			// Keep the tracked cell up-to-date.
+			//
+			trackCell(e.x, e.y);
+	
+			//
+			// Determine if there's been a mouse event we need to handle or we need to expose to listeners.
+			//
+			if (e.button == LEFT_MOUSE_BUTTON || e.button == RIGHT_MOUSE_BUTTON) {
+				if (e.count == 1) {
+					handleSingleClick(e.x, e.y, e.button);
+	
+				} else if (e.count > 1) {				
+					handleDoubleClick();
+				}
+			}
+			
+			//
+			// Paint the grid.
+			//
+			grid.redraw();
+	
+			//
+			// Notify any listeners.
+			//
+			notifyListeners(e.x, e.y, e.button, e.stateMask, e.count);
+			
+		} catch (final Throwable t) {
+			System.err.println(t);
+		}
+	}
+	
+	/**
+	 * Notify any listeners about click events.  
+	 */
+	protected void notifyListeners(final int mouseX, final int mouseY, final int button, final int stateMask, final int clickCount) {
+		if (row != null && column != null && (column != gridModel.getGroupSelectorColumn()) && (column != gridModel.getRowNumberColumn())) {
+			for (final IGridListener<T> listener : listeners) {
+				if (button == LEFT_MOUSE_BUTTON) {
+					if (clickCount == 1) {
+						if (row == gridModel.getColumnHeaderRow()) {
+							listener.headerClick(column, new Point(mouseX, mouseY), stateMask);
+						} else {
+							listener.click(column, row.getElement(), new Point(mouseX, mouseY), stateMask);
+						}
+
+					} else if (clickCount > 1) {
+						if (row == gridModel.getColumnHeaderRow()) {
+							listener.headerDoubleClick(column, new Point(mouseX, mouseY), stateMask);
+						} else {
+							listener.doubleClick(column, row.getElement(), new Point(mouseX, mouseY), stateMask);
+						}
+					}
+
+				} else if (button == RIGHT_MOUSE_BUTTON) {
+					if (row == gridModel.getColumnHeaderRow()) {
+						listener.headerRightClick(column, new Point(mouseX, mouseY), stateMask);
+					} else {
+						listener.rightClick(column, row.getElement(), new Point(mouseX, mouseY), stateMask);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Handle a single click (left OR right) - updating the selection model, expanding/collapsing groups, performing column sorts.
+	 */
+	protected void handleSingleClick(final int mouseX, final int mouseY, final int button) {
+		
+		if ((column != null) && (column != gridModel.getGroupSelectorColumn()) && (column != gridModel.getRowNumberColumn()) && (mouseY < viewport.getViewportArea(gc).y)) {
+			// TODO: Investigate/debug the last part of the above statement, it looks dubious to me.
+			if (grid.isSortedEnabled() && (row == gridModel.getColumnHeaderRow()) && (button == LEFT_MOUSE_BUTTON)) {
+				//
+				// Column sorting.
+				//
+				gridModel.getSortModel().sort(column, true, ctrl, true);
+				return;
+			}
+		}
+
+		//
+		// Check for group row hot-spots.
+		//
+		if ((column != null) && (row != null) && gridModel.isParentRow(row)) {
+			//
+			// Expand/collapse toggle.
+			//
+			final Rectangle bounds = grid.getGridRenderer().getExpandImageBounds(gc, row);
+			
+			if (bounds.contains(mouseX,  mouseY)) {							
+				if (grid.getContentProvider().isCollapsed(row.getElement())) {
+					grid.expandGroups(Collections.singletonList(row.getElement()));
+					
+				} else {
+					grid.collapseGroups(Collections.singletonList(row.getElement()));
+				}
+				
+				//return; // Don't exit here - allow the group to be selected if expanding.
+			}
+
+			if (grid.isSortedEnabled() && alt && (groupColumn != null)) {
+				//
+				// Toggle the sort on the group column.
+				//
+				gridModel.getSortModel().sort(groupColumn, true, ctrl, true);
+				return;
+			}
+		}
+		
+		//
+		// Handle the selection.
+		//
+		if (row != null && (row != gridModel.getColumnHeaderRow())) {
+			//
+			// Update the anchor column - before triggering selection changed events.
+			//
+			if (!shift) {
+				if (isRenderGroupInline() && gridModel.isParentElement(row.getElement())) {
+					if (groupColumn != null) {
+						gridModel.getSelectionModel().setAnchorColumn(groupColumn);
+
+					} else if (groupValue != null) {
+						gridModel.getSelectionModel().setAnchorColumn(groupValue);
+						
+					} else if (!gridModel.getGroupByColumns().isEmpty()) {
+						gridModel.getSelectionModel().setAnchorColumn(gridModel.getGroupByColumns().get(0));
+					}
+
+				} else if ((column != gridModel.getRowNumberColumn()) && (column != gridModel.getGroupSelectorColumn())) {
+					gridModel.getSelectionModel().setAnchorColumn(column);
+				}
+			}
+			
+			if (!(shift || ctrl)) {
+				//
+				// If the right mouse button is used, and the row being right-clicked is already selected, don't un-select it.
+				//
+				if (!((button == RIGHT_MOUSE_BUTTON) && (row.isSelected()))) {
+					//
+					// Single row/group replace.
+					//
+					final List<Row<T>> rows = new ArrayList<>();
+					rows.addAll((gridModel.isParentRow(row) || (gridModel.getGroupSelectorColumn() == column)) ? gridModel.getWholeGroup(row) : Collections.singletonList(row));
+					gridModel.getSelectionModel().setSelectedRows(rows);
+				}
+
+			} else if (ctrl && !shift) {
+				//
+				// Single row/group toggle.
+				//
+				gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row));
+
+			} else if (!ctrl && shift) {
+				//
+				// Range replace.
+				//
+				gridModel.getSelectionModel().selectRange(row, false);
+
+			} else if (ctrl && shift) {
+				//
+				// Range addition.
+				//
+				gridModel.getSelectionModel().selectRange(row, true);
+			}
+		}
+
+		//
+		// Select All - the corner has been clicked.
+		//
+		if ((mouseX < viewport.getViewportArea(gc).x) && (mouseY < viewport.getViewportArea(gc).y) && (viewport.getColumnIndexByX(mouseX, gc) == -1)) {
+			gridModel.getSelectionModel().selectAll();
+		}
+	}
+	
+	/**
+	 * Handle a double-click - selecting the entire group if it's a child row.
+	 */
+	protected void handleDoubleClick() {
+		if (row != null) {
+			//
+			// Get the rows group.
+			//
+			if (gridModel.isGroupRow(row)) {
+				final List<Row<T>> group = gridModel.getWholeGroup(row);
+				boolean selected = true;
+				for (final Row<T> member : group) {
+					if (!member.isSelected()) {
+						selected = false;
+						break;
+					}
+				}
+				
+				T anchorElement = null;
+				if (gridModel.isChildElement(row.getElement())) {
+					anchorElement = gridModel.getSelectionModel().getAnchorElement();
+				}
+
+				//
+				// If any are unselected, select the group, otherwise, if they are all selected,
+				// just the select the row that was double-clicked (as long as it's not a parent row).
+				//
+				if (!selected) {
+					gridModel.getSelectionModel().setSelectedRows(group);
+
+				} else if (!gridModel.isParentRow(row)) {
+					gridModel.getSelectionModel().setSelectedRows(Collections.singletonList(row));
+				}
+				
+				//
+				// Ensure the anchor is where the mouse was. Group children lose the anchor on double-click
+				// (due to the setSelection code) so we'll restore it.
+				//
+				if (gridModel.isChildElement(row.getElement())) {
+					gridModel.getSelectionModel().setAnchorElement(anchorElement);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Check, if the user was resizing a column, if they've completed the resize. 
+	 */
+	protected boolean handleColumnResized(final int clickCount) {
+		if (resizing != null) {
+			final Column wasResizing = resizing;
+			
+			//
+			// Complete the resize operation.
+			//
+			gridModel.fireColumnResizedEvent(resizing);
+			resizing = null;
+			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+						
+			if (clickCount > 1) {
+				//
+				// The user has double-clicked on a resize border - execute the auto-resize-a-tron.
+				//
+				grid.autoSizeColumn(wasResizing);
+			}
+			return true;			
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Check, if the user was repositioning a column, if they've completed the move. 
+	 */
+	protected boolean handleColumnRepositioned() {
+		if (repositioning != null) {						
+			//
+			// Reposition the column currently being dragged.
+			//
+			if (targetColumn != repositioning) {
+				//
+				// Move the column now.
+				//
+				gridModel.moveColumn(repositioning, targetColumn);
+			}
+			
+			repositioning = null;
+			targetColumn = null;
+			return true;
+		}
+		
+		return false;
+	}
+
+	/**
+	 * return the column currently under the mouse pointer.
+	 */
 	public Column getColumn() {
 		return column;
 	}
 
+	/**
+	 * return the row currently under the mouse pointer.
+	 */
 	public Row<T> getRow() {
 		return row;
 	}
 
+	/**
+	 * return the group column (or value) currently under the mouse pointer.
+	 */
 	public Column getGroupColumn() {
 		return groupColumn;
 	}
-	
+
+	/**
+	 * If we're in the middle of a column drag, this is the column being dragged.
+	 */
 	public Column getRepositioningColumn() {
 		return repositioning;
 	}
-	
+
+	/**
+	 * This is where the current (if any) column move will end up.
+	 */
 	public Column getTargetColumn() {
 		return targetColumn;
 	}
@@ -92,15 +565,11 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	public boolean isAltHeld() {
 		return alt;
 	}
-
-	public void setAlt(final boolean alt) {
-		this.alt = alt;
-	}
 	
 	/**
 	 * Make the code more readable.
 	 */
-	private boolean isRenderGroupInline() {
+	protected boolean isRenderGroupInline() {
 		return (grid.getGroupRenderStyle() == GroupRenderStyle.INLINE);
 	}
 
@@ -109,7 +578,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	 *
 	 * Returns true if the cell or row changes.
 	 */
-	private boolean trackCell(final int x, final int y) {
+	protected boolean trackCell(final int x, final int y) {
 		Column newGroupColumn = null;
 		Column newGroupValue = null;
 
@@ -140,7 +609,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 
 		if (newRow != row || newColumn != column || newGroupColumn != groupColumn || newGroupValue != groupValue) {
 			//
-			// If any of the tracked things has changed, update and return true;
+			// If any of the tracked things has changed, update out tracked references and return true;
 			//
 			row = newRow;
 			column = newColumn;
@@ -149,30 +618,176 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			return true;
 		}
 
+		//
+		// The mouse isn't over anything we need to track.
+		//
 		return false;
 	}
 
-	@Override
-	public void mouseEnter(final MouseEvent e) {
+	/**
+	 * Scroll the grid right one column - after a short delay.
+	 */
+	protected void scrollLeft() {
+		//
+		// Check to see if we need to scroll left.
+		//
+		grid.getDisplay().syncExec(new Runnable() {					
+			@Override
+			public void run() {
+				grid.getHorizontalBar().setSelection(Math.max(grid.getHorizontalBar().getMinimum(), grid.getHorizontalBar().getSelection() - 1));				
+				gridModel.fireChangeEvent();
+				if (isScrollLeftNeeded()) {
+					grid.getDisplay().timerExec(SCROLL_DELAY, this);
+				}
+			}
+		});
 	}
 
-	@Override
-	public void mouseExit(final MouseEvent e) {
+	/**
+	 * Scroll the grid right one column - after a short delay.
+	 */
+	protected void scrollRight() {
+		//
+		// Check to see if we need to scroll right.
+		//
+		grid.getDisplay().syncExec(new Runnable() {					
+			@Override
+			public void run() {
+				grid.getHorizontalBar().setSelection(Math.min(grid.getHorizontalBar().getMaximum(), grid.getHorizontalBar().getSelection() + 1));				
+				gridModel.fireChangeEvent();
+				if (isScrollRightNeeded()) {
+					grid.getDisplay().timerExec(SCROLL_DELAY, this);
+				}
+			}
+		});
+	}
+
+	/**
+	 * See if the user is starting - or is in the middle of a column move.
+	 */
+	protected void checkForColumnMove(final int mouseX) {
+		//
+		// See if the user has initiated a drag column move drag.
+		//
+		if (mouseDown && (repositioning == null)) {
+			repositioning = repositioningDetect;
+		}			
+		
+		//
+		// If we're repositioning a column, see where the current target is.
+		//
+		final int columnIndex = viewport.getColumnIndexByX(mouseX, gc);
+		if (columnIndex == -1) {
+			//
+			// We're moving a column, but we can't currently tell where to...
+			//
+			return;
+		}
+		
+		final Column mouseColumn = gridModel.getColumns().get(columnIndex);			
+		if (mouseColumn == repositioning) {
+			//
+			// We're moving a column, but we can't currently tell where to...
+			//
+			return;
+		}
+					
+		final int mouseColumnX = viewport.getColumnViewportX(gc, mouseColumn);
+		if (mouseX <= (mouseColumnX + (mouseColumn.getWidth() / 2))) {
+			//
+			// We're dragging to the left of the hovered column.
+			//
+			targetColumn = mouseColumn;
+			
+		} else if (columnIndex < gridModel.getColumns().size() - 1) {
+			//
+			// We're dragging to the right of the hovered column.
+			//
+			targetColumn = gridModel.getColumns().get(columnIndex + 1);
+			
+		} else {
+			//
+			// Something mad has occured.
+			//
+			targetColumn = LAST_COLUMN;
+		}
+	}
+	
+	/**
+	 * Resize the current column being resize - using the mouses current X position.
+	 */
+	protected void resizeColumn(final int mouseX) {
+		//
+		// Resize the column currently being resized.
+		//
+		final int columnX = viewport.getColumnViewportX(gc, resizing);
+		resizing.setWidth(Math.max(1, (mouseX - columnX)));
+		
+		//
+		// Cause the grid to repaint and recalculate the viewport.
+		//
+		gridModel.fireChangeEvent();
+	}
+		
+	/**
+	 * returns true if the targetColumn (of a column move operation) is off the right-hand edge of the viewport.
+	 */
+	protected boolean isScrollRightNeeded() {
+		return (viewport.getLastColumnIndex() < grid.getColumns().size()) && (targetColumn == grid.getColumns().get(viewport.getLastColumnIndex()));
+	}
+
+	/**
+	 * returns true if the targetColumn (of a column move operation) is off the left-hand edge of the viewport.
+	 */
+	protected boolean isScrollLeftNeeded() {
+		return (viewport.getFirstColumnIndex() > 0) && (targetColumn == grid.getColumns().get(viewport.getFirstColumnIndex()));
+	}
+
+	/**
+	 * Update the mouse cursor if we're resizeing or about to resize a column.
+	 */
+	protected void updateCursor(final int mouseX, final int mouseY) {
+		if ((repositioning == null) && (viewport.getColumnForMouseOperation(gc, mouseX, mouseY, ColumnMouseOperation.RESIZE) != null)) {
+			//
+			// Show the column resize mouse cursor.
+			//
+			if (grid.getCursor() != grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEE)) {
+				grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEE));
+			}
+			
+		} else if ((resizing == null) && (grid.getCursor() != grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW))) {
+			//
+			// Restore the default mouse cursor.
+			//
+			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+		}
+	}
+	
+	/**
+	 * Regardless of whether we're using the grid's own tool-tip provider or our built in one, hide it.
+	 */
+	protected void hideTooltip() {
 		if (grid.getToolTipProvider() != null) {
 			grid.getToolTipProvider().hide();
+			
 		} else {
 			toolTip.setVisible(false);
 		}
 	}
 
-	@Override
-	public void mouseHover(final MouseEvent e) {
-		//
-		// Show a tool-tip.
-		//
+	/**
+	 * Show a tool-tip if: -
+	 *  - we're not moving a column
+	 *  - there IS a column and row under the mouse
+	 *  - It's not the group selector or row number column
+	 *  - We have a label provider on the grid.
+	 * 
+	 * Specify whether it's a header tool-tip (if false, it'll be a body tool-tip).
+	 */
+	protected void showToolTipIfRequired(final int mouseX, final int mouseY) {
 		if ((repositioning == null) && (column != null) && (column != gridModel.getGroupSelectorColumn()) && (column != gridModel.getRowNumberColumn()) && (row != null) && (grid.getLabelProvider() != null)) {
-			final int x = e.x;
-			final int y = e.y + 16;
+			final int x = mouseX;
+			final int y = mouseY + 16; // er wut?
 
 			if (row == gridModel.getColumnHeaderRow()) {
 				if (grid.getToolTipProvider() != null) {
@@ -225,457 +840,16 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			}
 		}
 	}
-
-	@Override
-	public void mouseMove(final MouseEvent e) {
-		if (grid.getToolTipProvider() != null) {
-			grid.getToolTipProvider().hide();
-		} else {
-			toolTip.setVisible(false);
-		}
-		
-		shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
-		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
-		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
-		targetColumn = null;		
-		
-		if (resizing != null) {
-			//
-			// Resize the column currently being resized.
-			//
-			final int columnX = viewport.getColumnViewportX(gc, resizing);
-			resizing.setWidth(Math.max(1, (e.x - columnX)));
-			
-			//
-			// Cause the grid to repaint and recalculate the viewport.
-			//
-			gridModel.fireChangeEvent();			
-
-		} else if (repositioningDetect != null) {
-			//
-			// See if the user has initiated a drag.
-			//
-			if (mouseDown && (repositioning == null)) {
-				repositioning = repositioningDetect;
-			}			
-			
-			//
-			// If we're repositioning a column, see where the current target is.
-			//
-			final int columnIndex = viewport.getColumnIndexByX(e.x, gc);
-			
-			if (columnIndex == -1) {
-				return;
-			}
-			
-			final Column mouseColumn = gridModel.getColumns().get(columnIndex);
-			
-			if (mouseColumn == repositioning) {
-				return;
-			}
-			
-			final int mouseColumnX = viewport.getColumnViewportX(gc, mouseColumn);
-			if (e.x <= (mouseColumnX + (mouseColumn.getWidth() / 2))) {
-				targetColumn = mouseColumn;
-				
-			} else if (columnIndex < gridModel.getColumns().size() - 1) {				
-				targetColumn = gridModel.getColumns().get(columnIndex + 1);
-				
-			} else {
-				targetColumn = LAST_COLUMN;
-			}
-			
-			if (isScrollRightNeeded()) {
-				//
-				// Check to see if we need to scroll right.
-				//
-				grid.getDisplay().syncExec(new Runnable() {					
-					@Override
-					public void run() {
-						grid.getHorizontalBar().setSelection(Math.min(grid.getHorizontalBar().getMaximum(), grid.getHorizontalBar().getSelection() + 1));				
-						gridModel.fireChangeEvent();
-						if (isScrollRightNeeded()) {
-							grid.getDisplay().timerExec(100, this);
-						}
-					}
-				});
-				
-			} else if (isScrollLeftNeeded()) {
-				//
-				// Check to see if we need to scroll left.
-				//
-				grid.getDisplay().syncExec(new Runnable() {					
-					@Override
-					public void run() {
-						grid.getHorizontalBar().setSelection(Math.max(grid.getHorizontalBar().getMinimum(), grid.getHorizontalBar().getSelection() - 1));				
-						gridModel.fireChangeEvent();
-						if (isScrollLeftNeeded()) {
-							grid.getDisplay().timerExec(100, this);
-						}
-					}
-				});
-				
-			} else {
-				//
-				// Cause the drop-image to be rendered.
-				//
-				grid.redraw();
-			}
-			
-		} else if (trackCell(e.x, e.y)) {
-			//
-			// Repaint the grid to show the new hovered row.
-			//
-			grid.redraw();
-		}
-		
-		if ((repositioning == null) && (viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.RESIZE) != null)) {
-			//
-			// Show the column resize mouse cursor.
-			//
-			if (grid.getCursor() != grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEE)) {
-				grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_SIZEE));
-			}
-			
-		} else if ((resizing == null) && (grid.getCursor() != grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW))) {
-			//
-			// Restore the default mouse cursor.
-			//
-			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-		}
-		
-		//
-		// Fix an issue where, when dragging a column, the mouse leaves the grid area, mouse up, then re-enters the grid area.
-		//
-		if (targetColumn == null) {
-			repositioning = null;
-		}
-	}
 	
-	// TODO: Move this into the grid so the scroll column and scroll row logic is together.
-	private boolean isScrollRightNeeded() {
-		return (viewport.getLastColumnIndex() < grid.getColumns().size()) && (targetColumn == grid.getColumns().get(viewport.getLastColumnIndex()));
-	}
-	
-	private boolean isScrollLeftNeeded() {
-		return (viewport.getFirstColumnIndex() > 0) && (targetColumn == grid.getColumns().get(viewport.getFirstColumnIndex()));
-	}
-
-	@Override
-	public void mouseDown(final MouseEvent e) {
-		if (e.button == 1) {			
-			mouseDown = true;
-			
-			//
-			// See if the mouse is near a column header boundary. If so, begin a resize drag.
-			//
-			resizing = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.RESIZE);
-			
-			//
-			// If we're not resizing, maybe we're dragging a column?
-			//
-			if (resizing == null) {
-				repositioningDetect = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.REPOSITION);
-			}
-			
-		} else if (e.button == 3) {
-			//
-			// Keep the tracked cell up-to-date.
-			//
-			trackCell(e.x, e.y);
-
-			//
-			// Move the anchor to the thing under the mouse.
-			//
-			if ((row != null) && (row != gridModel.getColumnHeaderRow())) {
-				if (!row.isSelected()) {
-					gridModel.getSelectionModel().setSelectedRows(Collections.singletonList(row));
-				}
-				
-				gridModel.getSelectionModel().setAnchorElement(row.getElement());
-			}
-			
-			if ((column != null) && (column != gridModel.getGroupSelectorColumn()) && (column != gridModel.getRowNumberColumn())) {
-				gridModel.getSelectionModel().setAnchorColumn(column);
-			}			
-		}
-	}
-
-	@Override
-	public void mouseUp(final MouseEvent e) {
-		if (!mouseDown) {
-			return;
-		}
-		
-		mouseDown = false;
-		repositioningDetect = null;
-
-		if (grid.getKeyboardHandler().isEscapePressed()) {
-			if (resizing != null) {
-				resizing = null;
-				grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-			}
-			
-			if (repositioning != null) {
-				repositioning = null;
-				targetColumn = null;
-			}
-			
-			return;
-		}
-		
-		//
-		// If the event is outside the widget bounds - ignore it.
-		//
-		if (!grid.getClientArea().contains(e.x, e.y)) {
-			return;
-		}
-		
-		//
-		// Get the event details.
-		//		
-		shift = (e.stateMask & SWT.SHIFT) == SWT.SHIFT;
-		ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
-		alt = (e.stateMask & SWT.ALT) == SWT.ALT;
-		
-		if (!grid.isFocusControl()) {
-			grid.setFocus();
-		}
-		
-		if (resizing != null) {
-			final Column wasResizing = resizing;
-			
-			//
-			// Complete the resize operation.
-			//
-			gridModel.fireColumnResizedEvent(resizing);
-			resizing = null;
-			grid.setCursor(grid.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-						
-			if (e.count > 1) {
-				//
-				// The user has double-clicked on a resize border - execute the auto-resize-a-tron.
-				//
-				grid.autoSizeColumn(wasResizing);
-			}
-			return;			
-		}
-		
-		if (repositioning != null) {						
-			//
-			// Reposition the column currently being dragged.
-			//
-			if (targetColumn != repositioning) {
-				//
-				// Move the column now.
-				//
-				gridModel.moveColumn(repositioning, targetColumn);
-			}
-			
-			repositioning = null;
-			targetColumn = null;
-			return;
-		}
-		
-		//
-		// Keep the tracked cell up-to-date.
-		//
-		trackCell(e.x, e.y);
-
-		//
-		// Determine if there's been a mouse event we need to handle or we need to expose to listeners.
-		//
-		if (e.button == 1 || e.button == 3) { // LEFT or RIGHT
-			if (e.count == 1) {
-				if ((column != null) && (column != gridModel.getGroupSelectorColumn()) && (column != gridModel.getRowNumberColumn()) && (e.y < viewport.getViewportArea(gc).y)) {
-					if (grid.isSortedEnabled() && (row == gridModel.getColumnHeaderRow()) && (e.button == 1)) {
-						//
-						// Column sorting.
-						//
-						gridModel.getSortModel().sort(column, true, ctrl, true);
-						return;
-					}
-				}
-
-				//
-				// Check for group row hot-spots.
-				//
-				if ((column != null) && (row != null) && gridModel.isParentRow(row)) {
-					//
-					// Expand/collapse toggle.
-					//
-					final Rectangle bounds = grid.getGridRenderer().getExpandImageBounds(gc, row);
-					if (bounds.contains(e.x,  e.y)) {							
-						if (grid.getContentProvider().isCollapsed(row.getElement())) {
-							grid.expandGroups(Collections.singletonList(row.getElement()));
-						} else {
-							grid.collapseGroups(Collections.singletonList(row.getElement()));
-						}
-						
-						//return; // Don't exit here - allow the group to be selected if expanding.
-					}
-
-					if (grid.isSortedEnabled() && alt && (groupColumn != null)) {
-						//
-						// Toggle the sort on the group column.
-						//
-						gridModel.getSortModel().sort(groupColumn, true, ctrl, true);
-						return;
-					}
-				}
-				
-				//
-				// Handle the selection.
-				//
-				if (row != null && (row != gridModel.getColumnHeaderRow())) {
-					//
-					// Update the anchor column - before triggering selection changed events.
-					//
-					if (!shift) {
-						if (isRenderGroupInline() && gridModel.isParentElement(row.getElement())) {
-							if (groupColumn != null) {
-								gridModel.getSelectionModel().setAnchorColumn(groupColumn);
-
-							} else if (groupValue != null) {
-								gridModel.getSelectionModel().setAnchorColumn(groupValue);
-								
-							} else if (!gridModel.getGroupByColumns().isEmpty()) {
-								gridModel.getSelectionModel().setAnchorColumn(gridModel.getGroupByColumns().get(0));
-							}
-
-						} else if ((column != gridModel.getRowNumberColumn()) && (column != gridModel.getGroupSelectorColumn())) {
-							gridModel.getSelectionModel().setAnchorColumn(column);
-						}
-					}
-					
-					if (!(shift || ctrl)) {
-						//
-						// If the right mouse button is used, and the row being right-clicked is already selected, don't un-select it.
-						//
-						if (!((e.button == 3) && (row.isSelected()))) {
-							//
-							// Single row/group replace.
-							//
-							final List<Row<T>> rows = new ArrayList<>();
-							rows.addAll((gridModel.isParentRow(row) || (gridModel.getGroupSelectorColumn() == column)) ? gridModel.getWholeGroup(row) : Collections.singletonList(row));
-							gridModel.getSelectionModel().setSelectedRows(rows);
-						}
-
-					} else if (ctrl && !shift) {
-						//
-						// Single row/group toggle.
-						//
-						gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row));
-
-					} else if (!ctrl && shift) {
-						//
-						// Range replace.
-						//
-						gridModel.getSelectionModel().selectRange(row, false);
-
-					} else if (ctrl && shift) {
-						//
-						// Range addition.
-						//
-						gridModel.getSelectionModel().selectRange(row, true);
-					}
-				}
-
-				//
-				// Select All - the corner has been clicked.
-				//
-				if ((e.x < viewport.getViewportArea(gc).x) && (e.y < viewport.getViewportArea(gc).y) && (viewport.getColumnIndexByX(e.x, gc) == -1)) {
-					gridModel.getSelectionModel().selectAll();
-				}
-
-			} else if (e.count > 1) {				
-				//
-				// Double-click.
-				//
-				if (row != null) {
-					//
-					// Get the rows group.
-					//
-					if (gridModel.isGroupRow(row)) {
-						final List<Row<T>> group = gridModel.getWholeGroup(row);
-						boolean selected = true;
-						for (final Row<T> member : group) {
-							if (!member.isSelected()) {
-								selected = false;
-								break;
-							}
-						}
-						
-						T anchorElement = null;
-						if (gridModel.isChildElement(row.getElement())) {
-							anchorElement = gridModel.getSelectionModel().getAnchorElement();
-						}
-
-						//
-						// If any are unselected, select the group, otherwise, if they are all selected,
-						// just the select the row that was double-clicked (as long as it's not a parent row).
-						//
-						if (!selected) {
-							gridModel.getSelectionModel().setSelectedRows(group);
-
-						} else if (!gridModel.isParentRow(row)) {
-							gridModel.getSelectionModel().setSelectedRows(Collections.singletonList(row));
-						}
-						
-						//
-						// Ensure the anchor is where the mouse was. Group children lose the anchor on double-click
-						// (due to the setSelection code) so we'll restore it.
-						//
-						if (gridModel.isChildElement(row.getElement())) {
-							gridModel.getSelectionModel().setAnchorElement(anchorElement);
-						}
-					}
-				}
-			}
-		}
-		
-		//
-		// Paint the grid.
-		//
-		grid.redraw();
-
-		//
-		// Notify listeners.
-		//
-		if (row != null && column != null && (column != gridModel.getGroupSelectorColumn()) && (column != gridModel.getRowNumberColumn())) {
-			for (final IGridListener<T> listener : listeners) {
-				if (e.button == 1) {
-					if (e.count == 1) {
-						if (row == gridModel.getColumnHeaderRow()) {
-							listener.headerClick(column, new Point(e.x, e.y), e.stateMask);
-						} else {
-							listener.click(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
-						}
-
-					} else if (e.count > 1) {
-						if (row == gridModel.getColumnHeaderRow()) {
-							listener.headerDoubleClick(column, new Point(e.x, e.y), e.stateMask);
-						} else {
-							listener.doubleClick(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
-						}
-					}
-
-				} else if (e.button == 3) {
-					if (row == gridModel.getColumnHeaderRow()) {
-						listener.headerRightClick(column, new Point(e.x, e.y), e.stateMask);
-					} else {
-						listener.rightClick(column, row.getElement(), new Point(e.x, e.y), e.stateMask);
-					}
-				}
-			}
-		}
-	}
-
-	private void showToolTip(final int x, final int y, final String boldText, final String message) {
+	/**
+	 * If there's no customised tool-tip provider, use the grid's own tool-tip provider to show the tool-tip
+	 * at the location specified.
+	 */
+	protected void showToolTip(final int x, final int y, final String boldText, final String message) {
 		//
 		// Build a slight delay otherwise the tool-tip would swallow clicks meant for the grid.
 		//
-		grid.getDisplay().timerExec(4, new Runnable() {
+		grid.getDisplay().timerExec(TOOLTIP_DELAY, new Runnable() {
 			@Override
 			public void run() {
 				final Point location = grid.toDisplay(x, y);

@@ -76,8 +76,8 @@ public class Grid<T> extends Composite {
 	private final FocusListener focusListener;
 
 	// Keyboard and mouse input handling.
-	private final GridMouseHandler<T> mouseHandler;
-	private final GridKeyboardHandler<T> keyboardHandler;
+	private GridMouseHandler<T> mouseHandler;
+	private GridKeyboardHandler<T> keyboardHandler;
 
 	// The grid monitors the internal model for certain events.
 	private GridModel.IModelListener<T> modelListener;
@@ -123,8 +123,8 @@ public class Grid<T> extends Composite {
 		listeners = new ArrayList<>();
 		toolTip = new ToolTip(parent.getShell(), SWT.NONE);
 		toolTip.setAutoHide(true);
-		keyboardHandler = new GridKeyboardHandler<T>(this, gc);
-		mouseHandler = new GridMouseHandler<T>(this, gc, listeners, toolTip);		
+		keyboardHandler = createKeyboardHandler(gc);
+		mouseHandler = createMouseHandler(gc, listeners, toolTip);		
 
 		parent.addDisposeListener(disposeListener);
 		addKeyListener(keyboardHandler);
@@ -137,7 +137,7 @@ public class Grid<T> extends Composite {
 		getVerticalBar().addSelectionListener(scrollListener);
 		getHorizontalBar().addSelectionListener(scrollListener);
 	}
-
+	
 	@Override
 	public void dispose() {
 		toolTip.dispose();
@@ -158,6 +158,14 @@ public class Grid<T> extends Composite {
 		gc.dispose();
 		resourceManager.dispose();
 		super.dispose();
+	}
+	
+	protected GridKeyboardHandler<T> createKeyboardHandler(final GC gc) {
+		return new GridKeyboardHandler<T>(this, gc);
+	}
+	
+	protected GridMouseHandler<T> createMouseHandler(final GC gc, final Collection<IGridListener<T>> listeners, final ToolTip toolTip) {
+		return new GridMouseHandler<T>(this, gc, listeners, toolTip);
 	}
 	
 	/**
