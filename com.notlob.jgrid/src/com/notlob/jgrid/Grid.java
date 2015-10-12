@@ -63,48 +63,48 @@ public class Grid<T> extends Composite {
 	}
 	
 	// Models.
-	private final GridModel<T> gridModel;
-	private IGridLabelProvider<T> labelProvider;
-	private IGridContentProvider<T> contentProvider;
-	private GridRenderer<T> gridRenderer;
-	private final Viewport<T> viewport;
+	protected final GridModel<T> gridModel;
+	protected IGridLabelProvider<T> labelProvider;
+	protected IGridContentProvider<T> contentProvider;
+	protected GridRenderer<T> gridRenderer;
+	protected final Viewport<T> viewport;
 
 	// Things we listen to.
-	private final ScrollListener scrollListener;
-	private final ResizeListener resizeListener;
-	private final DisposeListener disposeListener;
-	private final FocusListener focusListener;
+	protected final ScrollListener scrollListener;
+	protected final ResizeListener resizeListener;
+	protected final DisposeListener disposeListener;
+	protected final FocusListener focusListener;
 
 	// Keyboard and mouse input handling.
-	private GridMouseHandler<T> mouseHandler;
-	private GridKeyboardHandler<T> keyboardHandler;
+	protected GridMouseHandler<T> mouseHandler;
+	protected GridKeyboardHandler<T> keyboardHandler;
 
 	// The grid monitors the internal model for certain events.
-	private GridModel.IModelListener<T> modelListener;
+	protected GridModel.IModelListener<T> modelListener;
 		
 	// Things that listen to the grid.
-	private final Collection<IGridListener<T>> listeners;
+	protected final Collection<IGridListener<T>> listeners;
 
 	// Used for dimension calculations.
-	private final GC gc;
-	private final Point computedArea;
+	protected final GC gc;
+	protected final Point computedArea;
 	
 	// Used to dispose graphical UI resources managed by this grid.
-	private final ResourceManager resourceManager;
+	protected final ResourceManager resourceManager;
 
-	private IGridToolTipProvider<T> toolTipProvider;
-	private final ToolTip toolTip;
-	private String emptyMessage;
+	protected IGridToolTipProvider<T> toolTipProvider;
+	protected final ToolTip toolTip;
+	protected String emptyMessage;
 
 	// Some grid behavioural flags.	
-	private boolean highlightHoveredRow = true;
-	private boolean highlightAnchorInHeaders = true;
-	private boolean highlightAnchorCellBorder = true;
-	private boolean sortingEnabled = true;
+	protected boolean highlightHoveredRow = true;
+	protected boolean highlightAnchorInHeaders = true;
+	protected boolean highlightAnchorCellBorder = true;
+	protected boolean sortingEnabled = true;
 		
 	// Animate new/update rows?
-	private RowAnimation<T> newRowAnimiation = null;
-	private RowAnimation<T> updatedRowAnimiation = null;
+	protected RowAnimation<T> newRowAnimiation = null;
+	protected RowAnimation<T> updatedRowAnimiation = null;
 	
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
@@ -127,10 +127,8 @@ public class Grid<T> extends Composite {
 		mouseHandler = createMouseHandler(gc, listeners, toolTip);		
 
 		parent.addDisposeListener(disposeListener);
-		addKeyListener(keyboardHandler);
-		addMouseListener(mouseHandler);
-		addMouseMoveListener(mouseHandler);
-		addMouseTrackListener(mouseHandler);
+		setKeyboardHandler(keyboardHandler);
+		setMouseHandler(mouseHandler);
 		addPaintListener(gridRenderer);
 		addListener(SWT.Resize, resizeListener);
 		addFocusListener(focusListener);
@@ -158,14 +156,6 @@ public class Grid<T> extends Composite {
 		gc.dispose();
 		resourceManager.dispose();
 		super.dispose();
-	}
-	
-	protected GridKeyboardHandler<T> createKeyboardHandler(final GC gc) {
-		return new GridKeyboardHandler<T>(this, gc);
-	}
-	
-	protected GridMouseHandler<T> createMouseHandler(final GC gc, final Collection<IGridListener<T>> listeners, final ToolTip toolTip) {
-		return new GridMouseHandler<T>(this, gc, listeners, toolTip);
 	}
 	
 	/**
@@ -198,6 +188,35 @@ public class Grid<T> extends Composite {
 	
 	public ResourceManager getResourceManager() {
 		return resourceManager;
+	}
+	
+	protected GridKeyboardHandler<T> createKeyboardHandler(final GC gc) {
+		return new GridKeyboardHandler<T>(this, gc);
+	}
+	
+	protected GridMouseHandler<T> createMouseHandler(final GC gc, final Collection<IGridListener<T>> listeners, final ToolTip toolTip) {
+		return new GridMouseHandler<T>(this, gc, listeners, toolTip);
+	}
+	
+	// TODO: Duplicate this for the keyboard handler.
+	public void setMouseHandler(GridMouseHandler<T> mouseHandler) {
+		final GridMouseHandler<T> oldHandler = this.mouseHandler;
+		removeMouseListener(oldHandler);
+		removeMouseTrackListener(oldHandler);
+		removeMouseMoveListener(oldHandler);
+		
+		this.mouseHandler = mouseHandler;
+		addMouseListener(mouseHandler);
+		addMouseMoveListener(mouseHandler);
+		addMouseTrackListener(mouseHandler);
+	}
+	
+	public void setKeyboardHandler(GridKeyboardHandler<T> keyboardHandler) {
+		final GridKeyboardHandler<T> oldHandler = this.keyboardHandler;
+		removeKeyListener(oldHandler);
+		
+		this.keyboardHandler = keyboardHandler;
+		addKeyListener(keyboardHandler);
 	}
 	
 	public void enableEvents(final boolean enable) {
