@@ -9,6 +9,7 @@ Require-Bundle: org.eclipse.swt
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.notlob.jgrid,
+ com.notlob.jgrid.input,
  com.notlob.jgrid.listeners,
  com.notlob.jgrid.model,
  com.notlob.jgrid.model.filtering,
