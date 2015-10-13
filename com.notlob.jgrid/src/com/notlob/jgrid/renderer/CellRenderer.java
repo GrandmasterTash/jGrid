@@ -1,5 +1,7 @@
 package com.notlob.jgrid.renderer;
 
+import java.util.List;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -33,9 +35,11 @@ public class CellRenderer<T> extends Renderer<T> {
 	// The references below are recycled objects - to avoid GC churn.
 	//
 		
-	// Used to render the inner border (example: anchor) of a cell and also used to layout the content
-	// of a cell.
+	// Used to render the inner border (example: anchor) of a cell and also used to layout the content of a cell.
 	protected final Rectangle innerBounds;
+	
+	// Used to size the area needed when painting one or more images in a cell.
+	protected final Point imageExtent;
 	
 	// Used to align an image and/or text within the innerBounds.
 	protected final Point contentLocation;
@@ -46,6 +50,7 @@ public class CellRenderer<T> extends Renderer<T> {
 		super(grid);
 		errorImage = getImage("cell_error.gif");			
 		contentLocation = new Point(0, 0);
+		imageExtent = new Point(0, 0);
 		innerBounds = new Rectangle(0, 0, 0, 0);
 		textLayout = new TextLayout(grid.getDisplay());
 		grid.addDisposeListener(new DisposeListener() {
@@ -233,7 +238,10 @@ public class CellRenderer<T> extends Renderer<T> {
 		// Render cell image BEFORE text..
 		//
 		if ((row != null) && (cellStyle.getContentStyle() == ContentStyle.IMAGE || cellStyle.getContentStyle() == ContentStyle.IMAGE_THEN_TEXT)) {
-			paintCellImage(rc, column, row, cellStyle);
+			final Rectangle oldClipping = gc.getClipping();
+			gc.setClipping(bounds);
+			paintCellImages(rc, column, row, cellStyle);
+			gc.setClipping(oldClipping);
 		}
 
 		//
@@ -250,7 +258,10 @@ public class CellRenderer<T> extends Renderer<T> {
 		// Render cell image AFTER text..
 		//
 		if ((row != null) && (cellStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE)) {
-			paintCellImage(rc, column, row, cellStyle);
+			final Rectangle oldClipping = gc.getClipping();
+			gc.setClipping(bounds);
+			paintCellImages(rc, column, row, cellStyle);
+			gc.setClipping(oldClipping);
 		}
 		
 	}
@@ -259,27 +270,41 @@ public class CellRenderer<T> extends Renderer<T> {
 	 * Paints the image for the cell (if there is one) regardless of whether we're painting it before (to the left of) 
 	 * or after (to the right of) the cell's text (if any).
 	 */
-	protected void paintCellImage(final RenderContext rc, final Column column, final Row<T> row, final CellStyle cellStyle) throws Exception {
-		final Image image = getCellImage(column, row);
+	protected void paintCellImages(final RenderContext rc, final Column column, final Row<T> row, final CellStyle cellStyle) throws Exception {
+		final List<Image> images = getCellImages(column, row);
 
-		if (image != null) {
+		if (!images.isEmpty()) {
 			//
-			// Get the image alignment.
+			// Get the combines bounds of all the images.
+			//
+			imageExtent.x = 0;
+			imageExtent.y = 0;
+			
+			for (Image image : images) {
+				imageExtent.x += image.getBounds().width;
+				imageExtent.y = Math.max(image.getBounds().height, imageExtent.y);
+			}
+			
+			//
+			// Align them all within the available space (innerBounds).
 			//
 			final AlignmentStyle imageAlignment = (cellStyle.getImageAlignment() != null) ? cellStyle.getImageAlignment() : (column.getImageAlignment() != null ? column.getImageAlignment() : AlignmentStyle.LEFT_CENTER);
+			align(imageExtent.x, imageExtent.y, innerBounds, contentLocation, imageAlignment);
 			
 			//
-			// Align/position and render the image.
+			// Render the images left-to-right in this space.
 			//
-			align(image.getBounds().width, image.getBounds().height, innerBounds, contentLocation, imageAlignment);
-			
-			if (rc.getRenderPass() == RenderPass.FOREGROUND) {
-				rc.getGC().drawImage(image, contentLocation.x, contentLocation.y);
+			for (Image image : images) {
+				if (rc.getRenderPass() == RenderPass.FOREGROUND) {
+					rc.getGC().drawImage(image, contentLocation.x, contentLocation.y);
+				}
+				
+				contentLocation.x += image.getBounds().width;
 			}
-
+			
 			if (!cellStyle.isAllowContentOverlap()) {
-				innerBounds.x += (image.getBounds().width + cellStyle.getPaddingImageText());
-				innerBounds.width -= (image.getBounds().width + cellStyle.getPaddingImageText());
+				innerBounds.x += (imageExtent.x + cellStyle.getPaddingImageText());
+				innerBounds.width -= (imageExtent.x + cellStyle.getPaddingImageText());
 			}
 		}
 	}
@@ -298,9 +323,14 @@ public class CellRenderer<T> extends Renderer<T> {
 			//
 			int widthCap = 0;
 			if (row == gridModel.getColumnHeaderRow() && (cellStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE)) {
-				final Image image = getCellImage(column, row);
-				if (image != null) {
-					widthCap = image.getBounds().width + cellStyle.getPaddingImageText();
+				final List<Image> images = getCellImages(column, row);
+				
+				if (!images.isEmpty()) {
+					for (Image image : images) {
+						widthCap += image.getBounds().width;
+					}
+					
+					widthCap += cellStyle.getPaddingImageText();
 					innerBounds.width -= widthCap;
 					gc.setClipping(innerBounds);
 				}
@@ -480,40 +510,38 @@ public class CellRenderer<T> extends Renderer<T> {
 	/**
 	 * Return the image for the given cell.
 	 */
-	protected Image getCellImage(final Column column, final Row<T> row) {
-		 if (row == gridModel.getColumnHeaderRow()) {
+	protected List<Image> getCellImages(final Column column, final Row<T> row) {
+		imageCollector.clear();
+		
+		if (row == gridModel.getColumnHeaderRow()) {
 			//
 			// Get any image from the provider
-			//
-			final Image image = grid.getLabelProvider().getHeaderImage(column);
-
-			if (image != null) {
-				return image;
-			}
-
+			//			 
+			grid.getLabelProvider().getHeaderImage(imageCollector, column);
+			
 			//
 			// Return a sorted image if sorted.
 			//
 			if (column.getSortDirection() != SortDirection.NONE) {
 				if (column.getSortDirection() == SortDirection.ASC){
-					return getImage("sort_ascending.png");
+					imageCollector.addImage(getImage("sort_ascending.png"));
 
 				} else if (column.getSortDirection() == SortDirection.DESC){
-					return getImage("sort_descending.png");
+					imageCollector.addImage(getImage("sort_descending.png"));
 				}
 			}
 
 		} else if ((column == gridModel.getRowNumberColumn()) || (column == gridModel.getGroupSelectorColumn())) {
-			 return null;
+			 // Do nothing, they don't have images.
 			 
 		} else {
 			//
 			// Get any image from the provider
 			//
-			return grid.getLabelProvider().getImage(column, row.getElement());
+			grid.getLabelProvider().getImage(imageCollector, column, row.getElement());
 		}
 
-		return null;
+		return imageCollector.getImages();
 	}
 	
 	public Point getContentLocation() {

@@ -19,6 +19,7 @@ import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.Viewport;
 import com.notlob.jgrid.model.filtering.IHighlightingFilter;
+import com.notlob.jgrid.providers.ImageCollector;
 import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.BorderStyle;
 import com.notlob.jgrid.styles.StyleRegistry;
@@ -35,6 +36,7 @@ public abstract class Renderer<T> {
 	protected final GridModel<T> gridModel;
 	protected final Viewport<T> viewport;
 	protected final StyleRegistry<T> styleRegistry;
+	protected final ImageCollector imageCollector;
 	
 	// Animation frequency and duration (in 'frames').
 	public final static int ANIMATION_INTERVAL = 10;
@@ -61,6 +63,7 @@ public abstract class Renderer<T> {
 	
 	public Renderer(final Grid<T> grid) {
 		this.grid = grid;
+		imageCollector = new ImageCollector();
 		gridModel = grid.getGridModel();
 		styleRegistry = gridModel.getStyleRegistry();
 		viewport = grid.getViewport();
@@ -95,6 +98,16 @@ public abstract class Renderer<T> {
 	 */
 	protected Font getFont(final FontData fontData) {
 		return grid.getResourceManager().getFont(fontData);
+	}
+	
+	/**
+	 * Get a collector to acquire images from the label providers. 
+	 */
+	protected ImageCollector getImageCollector(final boolean clear) {
+		if (clear) {
+			imageCollector.clear();
+		}
+		return imageCollector;
 	}
 	
 	/**

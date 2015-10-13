@@ -1,7 +1,5 @@
 package com.notlob.jgrid.providers;
 
-import org.eclipse.swt.graphics.Image;
-
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.styles.StyleCollector;
@@ -14,9 +12,9 @@ public interface IGridLabelProvider<T> {
 
 	String getHeaderToolTip(final Column column);
 
-	Image getImage(final Column column, final T element);
+	void getImage(final ImageCollector collector, final Column column, final T element);
 
-	Image getHeaderImage(final Column column);
+	void getHeaderImage(final ImageCollector collector, final Column column);
 
 	void getCellStyle(final StyleCollector styleCollector, final Column column, final T element);
 

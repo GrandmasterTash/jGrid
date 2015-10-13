@@ -255,8 +255,11 @@ public class GroupRowRenderer<T> extends Renderer<T> {
 			// Field value image.
 			//
 			if ((groupValueStyle.getContentStyle() == ContentStyle.IMAGE_THEN_TEXT) || (groupValueStyle.getContentStyle() == ContentStyle.IMAGE)) {
-				final Image image = grid.getLabelProvider().getImage(column, row.getElement());
-				if (image != null) {
+				imageCollector.clear();
+				grid.getLabelProvider().getImage(imageCollector, column, row.getElement());
+				if (!imageCollector.isEmpty()) {
+					// TODO: Support multiple images in an in-line group value cell.
+					final Image image = imageCollector.getImages().get(0);
 					groupCellBounds.width = image.getBounds().width + PADDING__GROUP_FIELD;
 					align(image.getBounds().width, image.getBounds().height, groupCellBounds, contentLocation, groupValueStyle.getImageAlignment());
 					
@@ -300,8 +303,11 @@ public class GroupRowRenderer<T> extends Renderer<T> {
 			// Field value image.
 			//
 			if (groupValueStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE) {
-				final Image image = grid.getLabelProvider().getImage(column, row.getElement());
-				if (image != null) {
+				imageCollector.clear();
+				grid.getLabelProvider().getImage(imageCollector, column, row.getElement());
+				if (!imageCollector.isEmpty()) {
+					// TODO: Support multiple images in an in-line group value cell.
+					final Image image = imageCollector.getImages().get(0);
 					groupCellBounds.width = image.getBounds().width + PADDING__GROUP_FIELD;
 					align(image.getBounds().width, image.getBounds().height, groupCellBounds, contentLocation, groupValueStyle.getImageAlignment());
 					
