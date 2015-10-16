@@ -229,10 +229,15 @@ public class CellRenderer<T> extends Renderer<T> {
 		//
 		final int outerBorderLeftWidth = (cellStyle.getBorderOuterLeft() == null ? 0 :cellStyle.getBorderOuterLeft().getWidth());
 		final int outerBorderTopWidth = (cellStyle.getBorderOuterTop() == null ? 0 : cellStyle.getBorderOuterTop().getWidth());
-		innerBounds.x = bounds.x + cellStyle.getPaddingLeft() + outerBorderLeftWidth;
-		innerBounds.y = bounds.y + cellStyle.getPaddingTop() + outerBorderTopWidth;
-		innerBounds.width = bounds.width - cellStyle.getPaddingLeft() - cellStyle.getPaddingRight() - outerBorderLeftWidth;
-		innerBounds.height = bounds.height - cellStyle.getPaddingTop() - cellStyle.getPaddingBottom() - outerBorderTopWidth;
+		final int paddingLeft = (cellStyle.getPaddingLeft() == null ? 0 : cellStyle.getPaddingLeft());
+		final int paddingRight = (cellStyle.getPaddingRight() == null ? 0 : cellStyle.getPaddingRight());
+		final int paddingTop = (cellStyle.getPaddingTop() == null ? 0 : cellStyle.getPaddingTop());
+		final int paddingBottom = (cellStyle.getPaddingBottom() == null ? 0 : cellStyle.getPaddingBottom());
+
+		innerBounds.x = bounds.x + paddingLeft + outerBorderLeftWidth;
+		innerBounds.y = bounds.y + paddingTop + outerBorderTopWidth;
+		innerBounds.width = bounds.width - paddingLeft - paddingRight - outerBorderLeftWidth;
+		innerBounds.height = bounds.height - paddingTop - paddingBottom - outerBorderTopWidth;
 
 		//
 		// Render cell image BEFORE text..

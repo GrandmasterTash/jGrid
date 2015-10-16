@@ -132,7 +132,7 @@ public class StyleRegistry<T> {
 		//
 		// Anchor style.
 		//
-		anchorStyle = new CellStyle();
+		anchorStyle = defaultStyle.copy();
 		anchorStyle.setForegroundOpacity(255);
 		anchorStyle.setBackgroundOpacity(255);
 		anchorStyle.setPaddingInnerBorder(2);

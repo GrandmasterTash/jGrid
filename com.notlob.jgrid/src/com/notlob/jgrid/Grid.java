@@ -186,6 +186,10 @@ public class Grid<T> extends Composite {
 		return gridModel;
 	}
 	
+	public GC getGC() {
+		return gc;
+	}
+	
 	public ResourceManager getResourceManager() {
 		return resourceManager;
 	}

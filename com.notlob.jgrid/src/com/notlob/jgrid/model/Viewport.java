@@ -296,6 +296,17 @@ public class Viewport<T> {
 	 * Return how many rows fit on the last page of the viewport.
 	 */
 	public int getRowCountLastPage(final GC gc) {		
+		if (!grid.getRows().isEmpty()) {
+			return getRowsToFitAbove(gc, (gridModel.getRows().get(gridModel.getRows().size()-1)));
+		}
+		
+		return 0;
+	}
+	
+	/**
+	 * Return the number of rows that will fit in the viewport if the specified row is to be the last shown row.
+	 */
+	private int getRowsToFitAbove(final GC gc, final Row<T> startingRow) {
 		final Rectangle viewportArea = getViewportArea(gc);
 		
 		int rowCount = 0;
@@ -304,9 +315,8 @@ public class Viewport<T> {
 			// Work from the last row - towards the first, trying to fit them into the viewport. 
 			//
 			int y = 0;
-			for (int rowIndex=(gridModel.getRows().size()-1); rowIndex>=0; rowIndex--) {
+			for (int rowIndex=(startingRow.getRowIndex()); rowIndex>=0; rowIndex--) {
 				final Row<T> row = gridModel.getRows().get(rowIndex);
-	
 				y += (grid.getRowHeight(row) + gridModel.getStyleRegistry().getCellSpacingVertical());
 	
 				if ((y <= viewportArea.height)) {
@@ -324,6 +334,17 @@ public class Viewport<T> {
 	 * Return how many column fit on the last page of the viewport.
 	 */
 	public int getColumnCountLastPage(final GC gc) {		
+		if (!grid.getColumns().isEmpty()) {
+			return getColumnsToFitToTheLeftOf(gc, gridModel.getColumns().get(gridModel.getColumns().size()-1));
+		}
+		
+		return 0;
+	}
+	
+	/**
+	 * Return how many columns will fit to the left of the specified column.
+	 */
+	private int getColumnsToFitToTheLeftOf(final GC gc, final Column startingColumn) {
 		final Rectangle viewportArea = getViewportArea(gc);
 
 		int columnCount = 0;
@@ -332,7 +353,7 @@ public class Viewport<T> {
 			// Work from the last column - towards the first, trying to fit them into the viewport. 
 			//
 			int x = 0;
-			for (int columnIndex=(gridModel.getColumns().size()-1); columnIndex>=0; columnIndex--) {
+			for (int columnIndex=(gridModel.getColumns().indexOf(startingColumn)); columnIndex>=0; columnIndex--) {
 				final Column column = gridModel.getColumns().get(columnIndex);
 	
 				x += (column.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal());
@@ -553,23 +574,72 @@ public class Viewport<T> {
 
 		return -1;
 	}
+	
+	private boolean isRowAboveViewport(final Row<T> row) {
+		return (row.getRowIndex() > 0) && (row.getRowIndex() < getFirstRowIndex());
+	}
+	
+	private boolean isColumnLeftOfViewport(final Column column) {
+		final int columnIndex = grid.getColumns().indexOf(column); 
+		return (columnIndex > 0) && (columnIndex < getFirstColumnIndex());
+	}
 
 	/**
 	 * Ensures the cell specified is visible in the viewport.
 	 */
 	public void reveal(final GC gc, final Column column, final Row<T> row) {
-		
 		final int rowIndex = row.getRowIndex();
 		final int columnIndex = gridModel.getColumns().indexOf(column);
+		final int max = grid.getVerticalBar().getMaximum();
+		final int capped = Math.min(rowIndex, max);
+		boolean selectionChanged = false;
 		
-		grid.getVerticalBar().setSelection(rowIndex);
-		grid.getHorizontalBar().setSelection(columnIndex);
+		if (!isRowVisible(row)) {
+			if (isRowAboveViewport(row)) {
+				grid.getVerticalBar().setSelection(capped);	
+				
+			} else {
+				//
+				// Scrolling down to make the row visible requires us to get the row to be the last row in the viewport. To do this,
+				// we have to do a little walk up from the row - calculating how many rows will fit into the page.
+				//
+				grid.getVerticalBar().setSelection(row.getRowIndex() - (getRowsToFitAbove(gc, row) - 1));
+			}
+			
+			selectionChanged = true;
+		}
 		
-		invalidate();
-		grid.redraw();
-		grid.update();
+		if (!isColumnVisible(column)) {
+			if (isColumnLeftOfViewport(column)) {
+				grid.getHorizontalBar().setSelection(columnIndex);
+				
+			} else {
+				//
+				// Scrolling right to make the column visible requires us to get the column to be the last column in the viewport. To do this,
+				// we have to do a little walk left from the column - calculating how many columns will fit into the page.
+				//
+				grid.getHorizontalBar().setSelection(columnIndex - (getColumnsToFitToTheLeftOf(gc, column) - 1));
+			}
+			
+			selectionChanged = true;
+		}
+		
+		if (selectionChanged) {
+			invalidate();
+			grid.redraw();
+			grid.update();
+		}
 	}
 	
+	public boolean isRowVisible(final Row<T> row) {
+		return (row.getRowIndex() >= getFirstRowIndex() && row.getRowIndex() < getLastRowIndex());
+	}
+	
+	public boolean isColumnVisible(final Column column) {
+		final int columnIndex = grid.getColumns().indexOf(column);
+		return (columnIndex >= getFirstColumnIndex() && columnIndex < getLastColumnIndex());
+	}
+
 	/**
 	 * The last column is 'stretchy' and runs to the end of the grid.
 	 */

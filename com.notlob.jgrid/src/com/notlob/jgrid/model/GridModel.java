@@ -26,6 +26,8 @@ import com.notlob.jgrid.util.ResourceManager;
  * @author Stef
  */
 public class GridModel<T> {
+	
+	private final Grid<T> grid;
 
 	// Visible columns and rows.
 	private final List<Row<T>> rows;
@@ -115,6 +117,7 @@ public class GridModel<T> {
 	}
 
 	public GridModel(final Grid<T> grid, final ResourceManager resourceManager, final GC gc) {
+		this.grid = grid;
 		this.resourceManager = resourceManager;
 		this.gc = gc; 
 		rows = new ArrayList<>();
@@ -323,6 +326,7 @@ public class GridModel<T> {
 			}
 		}
 
+		column.setGrid(grid);
 		allColumns.add(column);
 
 		if (column.getSortDirection() != SortDirection.NONE) {

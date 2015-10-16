@@ -5,6 +5,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.graphics.GC;
+
+import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.styles.AlignmentStyle;
 
 @SuppressWarnings("rawtypes")
@@ -22,6 +27,9 @@ public class Column {
 	private AlignmentStyle textAlignment;
 	private AlignmentStyle imageAlignment;
 
+	private Grid<?> grid;
+	private GC gc;
+	
 	// Arbitrary things can be tagged onto a column by key.
 	private Map<String, Object> dataByKey;
 
@@ -51,6 +59,26 @@ public class Column {
 		return sb.toString();
 	}
 
+	/**
+	 * The grid is needed to calculate the content width of elastic columns (the last ones).
+	 */
+	void setGrid(final Grid<?> grid) {
+		this.grid = grid;
+		this.gc = grid.getGC();
+		
+		if (grid != null) {
+			this.grid.addDisposeListener(new DisposeListener() {
+				@Override
+				public void widgetDisposed(DisposeEvent e) {
+					if (gc != null) {
+						gc.dispose();
+						gc = null;
+					}
+				}
+			});
+		}
+	}
+	
 	public void setCaption(final String caption) {
 		this.caption = caption;
 	}
@@ -134,6 +162,10 @@ public class Column {
 	public void setImageAlignment(final AlignmentStyle imageAlignment) {
 		this.imageAlignment = imageAlignment;
 	}
+	
+	public boolean isLastColumn() {
+ 		return (grid != null) && (grid.getColumns().get(grid.getColumns().size() - 1) == this);
+ 	}
 
 	public Object getData(final String key) {
 		if (dataByKey != null) {
