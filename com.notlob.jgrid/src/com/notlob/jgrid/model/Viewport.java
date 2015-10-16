@@ -315,7 +315,7 @@ public class Viewport<T> {
 			// Work from the last row - towards the first, trying to fit them into the viewport. 
 			//
 			int y = 0;
-			for (int rowIndex=(startingRow.getRowIndex()); rowIndex>=0; rowIndex--) {
+			for (int rowIndex=(gridModel.getRows().indexOf(startingRow)); rowIndex>=0; rowIndex--) {
 				final Row<T> row = gridModel.getRows().get(rowIndex);
 				y += (grid.getRowHeight(row) + gridModel.getStyleRegistry().getCellSpacingVertical());
 	
