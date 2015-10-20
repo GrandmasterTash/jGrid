@@ -41,21 +41,20 @@ public class SortModel<T> {
 		// Toggle the sort direction on the column.
 		//
 		final SortDirection sortDirection = toggle ? toggleDirection(column.getSortDirection()) : column.getSortDirection();
-
+		
 		if (!append) {
 			clearInternal();
-			
-		} else {
-			column.setSortSequence(sortedColumns.size());
 		}
-
+		
 		column.setSortDirection(sortDirection);
 
 		//
 		// Add the column to the model if it's not already there.
 		//
 		if (!sortedColumns.contains(column)) {
+			column.setSortSequence(sortedColumns.size());
 			sortedColumns.add(column);
+			
 			Collections.sort(sortedColumns, new Comparator<Column>() {
 				@Override
 				public int compare(Column o1, Column o2) {
@@ -115,7 +114,7 @@ public class SortModel<T> {
 	 */
 	private void clearInternal() {
 		for (final Column column : sortedColumns) {
-			column.setSortSequence(0);
+			column.setSortSequence(-1);
 			column.setSortDirection(SortDirection.NONE);
 		}
 
