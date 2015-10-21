@@ -469,10 +469,37 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		int width = cellStyle.getPaddingLeft() + cellStyle.getPaddingRight();
 
 		//
-		// Ensure the standard image can also fit.
+		// Ensure the standard image can also fit - if the cell could potentially render an image.
 		//
 		if (cellStyle.getContentStyle() != ContentStyle.TEXT) {
-			width += (16 + cellStyle.getPaddingImageText());
+			//
+			// Get the images for the cell.
+			//
+			imageCollector.clear();
+			
+			if (grid.getGridModel().isHeaderRow(row)) {
+				grid.getLabelProvider().getHeaderImage(imageCollector, column);
+				
+			} else {
+				grid.getLabelProvider().getImage(imageCollector, column, row.getElement());
+			}
+			
+			if (imageCollector.isEmpty()) {
+				if (grid.getGridModel().isHeaderRow(row)) {
+					//
+					// Even if there are no images, leave some room for the sort indicator (if this is the header).
+					//
+					final Image sortedImage = getImage("sort_ascending.png");
+					width += (sortedImage.getBounds().width + cellStyle.getPaddingImageText());
+				}
+				
+			} else {
+				for (Image image : imageCollector.getImages()) {
+					width += image.getBounds().width;
+				}
+				
+				width += cellStyle.getPaddingImageText();
+			}
 		}
 		
 		//
@@ -483,6 +510,10 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			final Point point = getTextExtent(text, gc, cellStyle.getFontData());
 			width += point.x;
 		}
+		
+		width += cellStyle.getBorderOuterLeft() == null ? 0 : cellStyle.getBorderOuterLeft().getWidth();
+		width += cellStyle.getBorderOuterRight() == null ? 0 : cellStyle.getBorderOuterRight().getWidth();
+		width += 6; // FUDGE.
 		
 		return width;
 	}
