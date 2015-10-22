@@ -52,7 +52,10 @@ public class SortModel<T> {
 		// Add the column to the model if it's not already there.
 		//
 		if (!sortedColumns.contains(column)) {
-			column.setSortSequence(sortedColumns.size());
+			if (column.getSortSequence() == -1) {
+				column.setSortSequence(sortedColumns.size());
+			}
+			
 			sortedColumns.add(column);
 			
 			Collections.sort(sortedColumns, new Comparator<Column>() {
