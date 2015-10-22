@@ -594,7 +594,7 @@ public class Viewport<T> {
 		final int capped = Math.min(rowIndex, max);
 		boolean selectionChanged = false;
 		
-		if (!isRowVisible(row)) {
+		if (!isRowPartiallyVisible(row)) {
 			if (isRowAboveViewport(row)) {
 				grid.getVerticalBar().setSelection(capped);	
 				
@@ -609,7 +609,7 @@ public class Viewport<T> {
 			selectionChanged = true;
 		}
 		
-		if (!isColumnVisible(column)) {
+		if (!isColumnPartiallyVisible(column)) {
 			if (isColumnLeftOfViewport(column)) {
 				grid.getHorizontalBar().setSelection(columnIndex);
 				
@@ -631,8 +631,17 @@ public class Viewport<T> {
 		}
 	}
 	
+	public boolean isRowPartiallyVisible(final Row<T> row) {
+		return (row.getRowIndex() >= getFirstRowIndex() && row.getRowIndex() <= getLastRowIndex());
+	}
+	
 	public boolean isRowVisible(final Row<T> row) {
 		return (row.getRowIndex() >= getFirstRowIndex() && row.getRowIndex() < getLastRowIndex());
+	}
+	
+	public boolean isColumnPartiallyVisible(final Column column) {
+		final int columnIndex = grid.getColumns().indexOf(column);
+		return (columnIndex >= getFirstColumnIndex() && columnIndex < getLastColumnIndex());
 	}
 	
 	public boolean isColumnVisible(final Column column) {
