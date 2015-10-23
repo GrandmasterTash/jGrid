@@ -589,21 +589,24 @@ public class GridModel<T> {
 					if (expectedIndex != actualIndex) {
 						//
 						// Move the row to the correct position.
-						//										
+						//
 						rows.remove(row);
-						final int newExpectedIndex = sortModel.getSortedRowIndex(row);					
+						final int newExpectedIndex = Math.abs(sortModel.getSortedRowIndex(row));
 						rows.add(newExpectedIndex, row);
 						row.setRowIndex(newExpectedIndex);
+						
+						//
+						// If this was a group row that has moved, bring all the children with it.
+						//
+						if (isParentRow(row)) {
+							moveVisibleChildren(row);
+						}
 					}
 					
 					//
 					// Check if the row's height is accurate.
-					//
-					final int oldHeight = getRowHeight(row);
-					row.setHeight(labelProvider.getDefaultRowHeight(element));
-					final int newHeight = getRowHeight(row);
-					
-					heightDelta += newHeight - oldHeight;
+					//				
+					heightDelta += getUpdatedRowHeightDelta(row);
 					
 				} else if (visible && !row.isVisible()) {
 					//
@@ -655,6 +658,34 @@ public class GridModel<T> {
 		}
 		
 		return rowsShown;
+	}
+	
+	/**
+	 * Remove child rows and re-insert them into the correct location.
+	 */
+	private void moveVisibleChildren(Row<T> row) {
+		final List<Row<T>> children = getChildren(row);
+		for (Row<T> child : children) {
+			if (child.isVisible()) {
+				rows.remove(child);
+				
+				final int newExpectedIndex = Math.abs(sortModel.getSortedRowIndex(child));
+				rows.add(newExpectedIndex, child);
+				row.setRowIndex(newExpectedIndex);
+			}
+		}	
+	}
+
+	/**
+	 * Get the cached height of a row, then force it to be recalculated (because value-changed may have caused styling to change).
+	 * Return the delta between the old and new heights. 
+	 */
+	private int getUpdatedRowHeightDelta(final Row<T> row) {
+		final int oldHeight = getRowHeight(row);
+		row.setHeight(labelProvider.getDefaultRowHeight(row.getElement()));
+		final int newHeight = getRowHeight(row);
+		
+		return newHeight - oldHeight;
 	}
 	
 	/**
