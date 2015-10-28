@@ -1086,7 +1086,10 @@ public class GridModel<T> {
 
 		if (childElements != null) {
 			for (final T childElement : childElements) {
-				children.add(rowsByElement.get(childElement));
+				final Row<T> childRow = rowsByElement.get(childElement);
+				if (childRow != null) {
+					children.add(childRow);
+				}
 			}
 		}
 
