@@ -20,6 +20,7 @@ import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.ContentStyle;
 import com.notlob.jgrid.styles.LineStyle;
+import com.notlob.jgrid.styles.StyleCollector;
 
 /**
  * Responsible for rendering individual cells.
@@ -46,6 +47,8 @@ public class CellRenderer<T> extends Renderer<T> {
 	
 	protected final TextLayout textLayout;
 	
+	protected final StyleCollector anchorCollector;
+	
 	public CellRenderer(final Grid<T> grid) {
 		super(grid);
 		errorImage = getImage("cell_error.gif");			
@@ -53,6 +56,7 @@ public class CellRenderer<T> extends Renderer<T> {
 		imageExtent = new Point(0, 0);
 		innerBounds = new Rectangle(0, 0, 0, 0);
 		textLayout = new TextLayout(grid.getDisplay());
+		anchorCollector = new StyleCollector();
 		grid.addDisposeListener(new DisposeListener() {
 			@Override
 			public void widgetDisposed(DisposeEvent e) {
@@ -76,8 +80,16 @@ public class CellRenderer<T> extends Renderer<T> {
 			// If the cell has the anchor, use a composite style.
 			//
 			if (!rc.isPaintingPinned() && grid.isFocusControl() && grid.isHighlightAnchorCellBorder() && doesColumnHaveAnchor(column) && doesRowHaveAnchor(row)) {
-				styleRegistry.getStyleCollector().addFirst(styleRegistry.getAnchorStyle());
-				currentStyle = styleRegistry.getStyleCollector().getCellStyle();
+				anchorCollector.clear();
+				grid.getLabelProvider().getAnchorStyle(anchorCollector, column, row.getElement());
+				
+				if (anchorCollector.isEmpty()) {
+					styleRegistry.getStyleCollector().addFirst(styleRegistry.getAnchorStyle());
+					currentStyle = styleRegistry.getStyleCollector().getCellStyle();
+					
+				} else {
+					currentStyle = anchorCollector.getCellStyle();
+				}
 			}			
 			
 			switch (rc.getRenderPass()) {

@@ -19,6 +19,8 @@ public interface IGridLabelProvider<T> {
 	void getCellStyle(final StyleCollector styleCollector, final Column column, final T element);
 
 	void getHeaderStyle(final StyleCollector styleCollector, final Column column);
+	
+	void getAnchorStyle(final StyleCollector styleCollector, final Column column, final T element);
 
 	int getDefaultRowHeight(final T element);
 	
