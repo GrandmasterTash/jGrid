@@ -43,12 +43,6 @@ import com.notlob.jgrid.util.ResourceManager;
 
 public class Grid<T> extends Composite {
 		
-	// TODO: Focus select style / un-focus select style.	
-	// TODO: Keep selection in viewport.
-	// TODO: try..catch around all calls to listeners...
-	// TODO: Partially filtered groups.
-	// TODO: Javadoc.
-
 	// Affects the rending of the selection region rather than how the selection model works.
 	public enum SelectionStyle {
 		ROW_BASED,
@@ -101,6 +95,9 @@ public class Grid<T> extends Composite {
 	protected boolean highlightAnchorInHeaders = true;
 	protected boolean highlightAnchorCellBorder = true;
 	protected boolean sortingEnabled = true;
+	
+	// Paints some diagnostic details.
+	protected boolean debugPainting = false;
 		
 	// Animate new/update rows?
 	protected RowAnimation<T> newRowAnimiation = null;
@@ -176,6 +173,14 @@ public class Grid<T> extends Composite {
 		}
 		
 		return !invalid;
+	}
+	
+	public void setDebugPainting(boolean debugPainting) {
+		this.debugPainting = debugPainting;
+	}
+	
+	public boolean isDebugPainting() {
+		return debugPainting;
 	}
 	
 	/**

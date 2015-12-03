@@ -7,7 +7,9 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.TextLayout;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.Grid.GroupRenderStyle;
@@ -238,6 +240,13 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			paintBorderLine(gc, styleRegistry.getMainBorderBottom(), bottomLeft, bottomRight);
 			
 			//
+			// Display some diagnostics.
+			//
+			if (grid.isDebugPainting()) {
+				paintDiagnostics(gc);
+			}
+			
+			//
 			// Paint the image to the real GC now.
 			//
 			e.gc.drawImage(image, 0, 0);
@@ -281,6 +290,54 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			if (gc != null) {
 				gc.dispose();
 			}
+		}
+	}
+
+	private TextLayout textLayout;
+	private FontData debugFontData = new FontData("Consolas", 10, SWT.NORMAL);
+	
+	/**
+	 * Paints viewport and model details in an overlay.
+	 */
+	private void paintDiagnostics(GC gc) {
+		try {
+			final StringBuilder sb = new StringBuilder();
+			sb.append(String.format("Grid Model\nColumns [%s]\tRows [%s]", 
+					grid.getColumns().size(), 
+					grid.getRows().size()));
+			sb.append(String.format("\nWidth [%s]\tHeight [%s]", 
+					grid.getClientArea().width, 
+					grid.getClientArea().height));
+			sb.append(String.format("\n\nViewport\nRow Idx First [%s] Last [%s] LVis [%s]", 
+					viewport.getFirstRowIndex(), 
+					viewport.getLastRowIndex(),
+					viewport.getLastVisibleRowIndex()));
+			sb.append(String.format("\nCol Idx First [%s] Last [%s] LVis [%s]", 
+					viewport.getFirstColumnIndex(), 
+					viewport.getLastColumnIndex(),
+					viewport.getLastVisibleColumnIndex()));
+			sb.append(String.format("\n\nMouse\nCol Idx [%s] Row Idx [%s]", 
+					grid.getColumns().indexOf(grid.getMouseHandler().getColumn()), 
+					grid.getRows().indexOf(grid.getMouseHandler().getRow())));
+			
+			if (sb.length() > 0) {
+				if (textLayout == null) {
+					textLayout = new TextLayout(gc.getDevice());
+					textLayout.setFont(getFont(debugFontData));
+					textLayout.setAlignment(SWT.LEFT);
+					textLayout.setTabs(new int[] {100});
+					textLayout.setWidth(300);
+				}
+				
+				gc.setAlpha(200);
+				gc.setForeground(getColour(new RGB(0, 255, 0)));
+				gc.setBackground(getColour(new RGB(102, 102, 102)));
+				gc.fillRectangle(20, 20, textLayout.getBounds().width, textLayout.getBounds().height);
+				textLayout.setText(sb.toString());				
+				textLayout.draw(gc, 20, 20);
+			}
+		} catch (Throwable t) {
+			System.err.println("Failed to diag" + t);
 		}
 	}
 

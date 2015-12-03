@@ -42,8 +42,15 @@ public class GridKeyboardHandler<T> implements KeyListener {
 	@Override
 	public void keyReleased(final KeyEvent e) {
 		final boolean ctrl = (e.stateMask & SWT.CTRL) == SWT.CTRL;
+		final boolean alt = (e.stateMask & SWT.ALT) == SWT.ALT;
 		
-		if ((e.keyCode == 97) && ctrl) {
+		if ((e.keyCode == 100) && ctrl && alt) {
+			//
+			// CTRL+ALT+D
+			//
+			grid.setDebugPainting(!grid.isDebugPainting());
+			
+		} else if ((e.keyCode == 97) && ctrl) {
 			//
 			// CTRL+A
 			//

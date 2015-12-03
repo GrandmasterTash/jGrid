@@ -632,7 +632,7 @@ public class Viewport<T> {
 	}
 	
 	public boolean isRowPartiallyVisible(final Row<T> row) {
-		return (row.getRowIndex() >= getFirstRowIndex() && row.getRowIndex() <= getLastRowIndex());
+		return (row.getRowIndex() >= getFirstRowIndex() && row.getRowIndex() <= getLastVisibleRowIndex());
 	}
 	
 	public boolean isRowVisible(final Row<T> row) {
