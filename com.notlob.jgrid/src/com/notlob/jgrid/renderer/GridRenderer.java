@@ -302,7 +302,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	private void paintDiagnostics(GC gc) {
 		try {
 			final StringBuilder sb = new StringBuilder();
-			sb.append(String.format("Grid Model\nColumns [%s]\tRows [%s]", 
+			sb.append(String.format("Grid Diagnostics\nColumns [%s]\tRows [%s]", 
 					grid.getColumns().size(), 
 					grid.getRows().size()));
 			
@@ -319,6 +319,8 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 					viewport.getFirstColumnIndex(), 
 					viewport.getLastColumnIndex(),
 					viewport.getLastVisibleColumnIndex()));
+			
+			sb.append(String.format("\nLast Page Size [%s]", grid.getViewport().getRowCountLastPage(gc)));
 			
 			sb.append(String.format("\n\nScrollbars\nV-Max [%s] V-Cur [%s]",
 					grid.getVerticalBar().getMaximum(),
@@ -354,6 +356,19 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	}
 
 	/**
+	 * Forces all rows to calculate their height.
+	 */
+	public void calculateRowHeight() {
+		GC gc = new GC(grid.getDisplay());
+		rc.setGC(gc);
+		rc.setRenderPass(RenderPass.COMPUTE_SIZE);
+		rc.setForceAllRows(true);
+		paintRows(rc);
+		rc.setForceAllRows(false);
+		gc.dispose();
+	}
+	
+	/**
 	 * Iterate over the header row(s) then body rows and render each row in turn.
 	 */
 	protected void paintRows(final RenderContext rc) {
@@ -382,7 +397,10 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		rc.setAlternate(false);
 		rowBounds.y = viewportArea.y + styleRegistry.getCellSpacingVertical();
 		
-		for (int rowIndex=viewport.getFirstRowIndex(); rowIndex<viewport.getLastVisibleRowIndex(); rowIndex++) {
+		final int startRow = rc.isForceAllRows() ? 0 : viewport.getFirstRowIndex();
+		final int endRow = rc.isForceAllRows() ? (gridModel.getRows().size() - 1) : viewport.getLastVisibleRowIndex();
+		
+		for (int rowIndex=startRow; rowIndex<endRow; rowIndex++) {
 			final Row<T> row = gridModel.getRows().get(rowIndex);
 			rc.setAlternate(row.isAlternateBackground());
 			
@@ -420,10 +438,10 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			//
 			if ((rc.getRenderPass() == RenderPass.COMPUTE_SIZE) && (rc.getComputedHeightDelta() != null)) {
 				final int newHeight = grid.getRowHeight(row) + rc.getComputedHeightDelta();
-				if (newHeight > 0) {
+				if (newHeight > 0 && rc.getComputedHeightDelta() != 0) {
 //					System.out.println(String.format("height [%s] applying delta [%s] new-height [%s]", grid.getRowHeight(row), rc.getComputedHeightDelta(), newHeight));
 					row.setHeight(newHeight);
-//				} else {
+				} else {
 //					System.out.println(String.format("IGNORED height [%s] applying delta [%s] new-height [%s]", grid.getRowHeight(row), rc.getComputedHeightDelta(), newHeight));
 				}
 				

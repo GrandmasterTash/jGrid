@@ -45,6 +45,9 @@ public class RenderContext {
 	// Used by the text-wrapping calculation in a COMPUTE_SIZE pass to grow the row if required. 
 	protected Integer computedHeightDelta;
 	
+	// Sets a flag to force a paint to use all rows - not just what's in the viewport - used forced COMPUTED_SIZE calls.
+	protected boolean forceAllRows;
+	
 	// Cache the width of any text rendered by the font data.
 	protected final Map<FontData, Map<String, Point>> extentCache;
 		
@@ -112,6 +115,14 @@ public class RenderContext {
 
 	public void setDontPaintGrip(final boolean dontPaintGrip) {
 		this.dontPaintGrip = dontPaintGrip;
+	}
+	
+	public boolean isForceAllRows() {
+		return forceAllRows;
+	}
+	
+	public void setForceAllRows(final boolean forceAllRows) {
+		this.forceAllRows = forceAllRows;
 	}
 
 	public Map<FontData, Map<String, Point>> getExtentCache() {

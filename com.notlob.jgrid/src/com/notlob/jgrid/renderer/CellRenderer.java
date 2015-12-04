@@ -403,6 +403,11 @@ public class CellRenderer<T> extends Renderer<T> {
 				// Use a non-wrapping method of rendering the text.
 				//
 				final Point textExtent = getTextExtent(text, rc, cellStyle.getFontData());
+				
+				if (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) {
+					computeRowSize(rc, column, textExtent.y, innerBounds.height);
+				}
+				
 				width = Math.min(textExtent.x, (innerBounds.width - 0/*widthCap seems to shunt right-aligned text if theres an image - removing didn't cause any harm...*/));
 				height = Math.min(textExtent.y, innerBounds.height);	
 				align(width, height, innerBounds, contentLocation, textAlignment);
