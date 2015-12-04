@@ -84,7 +84,7 @@ public class Viewport<T> {
 		// If all rows fit in the screen, cap it.
 		//
 		if (getLastRowIndex() == -1 && !gridModel.getRows().isEmpty()) {
-			setLastRowIndex(gridModel.getRows().size());
+			setLastRowIndex(gridModel.getRows().size() - 1);
 		}
 
 		
@@ -111,7 +111,7 @@ public class Viewport<T> {
 		// If all columns fit in the screen, cap it.
 		//
 		if (getLastColumnIndex() == -1 && !gridModel.getColumns().isEmpty()) {
-			setLastColumnIndex(gridModel.getColumns().size());
+			setLastColumnIndex(gridModel.getColumns().size() - 1);
 		}
 		
 		//
@@ -594,7 +594,7 @@ public class Viewport<T> {
 		final int capped = Math.min(rowIndex, max);
 		boolean selectionChanged = false;
 		
-		if (!isRowPartiallyVisible(row)) {
+		if (!isRowVisible(row)) {
 			if (isRowAboveViewport(row)) {
 				grid.getVerticalBar().setSelection(capped);	
 				

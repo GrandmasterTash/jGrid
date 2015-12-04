@@ -305,17 +305,29 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			sb.append(String.format("Grid Model\nColumns [%s]\tRows [%s]", 
 					grid.getColumns().size(), 
 					grid.getRows().size()));
-			sb.append(String.format("\nWidth [%s]\tHeight [%s]", 
+			
+			sb.append(String.format("\n\nCanvas\nWidth [%s]\tHeight [%s]", 
 					grid.getClientArea().width, 
 					grid.getClientArea().height));
+			
 			sb.append(String.format("\n\nViewport\nRow Idx First [%s] Last [%s] LVis [%s]", 
 					viewport.getFirstRowIndex(), 
 					viewport.getLastRowIndex(),
 					viewport.getLastVisibleRowIndex()));
+			
 			sb.append(String.format("\nCol Idx First [%s] Last [%s] LVis [%s]", 
 					viewport.getFirstColumnIndex(), 
 					viewport.getLastColumnIndex(),
 					viewport.getLastVisibleColumnIndex()));
+			
+			sb.append(String.format("\n\nScrollbars\nV-Max [%s] V-Cur [%s]",
+					grid.getVerticalBar().getMaximum(),
+					grid.getVerticalBar().getSelection()));
+			
+			sb.append(String.format("\nH-Max [%s] H-Cur [%s]",
+					grid.getHorizontalBar().getMaximum(),
+					grid.getHorizontalBar().getSelection()));
+			
 			sb.append(String.format("\n\nMouse\nCol Idx [%s] Row Idx [%s]", 
 					grid.getColumns().indexOf(grid.getMouseHandler().getColumn()), 
 					grid.getRows().indexOf(grid.getMouseHandler().getRow())));

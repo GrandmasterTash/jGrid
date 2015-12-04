@@ -49,6 +49,7 @@ public class GridKeyboardHandler<T> implements KeyListener {
 			// CTRL+ALT+D
 			//
 			grid.setDebugPainting(!grid.isDebugPainting());
+			grid.redraw();
 			
 		} else if ((e.keyCode == 97) && ctrl) {
 			//
