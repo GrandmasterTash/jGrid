@@ -133,6 +133,7 @@ public class StyleRegistry<T> {
 		// Anchor style.
 		//
 		anchorStyle = defaultStyle.copy();
+		anchorStyle.setContentStyle(null);
 		anchorStyle.setForegroundOpacity(255);
 		anchorStyle.setBackgroundOpacity(255);
 		anchorStyle.setPaddingInnerBorder(2);
