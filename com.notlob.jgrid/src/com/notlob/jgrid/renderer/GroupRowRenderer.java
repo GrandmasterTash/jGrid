@@ -57,11 +57,10 @@ public class GroupRowRenderer<T> extends Renderer<T> {
 	public void paintRow(final RenderContext rc, final Rectangle rowBounds, final Row<T> row) {
 		try {
 			final GC gc = rc.getGC();
-			final Rectangle oldClipping = gc.getClipping();
 			
 			gc.setClipping(rowBounds);			
 			iterateGroupRowContent(paintRequest, rc, rowBounds, row);			
-			gc.setClipping(oldClipping);
+			gc.setClipping((Rectangle) null);
 	
 			//
 			// Paint any header/footer borders.

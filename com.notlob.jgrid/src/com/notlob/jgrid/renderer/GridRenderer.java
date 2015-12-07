@@ -214,7 +214,6 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 				final CellStyle cellStyle = styleRegistry.getNoDataStyle();
 				final Point point = getTextExtent(text, rc, cellStyle.getFontData());
 				final Rectangle bounds = viewport.getViewportArea(gc);
-				final Rectangle oldBounds = gc.getClipping();
 				
 				gc.setAlpha(cellStyle.getForegroundOpacity());
 				gc.setFont(getFont(cellStyle.getFontData()));
@@ -222,7 +221,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 				align(point.x, point.y, bounds, contentLocation, cellStyle.getTextAlignment());
 				gc.setClipping(bounds);
 				gc.drawText(text, contentLocation.x, contentLocation.y, SWT.DRAW_TRANSPARENT);
-				gc.setClipping(oldBounds);
+				gc.setClipping((Rectangle) null);
 			}
 
 			//

@@ -255,32 +255,27 @@ public class CellRenderer<T> extends Renderer<T> {
 		// Render cell image BEFORE text..
 		//
 		if ((row != null) && (cellStyle.getContentStyle() == ContentStyle.IMAGE || cellStyle.getContentStyle() == ContentStyle.IMAGE_THEN_TEXT)) {
-			final Rectangle oldClipping = gc.getClipping();
 			gc.setClipping(bounds);
 			paintCellImages(rc, column, row, cellStyle);
-			gc.setClipping(oldClipping);
 		}
 
 		//
 		// Render cell text.
 		//
 		if (cellStyle.getContentStyle() != ContentStyle.IMAGE) {
-			final Rectangle oldClipping = gc.getClipping();
 			gc.setClipping(innerBounds);
 			paintCellText(rc, column, row, cellStyle);
-			gc.setClipping(oldClipping);
 		}
 
 		//
 		// Render cell image AFTER text..
 		//
 		if ((row != null) && (cellStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE)) {
-			final Rectangle oldClipping = gc.getClipping();
 			gc.setClipping(bounds);
 			paintCellImages(rc, column, row, cellStyle);
-			gc.setClipping(oldClipping);
 		}
 		
+		gc.setClipping((Rectangle) null);
 	}
 	
 	/**
