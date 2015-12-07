@@ -23,6 +23,9 @@ public class RenderContext {
 	// The current graphics context being used for the paint.
 	protected GC gc;
 	
+	// True whilst we're in a paint job - used to prevent interleaving calls from corrupting the render context.
+	protected boolean painting;
+	
 	// We paint in multiple 'passes'. This allows us, for example, to render the selection background
 	// rectangle, THEN render the cell foreground without it being affected by the background.
 	protected RenderPass renderPass;
@@ -67,6 +70,14 @@ public class RenderContext {
 
 	public void setGC(final GC gc) {
 		this.gc = gc;
+	}
+	
+	public void setPainting(final boolean painting) {
+		this.painting = painting;
+	}
+	
+	public boolean isPainting() {
+		return this.painting;
 	}
 
 	public boolean isPaintingPinned() {

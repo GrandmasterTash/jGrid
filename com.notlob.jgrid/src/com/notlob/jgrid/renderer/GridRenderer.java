@@ -43,8 +43,15 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	// Set to represent the header cell when a column is being dragged to re-locate.
 	protected Image columnDragImage;
 	
+	// Used for the diagnostic panel.
+	private TextLayout textLayout;
+	private FontData debugFontData = new FontData("Consolas", 10, SWT.NORMAL);
+	
 	// Double-buffering image. Used as a key for the setData method.
 	private final static String DATA__DOUBLE_BUFFER_IMAGE = "double-buffer-image"; //$NON-NLS-1$
+	
+	// Double-buffering image. Used as a key for the calculateRowHeights method.
+	private final static String DATA__ROW_CALC_IMAGE = "row-height-calc-image"; //$NON-NLS-1$
 	
 	//
 	// The references below are recycled objects - to avoid GC churn.
@@ -129,10 +136,16 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	
 	@Override
 	public void paintControl(final PaintEvent e) {
+		if (rc.isPainting()) {
+			throw new IllegalAccessError("Already painting");
+		}
+		
 		GC gc = null;
-		rc.setAnimationPending(false);
 		
 		try {
+			rc.setPainting(true);
+			rc.setAnimationPending(false);
+			
 			if (grid.getLabelProvider() == null) {
 				throw new IllegalArgumentException("There's no IGridLabelProvider on the grid.");
 			}
@@ -144,21 +157,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			//
 			// Double-buffer the paint event.
 			//
-			Image image = (Image) grid.getData(DATA__DOUBLE_BUFFER_IMAGE);
-		    if ((image == null) || (image.getBounds().width != grid.getSize().x) || (image.getBounds().height != grid.getSize().y)) {
-		    	//
-		    	// If the old image no longer fits the bounds, trash it.
-		    	//
-		    	if (image != null) {
-		    		image.dispose();
-		    	}
-
-		    	//
-		    	// Store the double-buffer image in the data of the canvas.
-		    	//
-		    	image = new Image(grid.getDisplay(), grid.getSize().x, grid.getSize().y);
-		    	grid.setData(DATA__DOUBLE_BUFFER_IMAGE, image);
-		    }
+			final Image image = getDoubleBufferImage(DATA__DOUBLE_BUFFER_IMAGE);
 
 		    //
 		    // Set-up a GC for this paint event.
@@ -290,11 +289,32 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			if (gc != null) {
 				gc.dispose();
 			}
+			
+			rc.setPainting(false);
 		}
 	}
 
-	private TextLayout textLayout;
-	private FontData debugFontData = new FontData("Consolas", 10, SWT.NORMAL);
+	/**
+	 * Get or create an image with the same bounds as the grid - used to render onto - for double-buffering.
+	 */
+	private Image getDoubleBufferImage(final String imageKey) {
+		Image image = (Image) grid.getData(imageKey);
+		if ((image == null) || (image.getBounds().width != grid.getSize().x) || (image.getBounds().height != grid.getSize().y)) {
+			//
+			// If the old image no longer fits the bounds, trash it.
+			//
+			if (image != null) {
+				image.dispose();
+			}
+
+			//
+			// Store the double-buffer image in the data of the canvas.
+			//
+			image = new Image(grid.getDisplay(), grid.getSize().x, grid.getSize().y);
+			grid.setData(imageKey, image);
+		}
+		return image;
+	}	
 	
 	/**
 	 * Paints viewport and model details in an overlay.
@@ -359,13 +379,23 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	 * Forces all rows to calculate their height.
 	 */
 	public void calculateRowHeight() {
-		GC gc = new GC(grid.getDisplay());
-		rc.setGC(gc);
-		rc.setRenderPass(RenderPass.COMPUTE_SIZE);
-		rc.setForceAllRows(true);
-		paintRows(rc);
-		rc.setForceAllRows(false);
-		gc.dispose();
+		if (!rc.isPainting()) {
+			GC gc = null;
+			
+			try {
+				gc = new GC(getDoubleBufferImage(DATA__ROW_CALC_IMAGE));
+				rc.setPainting(true);
+				rc.setGC(gc);
+				rc.setRenderPass(RenderPass.COMPUTE_SIZE);
+				rc.setForceAllRows(true);
+				paintRows(rc);
+				rc.setForceAllRows(false);
+				
+			} finally {
+				gc.dispose();
+				rc.setPainting(false);
+			}
+		}
 	}
 	
 	/**
