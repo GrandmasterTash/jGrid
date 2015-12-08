@@ -594,7 +594,7 @@ public class Viewport<T> {
 		final int capped = Math.min(rowIndex, max);
 		boolean selectionChanged = false;
 		
-		if (!isRowVisible(row)) {
+		if (grid.getVerticalBar().isVisible() && !isRowVisible(row)) {
 			if (isRowAboveViewport(row)) {
 				grid.getVerticalBar().setSelection(capped);	
 				
@@ -605,7 +605,9 @@ public class Viewport<T> {
 				//
 				grid.getGridRenderer().calculateRowHeight();
 				grid.updateScrollbars();
-				grid.getVerticalBar().setSelection(row.getRowIndex() - (getRowsToFitAbove(gc, row) - 1));
+				
+				final int selection = row.getRowIndex() - (getRowsToFitAbove(gc, row) - 1);
+				grid.getVerticalBar().setSelection(selection);
 			}
 			
 			selectionChanged = true;

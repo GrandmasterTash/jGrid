@@ -48,6 +48,9 @@ public class RenderContext {
 	// Used by the text-wrapping calculation in a COMPUTE_SIZE pass to grow the row if required. 
 	protected Integer computedHeightDelta;
 	
+	// Set to true during a render pass, if any row's have had their computedHeightDelta set to a non-zero value.
+	protected boolean anyRowHeightsChanged;
+	
 	// Sets a flag to force a paint to use all rows - not just what's in the viewport - used forced COMPUTED_SIZE calls.
 	protected boolean forceAllRows;
 	
@@ -146,5 +149,13 @@ public class RenderContext {
 	
 	public void setComputedHeightDelta(final Integer computedHeightDelta) {
 		this.computedHeightDelta = computedHeightDelta;
+	}
+	
+	public boolean isAnyRowHeightsChanged() {
+		return this.anyRowHeightsChanged;
+	}
+	
+	public void setAnyRowHeightsChanged(final boolean anyRowHeightsChanged) {
+		this.anyRowHeightsChanged = anyRowHeightsChanged;
 	}
 }

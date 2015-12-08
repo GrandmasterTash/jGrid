@@ -145,6 +145,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		try {
 			rc.setPainting(true);
 			rc.setAnimationPending(false);
+			rc.setAnyRowHeightsChanged(false);
 			
 			if (grid.getLabelProvider() == null) {
 				throw new IllegalArgumentException("There's no IGridLabelProvider on the grid.");
@@ -272,7 +273,9 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			//
 			// A COMPUTE_SIZE pass can cause the number of rows in the viewport to change.
 			//
-			grid.updateScrollbars();
+			if (rc.isAnyRowHeightsChanged()) {
+				grid.updateScrollbars();
+			}
 
 		} catch (final Throwable t) {
 			if (!rc.isErrorLogged()) {
@@ -362,6 +365,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 					textLayout.setWidth(300);
 				}
 				
+				gc.setClipping((Rectangle) null);
 				gc.setAlpha(200);
 				gc.setForeground(getColour(new RGB(0, 255, 0)));
 				gc.setBackground(getColour(new RGB(102, 102, 102)));
@@ -470,6 +474,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 				if (newHeight > 0 && rc.getComputedHeightDelta() != 0) {
 //					System.out.println(String.format("height [%s] applying delta [%s] new-height [%s]", grid.getRowHeight(row), rc.getComputedHeightDelta(), newHeight));
 					row.setHeight(newHeight);
+					rc.setAnyRowHeightsChanged(true);
 				} else {
 //					System.out.println(String.format("IGNORED height [%s] applying delta [%s] new-height [%s]", grid.getRowHeight(row), rc.getComputedHeightDelta(), newHeight));
 				}
