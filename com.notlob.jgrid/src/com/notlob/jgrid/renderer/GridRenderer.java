@@ -381,7 +381,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	/**
 	 * Forces all rows to calculate their height.
 	 */
-	public void calculateRowHeight() {
+	public void calculateRowHeights() {
 		if (!rc.isPainting()) {
 			GC gc = null;
 			

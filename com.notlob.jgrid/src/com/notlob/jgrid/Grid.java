@@ -936,30 +936,53 @@ public class Grid<T> extends Composite {
 		viewport.invalidate();
 		viewport.calculateVisibleCellRange(gc);
 		
-		updateScrollbar(getVerticalBar(), 1, 1, viewport.getHeightInRows(), getRows().size(), (viewport.getRowCountLastPage(gc)));		
-		updateScrollbar(getHorizontalBar(), 1, 1, viewport.getWidthInColumns(), getColumns().size(), viewport.getColumnCountLastPage(gc));
+		updateScrollbar(getVerticalBar(), viewport.getHeightInRows(), getRows().size(), viewport.getRowCountLastPage(gc), viewport.getFirstRowIndex(), viewport.getLastRowIndex());		
+		updateScrollbar(getHorizontalBar(), viewport.getWidthInColumns(), getColumns().size(), viewport.getColumnCountLastPage(gc), viewport.getFirstColumnIndex(), viewport.getLastColumnIndex());
 	}
 
-	private void updateScrollbar(final ScrollBar scrollBar, final int increment, final int thumb, final int visible, final int maximum, final int lastPageSize) {
-		final int capped = maximum - (lastPageSize - 1);
-		scrollBar.setMaximum(capped);
-		scrollBar.setThumb(Math.min(thumb, capped));
-		scrollBar.setPageIncrement(Math.min(visible, scrollBar.getMaximum()));
-		scrollBar.setIncrement(increment);
-		scrollBar.setVisible((visible > 1) && (scrollBar.getMaximum() > 1));
-		scrollBar.setEnabled(scrollBar.isVisible());
+	/**
+	 * Setup the scrollbar based on the item counts specified. Note: This doesn't change the current selected position of the
+	 * scrollbar.
+	 * 
+	 * @param scrollBar
+	 *            the scrollbar to configure.
+	 * @param viewportSize
+	 *            how many columns or rows are currently visible in the
+	 *            viewport.
+	 * @param maximumSize
+	 *            the maximum number of columns or rows.
+	 * @param lastPageSize
+	 *            the maximum number of columns or rows that currently fits onto
+	 *            the last page of the viewport. For rows, this is at the bottom
+	 *            of the grid, for columns this is over on the right).
+	 */
+	private void updateScrollbar(final ScrollBar scrollBar, final int viewportSize, final int maximumSize, final int lastPageSize, final int firstVisibleIndex, final int lastVisibleIndex) {
+		//
+		// The scrollbar doesn't quite hold the total number of items. Because we want the last item to live at the bottom 
+		// of the grid (for rows) or the right edge of the grid (for columns) rather than the top/left, we stop scrolling 
+		// when the last item is in position. 
+		//
+		final int cappedMax = maximumSize - (lastPageSize - 1);
 		
-//		System.out.println(String.format("Vert Scroll - thumb [%s/%s] increment [%s/%s] page [%s] visible-rows [%s] maximum [%s/%s] last-page [%s] visible [%s]", 
-//					thumb, 
-//					scrollBar.getThumb(), 
-//					increment, 
-//					scrollBar.getIncrement(),
-//					scrollBar.getPageIncrement(),
-//					visible, 
-//					maximum,
-//					scrollBar.getMaximum(),
-//					lastPageSize,
-//					scrollBar.isVisible()));
+		//
+		// The scrollbar is only required, if there are items beyond either of the viewport edged.
+		//
+		final boolean visible = ((firstVisibleIndex > 0) || (lastVisibleIndex < maximumSize) && (maximumSize > 1));
+		
+		scrollBar.setMaximum(cappedMax);
+		scrollBar.setThumb(1);
+		scrollBar.setPageIncrement(Math.min(viewportSize, cappedMax));
+		scrollBar.setIncrement(1);
+		scrollBar.setVisible(visible);
+		scrollBar.setEnabled(visible);
+		
+//		System.out.println(String.format("Vert Scroll page [%s] visible-rows [%s] maximum [%s/%s] last-page [%s] visible [%s]", 
+//			scrollBar.getPageIncrement(),
+//			viewportSize, 
+//			maximumSize,
+//			scrollBar.getMaximum(),
+//			lastPageSize,
+//			scrollBar.isVisible()));
 	}
 
 	private void invalidateComputedArea() {

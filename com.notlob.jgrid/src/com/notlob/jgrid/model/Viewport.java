@@ -603,7 +603,7 @@ public class Viewport<T> {
 				// Scrolling down to make the row visible requires us to get the row to be the last row in the viewport. To do this,
 				// we have to do a little walk up from the row - calculating how many rows will fit into the page.
 				//
-				grid.getGridRenderer().calculateRowHeight();
+				grid.getGridRenderer().calculateRowHeights();
 				grid.updateScrollbars();
 				
 				final int selection = row.getRowIndex() - (getRowsToFitAbove(gc, row) - 1);

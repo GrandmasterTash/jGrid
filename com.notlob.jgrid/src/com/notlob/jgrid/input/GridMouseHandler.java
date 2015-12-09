@@ -319,7 +319,6 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	 * Handle a single click (left OR right) - updating the selection model, expanding/collapsing groups, performing column sorts.
 	 */
 	protected void handleSingleClick(final int mouseX, final int mouseY, final int button) {
-		
 		if ((column != null) && (column != gridModel.getGroupSelectorColumn()) && (column != gridModel.getRowNumberColumn()) && (mouseY < viewport.getViewportArea(gc).y)) {
 			// TODO: Investigate/debug the last part of the above statement, it looks dubious to me.
 			if (grid.isSortedEnabled() && (row == gridModel.getColumnHeaderRow()) && (button == LEFT_MOUSE_BUTTON)) {
