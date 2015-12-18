@@ -140,7 +140,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			//
 			// Fix an issue where, when dragging a column, the mouse leaves the grid area, mouse up, then re-enters the grid area.
 			//
-			if (targetColumn == null) {
+			if (targetColumn == null && !mouseDown) {
 				repositioning = null;
 			}
 			
@@ -743,7 +743,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	}
 
 	/**
-	 * Update the mouse cursor if we're resizeing or about to resize a column.
+	 * Update the mouse cursor if we're resizing or about to resize a column.
 	 */
 	protected void updateCursor(final int mouseX, final int mouseY) {
 		if ((repositioning == null) && (viewport.getColumnForMouseOperation(gc, mouseX, mouseY, ColumnMouseOperation.RESIZE) != null)) {
