@@ -685,10 +685,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		
 		final Column mouseColumn = gridModel.getColumns().get(columnIndex);			
 		if (mouseColumn == repositioning) {
-			//
-			// We're moving a column, but we can't currently tell where to...
-			//
-			return;
+			targetColumn = mouseColumn;
 		}
 					
 		final int mouseColumnX = viewport.getColumnViewportX(gc, mouseColumn);
@@ -706,7 +703,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			
 		} else {
 			//
-			// Something mad has occured.
+			// Something mad has occurred.
 			//
 			targetColumn = LAST_COLUMN;
 		}
