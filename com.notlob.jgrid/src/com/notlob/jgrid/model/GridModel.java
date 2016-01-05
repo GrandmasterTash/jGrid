@@ -649,14 +649,11 @@ public class GridModel<T> {
 		//
 		if (heightDelta != 0) {
 			fireHeightChangeEvent(heightDelta);
-			fireElementsUpdatedEvent(elements);
 			fireRowCountChangedEvent();
-			
-		} else {
-			fireElementsUpdatedEvent(elements);
-			fireChangeEvent();
 		}
-		
+		fireElementsUpdatedEvent(elements);
+		fireChangeEvent();
+
 		return rowsShown;
 	}
 	
