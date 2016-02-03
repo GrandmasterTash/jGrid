@@ -211,7 +211,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 				//
 				// Paint the 'no data' message. Note the filter check has to compensate for the CollapseGroupFilter. Naff.
 				//
-				final String text = (grid.getFilters().size() > 1) ? getDefaultFiltersHiddenDataMessage() : (grid.getEmptyMessage() == null ? getDefaultNoDataMessage() : grid.getEmptyMessage());
+				final String text = (grid.getFilters().size() > 1) ? (grid.getEmptyFilterMessage() == null ? getDefaultFiltersHiddenDataMessage() : grid.getEmptyFilterMessage()) : (grid.getEmptyMessage() == null ? getDefaultNoDataMessage() : grid.getEmptyMessage());
 				final CellStyle cellStyle = styleRegistry.getNoDataStyle();
 				final Point point = getTextExtent(text, rc, cellStyle.getFontData());
 				final Rectangle bounds = viewport.getViewportArea(gc);

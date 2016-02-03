@@ -89,6 +89,7 @@ public class Grid<T> extends Composite {
 	protected IGridToolTipProvider<T> toolTipProvider;
 	protected final ToolTip toolTip;
 	protected String emptyMessage;
+	protected String emptyFilterMessage;
 
 	// Some grid behavioural flags.	
 	protected boolean highlightHoveredRow = true;
@@ -1054,6 +1055,17 @@ public class Grid<T> extends Composite {
 	public void setEmptyMessage(final String emptyMessage) {
 		checkWidget();
 		this.emptyMessage = emptyMessage;
+		redraw();
+	}
+	
+	public String getEmptyFilterMessage() {
+		checkWidget();
+		return emptyFilterMessage;
+	}
+
+	public void setEmptyFilterMessage(final String emptyFilterMessage) {
+		checkWidget();
+		this.emptyFilterMessage = emptyFilterMessage;
 		redraw();
 	}
 
