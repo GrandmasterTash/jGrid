@@ -43,7 +43,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	// Set to represent the header cell when a column is being dragged to re-locate.
 	protected Image columnDragImage;
 	
-	// Used for the diagnostic panel.
+	// Used for the diagnostic panel and no-filter message.
 	private TextLayout textLayout;
 	private FontData debugFontData = new FontData("Consolas", 10, SWT.NORMAL);
 	
@@ -76,6 +76,12 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		contentLocation = new Point(0, 0);
 		rowBounds = new Rectangle(0, 0, 0, 0);
 		borderBounds = new Rectangle(0, 0, 0, 0);
+	}
+	
+	public void dispose() {
+		if (textLayout != null) {
+			textLayout.dispose();
+		}
 	}
 	
 	protected CellRenderer<T> createCellRenderer() {
@@ -208,21 +214,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			} 
 			
 			if (gridModel.getRows().isEmpty()) {
-				//
-				// Paint the 'no data' message. Note the filter check has to compensate for the CollapseGroupFilter. Naff.
-				//
-				final String text = (grid.getFilters().size() > 1) ? (grid.getEmptyFilterMessage() == null ? getDefaultFiltersHiddenDataMessage() : grid.getEmptyFilterMessage()) : (grid.getEmptyMessage() == null ? getDefaultNoDataMessage() : grid.getEmptyMessage());
-				final CellStyle cellStyle = styleRegistry.getNoDataStyle();
-				final Point point = getTextExtent(text, rc, cellStyle.getFontData());
-				final Rectangle bounds = viewport.getViewportArea(gc);
-				
-				gc.setAlpha(cellStyle.getForegroundOpacity());
-				gc.setFont(getFont(cellStyle.getFontData()));
-				gc.setForeground(getColour(cellStyle.getForeground()));
-				align(point.x, point.y, bounds, contentLocation, cellStyle.getTextAlignment());
-				gc.setClipping(bounds);
-				gc.drawText(text, contentLocation.x, contentLocation.y, SWT.DRAW_TRANSPARENT);
-				gc.setClipping((Rectangle) null);
+				paintNoDataMessage(gc);
 			}
 
 			//
@@ -297,6 +289,37 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	}
 
 	/**
+	 * When there's nothing to display, paint a message in the centre of the grid - the message can change if a filter
+	 * has filtered-out all the data. 
+	 */
+	protected void paintNoDataMessage(GC gc) {
+		//
+		// Paint the 'no data' message. Note the filter check has to compensate for the CollapseGroupFilter. Naff.
+		//
+		final String text = (grid.getFilters().size() > 1) ? (grid.getEmptyFilterMessage() == null ? getDefaultFiltersHiddenDataMessage() : grid.getEmptyFilterMessage()) : (grid.getEmptyMessage() == null ? getDefaultNoDataMessage() : grid.getEmptyMessage());
+		final CellStyle cellStyle = styleRegistry.getNoDataStyle();
+		final Rectangle bounds = viewport.getViewportArea(gc);
+		
+		gc.setAlpha(cellStyle.getForegroundOpacity());
+		gc.setFont(getFont(cellStyle.getFontData()));
+		gc.setForeground(getColour(cellStyle.getForeground()));		
+		gc.setClipping(bounds);
+		
+		if (textLayout == null) {
+			textLayout = new TextLayout(gc.getDevice());
+		}
+		
+		textLayout.setFont(getFont(cellStyle.getFontData()));
+		textLayout.setAlignment(SWT.CENTER);
+		textLayout.setWidth(bounds.width);		
+		textLayout.setText(text);
+		
+		align(textLayout.getBounds().x, textLayout.getBounds().y, bounds, contentLocation, cellStyle.getTextAlignment());
+		textLayout.draw(gc, 0, contentLocation.y);
+		gc.setClipping((Rectangle) null);
+	}
+
+	/**
 	 * Get or create an image with the same bounds as the grid - used to render onto - for double-buffering.
 	 */
 	private Image getDoubleBufferImage(final String imageKey) {
@@ -359,11 +382,11 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			if (sb.length() > 0) {
 				if (textLayout == null) {
 					textLayout = new TextLayout(gc.getDevice());
-					textLayout.setFont(getFont(debugFontData));
-					textLayout.setAlignment(SWT.LEFT);
-					textLayout.setTabs(new int[] {100});
-					textLayout.setWidth(300);
 				}
+				textLayout.setFont(getFont(debugFontData));
+				textLayout.setAlignment(SWT.LEFT);
+				textLayout.setTabs(new int[] {100});
+				textLayout.setWidth(300);
 				
 				gc.setClipping((Rectangle) null);
 				gc.setAlpha(200);

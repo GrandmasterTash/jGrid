@@ -149,6 +149,7 @@ public class Grid<T> extends Composite {
 		getVerticalBar().removeSelectionListener(scrollListener);
 		getHorizontalBar().removeSelectionListener(scrollListener);
 		gridModel.removeListener(modelListener);
+		gridRenderer.dispose();
 
 		// Dispose of UI handles.
 		gc.dispose();
