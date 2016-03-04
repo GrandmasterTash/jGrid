@@ -298,13 +298,30 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		//
 		final String text = (grid.getFilters().size() > 1) ? (grid.getEmptyFilterMessage() == null ? getDefaultFiltersHiddenDataMessage() : grid.getEmptyFilterMessage()) : (grid.getEmptyMessage() == null ? getDefaultNoDataMessage() : grid.getEmptyMessage());
 		final CellStyle cellStyle = styleRegistry.getNoDataStyle();
-		final Rectangle bounds = viewport.getViewportArea(gc);
+		final Rectangle bounds = grid.getClientArea();
 		
+		//
+		// Calculate the height of all the column header rows.
+		//
+		int headerHeight = 0;
+		for (Row<T> row : grid.getColumnHeaderRows()) {
+			headerHeight += grid.getRowHeight(row);
+		}
+		
+		bounds.height -= headerHeight;
+		bounds.x += headerHeight;
+				
+		//
+		// Set-up the GC for rendering the message.
+		//
 		gc.setAlpha(cellStyle.getForegroundOpacity());
 		gc.setFont(getFont(cellStyle.getFontData()));
 		gc.setForeground(getColour(cellStyle.getForeground()));		
 		gc.setClipping(bounds);
 		
+		//
+		// Layout the message (which could be multi-line).
+		//
 		if (textLayout == null) {
 			textLayout = new TextLayout(gc.getDevice());
 		}
@@ -314,6 +331,9 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		textLayout.setWidth(bounds.width);		
 		textLayout.setText(text);
 		
+		//
+		// Align in the client area and render.
+		//
 		align(textLayout.getBounds().x, textLayout.getBounds().y, bounds, contentLocation, cellStyle.getTextAlignment());
 		textLayout.draw(gc, 0, contentLocation.y);
 		gc.setClipping((Rectangle) null);
