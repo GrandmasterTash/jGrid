@@ -939,7 +939,7 @@ public class Grid<T> extends Composite {
 		viewport.calculateVisibleCellRange(gc);
 		
 		updateScrollbar(getVerticalBar(), viewport.getHeightInRows(), getRows().size(), viewport.getRowCountLastPage(gc), viewport.getFirstRowIndex(), viewport.getLastRowIndex());		
-		updateScrollbar(getHorizontalBar(), viewport.getWidthInColumns(), getColumns().size(), viewport.getColumnCountLastPage(gc), viewport.getFirstColumnIndex(), viewport.getLastColumnIndex());
+		updateScrollbar(getHorizontalBar(), viewport.getWidthInColumns(), getColumns().size(), viewport.getColumnCountLastPage(gc), viewport.getFirstColumnIndex(), viewport.getLastColumnIndex() + 1);
 	}
 
 	/**
@@ -978,7 +978,7 @@ public class Grid<T> extends Composite {
 		scrollBar.setVisible(visible);
 		scrollBar.setEnabled(visible);
 		
-//		System.out.println(String.format("Vert Scroll page [%s] visible-rows [%s] maximum [%s/%s] last-page [%s] visible [%s]", 
+//		System.out.println(String.format("Scroll page [%s] visible-rows [%s] maximum [%s/%s] last-page [%s] visible [%s]", 
 //			scrollBar.getPageIncrement(),
 //			viewportSize, 
 //			maximumSize,
