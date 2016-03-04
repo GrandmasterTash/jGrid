@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<site>
-   <feature url="features/com.notlob.jgrid.feature_1.0.0.201504300858.jar" id="com.notlob.jgrid.feature" version="1.0.0.201504300858">
-      <category name="jgrid"/>
-   </feature>
-   <category-def name="jgrid" label="JGrid"/>
-</site>
