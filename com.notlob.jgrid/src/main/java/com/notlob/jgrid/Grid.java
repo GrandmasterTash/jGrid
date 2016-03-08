@@ -1184,7 +1184,6 @@ public class Grid<T> extends Composite {
 	}
 	
 	private class GridModelListener implements GridModel.IModelListener<T> {
-		
 		/**
 		 * A structural or data change that requires a full invalidate then redraw.
 		 */		
@@ -1273,6 +1272,17 @@ public class Grid<T> extends Composite {
 			for (final IGridListener<T> listener : listeners) {
 				listener.columnResized(column);
 			}			
+		}
+		
+		@Override
+		public void columnAboutToSort(Column column) {
+			if (isEventsSuppressed()) {
+				return;
+			}
+			
+			for (final IGridListener<T> listener : listeners) {
+				listener.columnAboutToSort(column);
+			}
 		}
 		
 		@Override

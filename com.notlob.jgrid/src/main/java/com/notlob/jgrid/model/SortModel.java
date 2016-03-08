@@ -38,6 +38,11 @@ public class SortModel<T> {
 	 */
 	public void sort(final Column column, final boolean toggle, final boolean append, final boolean notify) {
 		//
+		// Notify listeners we're about to sort the column.
+		//
+		gridModel.fireColumnAboutToSortEvent(column);
+		
+		//
 		// Toggle the sort direction on the column.
 		//
 		final SortDirection sortDirection = toggle ? toggleDirection(column.getSortDirection()) : column.getSortDirection();

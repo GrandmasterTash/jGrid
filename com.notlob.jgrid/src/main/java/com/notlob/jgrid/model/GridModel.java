@@ -110,7 +110,8 @@ public class GridModel<T> {
 		void elementsUpdated(final Collection<T> elements);
 		void elementsRemoved(final Collection<T> elements);
 		void columnResized(final Column column);		
-		void columnMoved(final Column column);		
+		void columnMoved(final Column column);
+		void columnAboutToSort(final Column column);
 		void columnSorted(final Column column);
 		void rowNumbersVisibilityChanged(final boolean visible);
 		void groupSelectorVisibilityChanged(final boolean visible);
@@ -881,6 +882,12 @@ public class GridModel<T> {
 	public void fireColumnResizedEvent(Column column) {
 		for (final IModelListener<T> listener : listeners) {
 			listener.columnResized(column);
+		}
+	}
+	
+	public void fireColumnAboutToSortEvent(Column column) {
+		for (final IModelListener<T> listener : listeners) {
+			listener.columnAboutToSort(column);
 		}
 	}
 	

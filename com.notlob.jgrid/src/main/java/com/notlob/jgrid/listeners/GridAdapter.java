@@ -65,6 +65,10 @@ public class GridAdapter<T> implements IGridListener<T> {
 	}
 	
 	@Override
+	public void columnAboutToSort(Column column) {
+	}
+	
+	@Override
 	public void columnSorted(Column column) {
 	}
 	
