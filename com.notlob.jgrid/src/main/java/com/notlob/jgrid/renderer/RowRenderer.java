@@ -243,7 +243,8 @@ public class RowRenderer<T> extends Renderer<T> {
 		// Ascertain if we're the first row in the group, in the middle or the last row).
 		//
 		final boolean isFirstInGroup = isFirstInGroup(row);
-		final boolean isLastInGroup = isLastInGroup(row);
+		final boolean isLastInGroup = isLastInGroup(row);		
+		final boolean isParentRow = gridModel.isParentRow(row);
 		
 		cellBounds.width = gridModel.getGroupSelectorColumn().getWidth();
 		shrinkRectangle(cellBounds, groupSelectorBounds, 1);
@@ -291,10 +292,11 @@ public class RowRenderer<T> extends Renderer<T> {
 				groupSelectorBounds.width += 1;
 				setCorners(groupSelectorBounds, topLeft, topRight, bottomRight, bottomLeft);
 				gc.drawLine(topLeft.x, topLeft.y, bottomLeft.x, bottomLeft.y);
-				gc.drawLine(topRight.x, topRight.y, bottomRight.x, bottomRight.y);								
+				gc.drawLine(topRight.x, topRight.y, bottomRight.x, bottomRight.y);
+				
 			}
 			
-			if (isLastInGroup) {
+			if (isParentRow) {
 				//
 				// Draw an expand / collapse image.
 				//
@@ -314,7 +316,7 @@ public class RowRenderer<T> extends Renderer<T> {
 		
 		cellBounds.x += (cellBounds.width + styleRegistry.getCellSpacingHorizontal());
 	}
-	
+		
 	/**
 	 * True if the next visible row above this one is in a different group - OR if this is the first visible row.
 	 */
