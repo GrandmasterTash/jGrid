@@ -88,4 +88,20 @@ public class GridListener implements IGridListener<Person> {
 	public void rowNumbersVisibilityChanged(boolean visible) {
 		System.out.println("rowNumbersVisibilityChanged");
 	}
+
+	@Override
+	public void columnAboutToSort(Column column) {
+		System.out.println("columnAboutToSort");
+		
+	}
+
+	@Override
+	public void groupSelectorVisibilityChanged(boolean visible) {
+		System.out.println("groupSelectorVisibilityChanged");
+	}
+
+	@Override
+	public void cellRevealed(Column column, Person element) {
+		System.out.println("cellRevealed");
+	}
 }

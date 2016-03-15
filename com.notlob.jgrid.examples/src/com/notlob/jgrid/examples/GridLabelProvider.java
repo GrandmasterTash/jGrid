@@ -1,16 +1,15 @@
 package com.notlob.jgrid.examples;
 
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.RGB;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
+import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.providers.IGridLabelProvider;
-import com.notlob.jgrid.styles.AlignmentStyle;
-import com.notlob.jgrid.styles.BorderStyle;
+import com.notlob.jgrid.providers.ImageCollector;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.ContentStyle;
-import com.notlob.jgrid.styles.LineStyle;
+import com.notlob.jgrid.styles.StyleCollector;
 import com.notlob.jgrid.styles.StyleRegistry;
 
 /**
@@ -41,12 +40,10 @@ public class GridLabelProvider implements IGridLabelProvider<Person> {
 	}
 	
 	@Override
-	public CellStyle getCellStyle(Column column, Person person) {
+	public void getCellStyle(final StyleCollector styleCollector, final Column column, final Person element) {
 		if (column.getColumnId().equals(GridContentProvider.COLUMN_ID__FIRST_NAME)) {
-			return firstNameStyle;
+			styleCollector.add(firstNameStyle);
 		}
-		
-		return null;
 	}
 
 	@Override
@@ -56,13 +53,11 @@ public class GridLabelProvider implements IGridLabelProvider<Person> {
 	}
 
 	@Override
-	public Image getHeaderImage(Column column) {
-		return null;
+	public void getHeaderImage(final ImageCollector collector, final Column column) {
 	}
 
 	@Override
-	public CellStyle getHeaderStyle(Column column) {
-		return null;
+	public void getHeaderStyle(final StyleCollector styleCollector, final Column column) {
 	}
 
 	@Override
@@ -71,12 +66,10 @@ public class GridLabelProvider implements IGridLabelProvider<Person> {
 	}
 
 	@Override
-	public Image getImage(Column column, Person person) {
+	public void getImage(final ImageCollector collector, final Column column, final Person element) {
 		if (column.getColumnId().equals(GridContentProvider.COLUMN_ID__FIRST_NAME)) {
-			return personImage;
+			collector.addImage(personImage);
 		}
-		
-		return null;
 	}
 
 	/**
@@ -101,6 +94,15 @@ public class GridLabelProvider implements IGridLabelProvider<Person> {
 	@Override
 	public String getToolTip(Column column, Person person) {
 		return "This is a tool-tip for " + person.getFirstname();
+	}
+
+	@Override
+	public void getAnchorStyle(StyleCollector styleCollector, Column column, Person element) {
+	}
+
+	@Override
+	public boolean shouldAlternateBackground(Row<Person> previousRow, Row<Person> currentRow) {
+		return false;
 	}
 
 }
