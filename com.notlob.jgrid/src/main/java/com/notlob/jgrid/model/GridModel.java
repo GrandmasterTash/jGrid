@@ -514,18 +514,20 @@ public class GridModel<T> {
 		
 		for (final T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
-			heightDelta -= getRowHeight(row);			
-			rows.remove(row);
-			hiddenRows.remove(row);
-			rowsByElement.remove(element);
-
-			if (row.isSelected()) {
-				selectionChanged |= selectionModel.removeRow(row);
-				lastSelectedIndex = Math.max(lastSelectedIndex, row.getRowIndex());
-			}
-
-			if (row.isPinned()) {
-				columnHeaderRows.remove(row);
+			if (row != null) {
+				heightDelta -= getRowHeight(row);			
+				rows.remove(row);
+				hiddenRows.remove(row);
+				rowsByElement.remove(element);
+	
+				if (row.isSelected()) {
+					selectionChanged |= selectionModel.removeRow(row);
+					lastSelectedIndex = Math.max(lastSelectedIndex, row.getRowIndex());
+				}
+	
+				if (row.isPinned()) {
+					columnHeaderRows.remove(row);
+				}
 			}
 		}
 		
