@@ -1086,7 +1086,7 @@ public class GridModel<T> {
 	/**
 	 * Return immediate children from this row.
 	 */
-	private List<Row<T>> getChildren(final Row<T> row) {
+	public List<Row<T>> getChildren(final Row<T> row) {
 		final List<Row<T>> children = new ArrayList<>();
 		final List<T> childElements = contentProvider.getChildren(row.getElement());
 
