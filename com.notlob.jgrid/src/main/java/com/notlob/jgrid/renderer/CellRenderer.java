@@ -143,7 +143,7 @@ public class CellRenderer<T> extends Renderer<T> {
 	 */
 	protected void paintCellBackground(final RenderContext rc, final Rectangle bounds, final CellStyle cellStyle, final Column column, final Row<T> row) throws Exception {
 		final GC gc = rc.getGC();
-		gc.setAlpha(cellStyle.getBackgroundOpacity());
+		gc.setAlpha(cellStyle.getBackgroundOpacity() == null ? 255 : cellStyle.getBackgroundOpacity());
 
 		final RGB background = (rc.isAlternate() && (cellStyle.getBackgroundAlternate() != null)) ? cellStyle.getBackgroundAlternate() : cellStyle.getBackground();
 		final RGB backgroundGradient1 = (rc.isAlternate() && (cellStyle.getBackgroundAlternateGradient1() != null)) ? cellStyle.getBackgroundAlternateGradient1() : cellStyle.getBackgroundGradient1();
@@ -229,8 +229,8 @@ public class CellRenderer<T> extends Renderer<T> {
 		}
 		
 		final GC gc = rc.getGC();
-		gc.setAlpha(cellStyle.getForegroundOpacity());
-		gc.setFont(getFont(cellStyle.getFontData()));
+		gc.setAlpha(cellStyle.getForegroundOpacity() == null ? 255 : cellStyle.getForegroundOpacity());
+		gc.setFont(getFont(cellStyle.getFontData() == null ? styleRegistry.getDefaultStyle().getFontData() : cellStyle.getFontData()));
 
 		//
 		// We'll use inner bounds to indicate where the next piece of content will be allowed. Initially, it's the full
@@ -314,9 +314,10 @@ public class CellRenderer<T> extends Renderer<T> {
 				contentLocation.x += image.getBounds().width;
 			}
 			
-			if (!cellStyle.isAllowContentOverlap()) {
-				innerBounds.x += (imageExtent.x + cellStyle.getPaddingImageText());
-				innerBounds.width -= (imageExtent.x + cellStyle.getPaddingImageText());
+			if (cellStyle.isAllowContentOverlap() == null || !cellStyle.isAllowContentOverlap()) {
+				final int paddingImageText = (cellStyle.getPaddingImageText() == null ? 0 : cellStyle.getPaddingImageText());
+				innerBounds.x += (imageExtent.x + paddingImageText);
+				innerBounds.width -= (imageExtent.x + paddingImageText);
 			}
 		}
 	}
@@ -326,118 +327,135 @@ public class CellRenderer<T> extends Renderer<T> {
 	 */
 	protected void paintCellText(final RenderContext rc, final Column column, final Row<T> row, final CellStyle cellStyle) throws Exception {
 		final String text = getCellText(column, row);
-		
-		if (text != null && !text.isEmpty()) {
-			final GC gc = rc.getGC();
-	
-			//
-			// Ensure any image in the header row that follows text, doesn't have text running through it.
-			//
-			int widthCap = 0;
-			if (row == gridModel.getColumnHeaderRow() && (cellStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE)) {
-				final List<Image> images = getCellImages(column, row);
-				
-				if (!images.isEmpty()) {
-					for (Image image : images) {
-						widthCap += image.getBounds().width;
-					}
-					
-					widthCap += cellStyle.getPaddingImageText();
-					innerBounds.width -= widthCap;
-					gc.setClipping(innerBounds);
-				}
-			}
-	
-			final boolean highlightFilterMatch = doesCellHaveStyleableFilterMatch(row, column);
-			final AlignmentStyle textAlignment = (cellStyle.getTextAlignment() == null) ? (column.getTextAlignment() == null ? AlignmentStyle.LEFT_CENTER : column.getTextAlignment()) : cellStyle.getTextAlignment();
-			int width;
-			int height;
+		final GC gc = rc.getGC();
+
+		//
+		// Ensure any image in the header row that follows text, doesn't have text running through it.
+		//
+		int widthCap = 0;
+		if (row == gridModel.getColumnHeaderRow() && (cellStyle.getContentStyle() == ContentStyle.TEXT_THEN_IMAGE)) {
+			final List<Image> images = getCellImages(column, row);
 			
-			if (column.isWrap() && (row != grid.getColumnHeaderRow())) {
-				//
-				// Use a wrapping method of rendering the text.
-				//
-				textLayout.setText(text);				
-				textLayout.setAlignment(convertAlignmentToSwt(textAlignment));
-				textLayout.setFont(getFont(cellStyle.getFontData()));
-				
-				//
-				// Edge-case, don't use available width for the last column if it's less that it's defined width.
-				//
-				final boolean lastColumn = (column == gridModel.getColumns().get(gridModel.getColumns().size() - 1));
-				textLayout.setWidth(lastColumn ? (Math.max(column.getWidth(), innerBounds.width)) : innerBounds.width);
-				
-				if (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) {
-					computeRowSize(rc, column, textLayout.getBounds().height, innerBounds.height);
+			if (!images.isEmpty()) {
+				for (Image image : images) {
+					widthCap += image.getBounds().width;
 				}
 				
-				width = textLayout.getBounds().width;
-				height = textLayout.getBounds().height;
-				align(width, height, innerBounds, contentLocation, textAlignment);
-				
-				if (rc.getRenderPass() == RenderPass.FOREGROUND) {
-					if (highlightFilterMatch) {
-						//
-						// Use text highlighting if there's a FilterMatchRange in this column (and it's trackable).
-						//
-						gc.setBackground(getColour(styleRegistry.getFilterMatchBackground()));
-						gc.setForeground(getColour(styleRegistry.getFilterMatchForeground()));
-						textLayout.draw(gc, contentLocation.x, contentLocation.y);
-			
-					} else {
-						//
-						// Use normal colours if we're not highlighting a filter result.
-						//
-						gc.setForeground(getColour(cellStyle.getForeground()));
-						textLayout.draw(gc, contentLocation.x, contentLocation.y);
-					}
-				}
-				
-			} else {
-				//
-				// Use a non-wrapping method of rendering the text.
-				//
-				final Point textExtent = getTextExtent(text, rc, cellStyle.getFontData());
-				
-				width = Math.min(textExtent.x, (innerBounds.width - 0/*widthCap seems to shunt right-aligned text if theres an image - removing didn't cause any harm...*/));
-				height = Math.min(textExtent.y, innerBounds.height);	
-				align(width, height, innerBounds, contentLocation, textAlignment);
-				
-				if (rc.getRenderPass() == RenderPass.FOREGROUND) {
-					//
-					// Perform an animation on the row - if required. This can cause the text to bounce into view.
-					//			
-					if ((row != null) && (row != gridModel.getColumnHeaderRow()) && (row.getAnimation() != null)) {
-						row.getAnimation().animateText(rc, this, row);
-					}
-					
-					if (highlightFilterMatch) {
-						//
-						// Use text highlighting if there's a FilterMatchRange in this column (and it's trackable).
-						//
-						gc.setBackground(getColour(styleRegistry.getFilterMatchBackground()));
-						gc.setForeground(getColour(styleRegistry.getFilterMatchForeground()));
-						gc.drawText(text, contentLocation.x, contentLocation.y);
-			
-					} else {
-						//
-						// Use normal colours if we're not highlighting a filter result.
-						//
-						gc.setForeground(getColour(cellStyle.getForeground()));
-						gc.drawText(text, contentLocation.x, contentLocation.y, SWT.DRAW_DELIMITER | SWT.DRAW_TAB | SWT.DRAW_TRANSPARENT);
-					}
-				}
-			}
-			
-			if (widthCap > 0) {
-				innerBounds.width += widthCap;
+				widthCap += cellStyle.getPaddingImageText();
+				innerBounds.width -= widthCap;
 				gc.setClipping(innerBounds);
 			}
-	
-			if (!cellStyle.isAllowContentOverlap()) {
-				innerBounds.x += (width + cellStyle.getPaddingImageText());
-				innerBounds.width -= (height + cellStyle.getPaddingImageText());
+		}
+
+		final boolean highlightFilterMatch = doesCellHaveStyleableFilterMatch(row, column);
+		final AlignmentStyle textAlignment = (cellStyle.getTextAlignment() == null) ? (column.getTextAlignment() == null ? AlignmentStyle.LEFT_CENTER : column.getTextAlignment()) : cellStyle.getTextAlignment();
+		int width;
+		int height;
+		
+		if (column.isWrap() && (row != grid.getColumnHeaderRow())) {
+			//
+			// Use a wrapping method of rendering the text.
+			//
+			textLayout.setText(text);				
+			textLayout.setAlignment(convertAlignmentToSwt(textAlignment));
+			textLayout.setFont(getFont(cellStyle.getFontData()));
+			
+			//
+			// Edge-case, don't use available width for the last column if it's less that it's defined width.
+			//
+			final boolean lastColumn = (column == gridModel.getColumns().get(gridModel.getColumns().size() - 1));
+			textLayout.setWidth(lastColumn ? (Math.max(column.getWidth(), innerBounds.width)) : innerBounds.width);
+			
+			if (rc.getRenderPass() == RenderPass.COMPUTE_SIZE) {
+				computeRowSize(rc, column, textLayout.getBounds().height, innerBounds.height);
 			}
+			
+			width = textLayout.getBounds().width;
+			height = textLayout.getBounds().height;
+			align(width, height, innerBounds, contentLocation, textAlignment);
+			
+			if (rc.getRenderPass() == RenderPass.FOREGROUND) {
+				if (highlightFilterMatch) {
+					//
+					// Use text highlighting if there's a FilterMatchRange in this column (and it's trackable).
+					//
+					gc.setBackground(getColour(styleRegistry.getFilterMatchBackground()));
+					gc.setForeground(getColour(styleRegistry.getFilterMatchForeground()));
+					
+					if (text == null || text.length() == 0) {
+						//
+						// There's no text to highlight (but the blank cell matches the filter), so render a
+						// highlighted box.
+						//
+						gc.fillRoundRectangle(innerBounds.x, innerBounds.y, innerBounds.width, innerBounds.height, 4, 4);
+					}
+					
+					textLayout.draw(gc, contentLocation.x, contentLocation.y);
+		
+				} else {
+					//
+					// Use normal colours if we're not highlighting a filter result.
+					//
+					gc.setForeground(getColour(cellStyle.getForeground()));
+					textLayout.draw(gc, contentLocation.x, contentLocation.y);
+				}
+			}
+			
+		} else {
+			//
+			// Use a non-wrapping method of rendering the text.
+			//
+			final Point textExtent = getTextExtent(text, rc, cellStyle.getFontData());
+			
+			width = Math.min(textExtent.x, (innerBounds.width - 0/*widthCap seems to shunt right-aligned text if theres an image - removing didn't cause any harm...*/));
+			height = Math.min(textExtent.y, innerBounds.height);	
+			align(width, height, innerBounds, contentLocation, textAlignment);
+			
+			if (rc.getRenderPass() == RenderPass.FOREGROUND) {
+				//
+				// Perform an animation on the row - if required. This can cause the text to bounce into view.
+				//			
+				if ((row != null) && (row != gridModel.getColumnHeaderRow()) && (row.getAnimation() != null)) {
+					row.getAnimation().animateText(rc, this, row);
+				}
+				
+				if (highlightFilterMatch) {
+					//
+					// Use text highlighting if there's a FilterMatchRange in this column (and it's trackable).
+					//
+					gc.setBackground(getColour(styleRegistry.getFilterMatchBackground()));
+					gc.setForeground(getColour(styleRegistry.getFilterMatchForeground()));
+					
+					
+					
+					if (text == null || text.length() == 0) {
+						//
+						// There's no text to highlight (but the blank cell matches the filter), so render a
+						// highlighted box.
+						//
+						gc.fillRectangle(innerBounds);
+					}
+					
+					gc.drawText(text, contentLocation.x, contentLocation.y);
+		
+				} else {
+					//
+					// Use normal colours if we're not highlighting a filter result.
+					//
+					gc.setForeground(getColour(cellStyle.getForeground()));
+					gc.drawText(text, contentLocation.x, contentLocation.y, SWT.DRAW_DELIMITER | SWT.DRAW_TAB | SWT.DRAW_TRANSPARENT);
+				}
+			}
+		}
+		
+		if (widthCap > 0) {
+			innerBounds.width += widthCap;
+			gc.setClipping(innerBounds);
+		}
+
+		if (!cellStyle.isAllowContentOverlap()) {
+			innerBounds.x += (width + cellStyle.getPaddingImageText());
+			innerBounds.width -= (height + cellStyle.getPaddingImageText());
 		}
 	}
 	
