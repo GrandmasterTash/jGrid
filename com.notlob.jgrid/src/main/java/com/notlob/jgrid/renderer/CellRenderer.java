@@ -284,8 +284,14 @@ public class CellRenderer<T> extends Renderer<T> {
 	 */
 	protected void paintCellImages(final RenderContext rc, final Column column, final Row<T> row, final CellStyle cellStyle) throws Exception {
 		final List<Image> images = getCellImages(column, row);
-
+		final boolean highlightFilterMatch = doesCellHaveStyleableFilterMatch(row, column);
+		
 		if (!images.isEmpty()) {
+			if (highlightFilterMatch && cellStyle.getContentStyle() == ContentStyle.IMAGE) {
+				rc.getGC().setBackground(getColour(styleRegistry.getFilterMatchBackground()));
+				rc.getGC().fillRoundRectangle(innerBounds.x, innerBounds.y, innerBounds.width, innerBounds.height, 4, 4);
+			}
+			
 			//
 			// Get the combines bounds of all the images.
 			//
@@ -303,6 +309,8 @@ public class CellRenderer<T> extends Renderer<T> {
 			final AlignmentStyle imageAlignment = (cellStyle.getImageAlignment() != null) ? cellStyle.getImageAlignment() : (column.getImageAlignment() != null ? column.getImageAlignment() : AlignmentStyle.LEFT_CENTER);
 			align(imageExtent.x, imageExtent.y, innerBounds, contentLocation, imageAlignment);
 			
+			// TODO: Highlight if filter match.
+			
 			//
 			// Render the images left-to-right in this space.
 			//
@@ -318,6 +326,12 @@ public class CellRenderer<T> extends Renderer<T> {
 				final int paddingImageText = (cellStyle.getPaddingImageText() == null ? 0 : cellStyle.getPaddingImageText());
 				innerBounds.x += (imageExtent.x + paddingImageText);
 				innerBounds.width -= (imageExtent.x + paddingImageText);
+			}
+			
+		} else {
+			if (highlightFilterMatch && cellStyle.getContentStyle() == ContentStyle.IMAGE) {
+				rc.getGC().setBackground(getColour(styleRegistry.getFilterMatchBackground()));
+				rc.getGC().fillRoundRectangle(innerBounds.x, innerBounds.y, innerBounds.width, innerBounds.height, 4, 4);
 			}
 		}
 	}
