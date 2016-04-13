@@ -131,10 +131,12 @@ public class SortModel<T> {
 
 	/**
 	 * Ascertain where the specified row should live given the current sort model.
+	 * 
+	 * -1 is returned if the row is already present.
 	 */
 	public int getSortedRowIndex(final Row<T> row) {
 		final int index = Collections.binarySearch(gridModel.getRows(), row, rowComparator);
-		return (index * -1) - 1;
+		return index < 0 ? (index * -1) - 1 : index;
 	}
 	
 	public List<Column> getSortedColumns() {

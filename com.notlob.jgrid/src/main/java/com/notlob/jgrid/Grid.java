@@ -650,7 +650,7 @@ public class Grid<T> extends Composite {
 	}
 	
 	public IGridLabelProvider<T> getLabelProvider() {
-		checkWidget();
+//		checkWidget();
 		return labelProvider;
 	}
 

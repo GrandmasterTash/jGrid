@@ -586,7 +586,7 @@ public class GridModel<T> {
 					//
 					// Should the row move?
 					//
-					final int expectedIndex = Math.abs(sortModel.getSortedRowIndex(row));
+					final int expectedIndex = sortModel.getSortedRowIndex(row);
 					final int actualIndex = row.getRowIndex();
 					
 					if (expectedIndex != actualIndex) {
@@ -594,7 +594,7 @@ public class GridModel<T> {
 						// Move the row to the correct position.
 						//
 						rows.remove(row);
-						final int newExpectedIndex = Math.abs(sortModel.getSortedRowIndex(row));
+						final int newExpectedIndex = sortModel.getSortedRowIndex(row);
 						rows.add(newExpectedIndex, row);
 						row.setRowIndex(newExpectedIndex);
 						
@@ -663,15 +663,15 @@ public class GridModel<T> {
 	/**
 	 * Remove child rows and re-insert them into the correct location.
 	 */
-	private void moveVisibleChildren(Row<T> row) {
+	private void moveVisibleChildren(final Row<T> row) {
 		final List<Row<T>> children = getChildren(row);
 		for (Row<T> child : children) {
 			if (child.isVisible()) {
 				rows.remove(child);
 				
-				final int newExpectedIndex = Math.abs(sortModel.getSortedRowIndex(child));
+				final int newExpectedIndex = sortModel.getSortedRowIndex(child);
 				rows.add(newExpectedIndex, child);
-				row.setRowIndex(newExpectedIndex);
+				child.setRowIndex(newExpectedIndex);
 			}
 		}	
 	}
