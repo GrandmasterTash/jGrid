@@ -366,17 +366,17 @@ public class Grid<T> extends Composite {
 	}
 
 	public List<Column> getColumns() {
-		checkWidget();
+//		checkWidget();
 		return gridModel.getColumns();
 	}
 	
 	public List<Column> getAllColumns() {
-		checkWidget();
+//		checkWidget();
 		return gridModel.getAllColumns();
 	}
 
 	public Column getColumnById(final String columnId) {
-		checkWidget();
+//		checkWidget();
 		return gridModel.getColumnById(columnId);
 	}
 	
