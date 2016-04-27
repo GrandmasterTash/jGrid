@@ -93,6 +93,7 @@ public class FilterModel<T> {
 				for (Row<T> relative : gridModel.getWholeGroup(row)) {
 					if (filter.matches(relative)) {
 						matches = true;
+						break;
 					}
 				}
 				
