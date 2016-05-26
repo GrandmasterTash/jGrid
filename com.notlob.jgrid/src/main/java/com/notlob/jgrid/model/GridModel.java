@@ -14,6 +14,7 @@ import com.notlob.jgrid.Grid.GroupRenderStyle;
 import com.notlob.jgrid.model.filtering.FilterModel;
 import com.notlob.jgrid.providers.IGridContentProvider;
 import com.notlob.jgrid.providers.IGridLabelProvider;
+import com.notlob.jgrid.providers.IRowProvider;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.StyleRegistry;
 import com.notlob.jgrid.util.ResourceManager;
@@ -90,6 +91,7 @@ public class GridModel<T> {
 	// Providers to get / format data, images, tool-tips, etc.
 	private IGridContentProvider<T> contentProvider;
 	private IGridLabelProvider<T> labelProvider;
+	private IRowProvider<T> rowProvider;
 	
 	// Used in row height calculations.
 	private final ResourceManager resourceManager;
@@ -105,6 +107,7 @@ public class GridModel<T> {
 		void selectionChanged();
 		void heightChanged(final int delta);
 		void rowCountChanged();
+		void filtersChanging();
 		void filtersChanged();
 		void elementsAdded(final Collection<T> elements);
 		void elementsUpdated(final Collection<T> elements);
@@ -138,6 +141,7 @@ public class GridModel<T> {
 		columnHeaderRow = new Row<T>(null);
 		groupSelectorColumn = new Column(null);
 		groupSelectorColumn.setWidth(16);
+		rowProvider = new DefaultRowProvider<T>();
 	}
 	
 	public void enableEvents(final boolean enable) {
@@ -309,6 +313,14 @@ public class GridModel<T> {
 		clearFilters();
 	}
 	
+	public IRowProvider<T> getRowProvider() {
+		return rowProvider;
+	}
+	
+	public void setRowProvider(final IRowProvider<T> rowProvider) {
+		this.rowProvider = rowProvider;
+	}
+	
 	public void clearFilters() {
 		filterModel.clear();
 	}
@@ -459,7 +471,7 @@ public class GridModel<T> {
 			//
 			// Add a row for the element.
 			//
-			final Row<T> row = new Row<T>(element);
+			final Row<T> row = rowProvider.createRow(element);
 			row.setHeight(labelProvider.getDefaultRowHeight(element));
 			
 			if (addRow(row)) {
@@ -866,6 +878,12 @@ public class GridModel<T> {
 	public void fireSelectionChangedEvent() {
 		for (final IModelListener<T> listener : listeners) {
 			listener.selectionChanged();
+		}
+	}
+	
+	public void fireFiltersChangingEvent() {
+		for (final IModelListener<T> listener : listeners) {
+			listener.filtersChanging();
 		}
 	}
 	

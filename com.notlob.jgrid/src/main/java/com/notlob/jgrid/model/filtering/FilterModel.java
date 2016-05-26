@@ -25,12 +25,14 @@ public class FilterModel<T> {
 	}
 
 	public void addFilters(final Collection<Filter<T>> filters) {
+		gridModel.fireFiltersChangingEvent();
 		this.filters.addAll(filters);
 		applyFilters();
 		gridModel.fireFiltersChangedEvent();
 	}
 
 	public void removeFilters(final Collection<Filter<T>> filters) {
+		gridModel.fireFiltersChangingEvent();
 		this.filters.removeAll(filters);
 		applyFilters();
 		gridModel.fireFiltersChangedEvent();

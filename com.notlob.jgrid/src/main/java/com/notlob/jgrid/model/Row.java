@@ -26,8 +26,8 @@ public class Row<T> {
 
 	// If this row has matched a filter which highlights results, store the matches here.
 	private Collection<IHighlightingFilter> filterMatches;
-
-	Row(final T element) {
+	
+	public Row(final T element) {
 		this.element = element;
 		height = -1;
 		frame = -1; // No animation.

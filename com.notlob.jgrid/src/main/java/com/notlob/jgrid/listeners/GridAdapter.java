@@ -53,6 +53,10 @@ public class GridAdapter<T> implements IGridListener<T> {
 	}
 	
 	@Override
+	public void filtersChanging() {
+	}
+	
+	@Override
 	public void filtersChanged() {
 	}
 	

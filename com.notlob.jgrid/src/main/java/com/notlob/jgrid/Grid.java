@@ -36,6 +36,7 @@ import com.notlob.jgrid.model.filtering.Filter;
 import com.notlob.jgrid.providers.IGridContentProvider;
 import com.notlob.jgrid.providers.IGridLabelProvider;
 import com.notlob.jgrid.providers.IGridToolTipProvider;
+import com.notlob.jgrid.providers.IRowProvider;
 import com.notlob.jgrid.renderer.GridRenderer;
 import com.notlob.jgrid.renderer.animation.RowAnimation;
 import com.notlob.jgrid.styles.StyleRegistry;
@@ -583,6 +584,7 @@ public class Grid<T> extends Composite {
 
 	public void applyFilters() {
 		checkWidget();
+		gridModel.fireFiltersChangingEvent();
 		gridModel.getFilterModel().applyFilters();
 		gridModel.fireFiltersChangedEvent();
 	}
@@ -676,6 +678,15 @@ public class Grid<T> extends Composite {
 	public IGridContentProvider<T> getContentProvider() {
 		checkWidget();
 		return contentProvider;
+	}
+	
+	public void setRowProvider(final IRowProvider<T> rowProvider) {
+		checkWidget();
+		this.gridModel.setRowProvider(rowProvider);
+	}
+	
+	public IRowProvider<T> getRowProvider() {
+		return this.gridModel.getRowProvider();
 	}
 	
 	public void collapseGroups(final Collection<T> elements) {
@@ -1243,6 +1254,13 @@ public class Grid<T> extends Composite {
 			for (final IGridListener<T> listener : listeners) {
 				listener.elementsRemoved(elements);
 			}
+		}
+		
+		@Override
+		public void filtersChanging() {
+			for (final IGridListener<T> listener : listeners) {
+				listener.filtersChanging();
+			}			
 		}
 		
 		@Override
