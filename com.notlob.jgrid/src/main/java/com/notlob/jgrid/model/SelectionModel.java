@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.notlob.jgrid.Grid.SelectionStyle;
 
 public class SelectionModel<T> {
@@ -19,6 +22,8 @@ public class SelectionModel<T> {
 	private boolean selectGroupIfAllChildrenSelected = true;
 	private boolean selectNextOnRemove = true;
 	private SelectionStyle selectionStyle = SelectionStyle.ROW_BASED;
+	
+	private final static Logger logger = LoggerFactory.getLogger(SelectionModel.class);
 
 	public SelectionModel(final GridModel<T> gridModel) {
 		this.gridModel = gridModel;
@@ -148,7 +153,7 @@ public class SelectionModel<T> {
 			final Row<T> row = gridModel.getRow(element);
 			
 			if (row == null) {
-				System.err.println("Cannot find row for element to select " + element);
+				logger.error("Cannot find row for element to select " + element);
 			} else {
 				rowsToSelect.add(row);
 			}

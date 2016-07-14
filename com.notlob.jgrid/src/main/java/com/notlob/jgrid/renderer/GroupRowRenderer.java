@@ -4,6 +4,8 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
@@ -45,6 +47,8 @@ public class GroupRowRenderer<T> extends Renderer<T> {
 	protected final Point contentLocation;
 	protected final Rectangle groupCellBounds;
 	protected final ContentRequest paintRequest;
+	
+	private final static Logger logger = LoggerFactory.getLogger(GroupRowRenderer.class);
 	
 	public GroupRowRenderer(final Grid<T> grid, final CellRenderer<T> cellRenderer) {
 		super(grid);
@@ -88,8 +92,7 @@ public class GroupRowRenderer<T> extends Renderer<T> {
 				//
 				// Print the error to the std err and ensure we only do this once to avoid log fillage.
 				//
-				System.err.println(String.format("Failed to paint group row: %s", t.getMessage()));
-				t.printStackTrace(System.err);
+				logger.error(String.format("Failed to paint group row: %s", t.getMessage()));
 				rc.setErrorLogged(true);
 			}
 		}

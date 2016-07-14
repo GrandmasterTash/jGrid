@@ -14,6 +14,8 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.ToolTip;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.Grid.GroupRenderStyle;
@@ -63,6 +65,8 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	protected Column groupColumn = null;  // << Mouse is over a group field header.
 	protected Column groupValue = null;	  // << Mouse is over a group field value not the header;
 	
+	private final static Logger logger = LoggerFactory.getLogger(GridMouseHandler.class);
+	
 	public GridMouseHandler(final Grid<T> grid, final GC gc, final Collection<IGridListener<T>> listeners, final ToolTip toolTip) {
 		this.grid = grid;
 		this.gridModel = grid.getGridModel();
@@ -82,7 +86,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			hideTooltip();
 			
 		} catch (final Throwable t) {
-			System.err.println(t);
+			logger.error("MouseExit failed.", t);
 		}
 	}
 
@@ -92,7 +96,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			showToolTipIfRequired(e.x, e.y);
 			
 		} catch (final Throwable t) {
-			System.err.println(t);
+			logger.error("MouseHover failed.", t);
 		}
 	}
 	
@@ -145,7 +149,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			}
 			
 		} catch (final Throwable t) {
-			System.err.println(t);
+			logger.error("MouseMove failed", t);
 		}
 	}
 	
@@ -190,7 +194,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			}
 			
 		} catch (final Throwable t) {
-			System.err.println(t);
+			logger.error("MouseDown failed", t);
 		}
 	}
 
@@ -278,7 +282,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			notifyListeners(e.x, e.y, e.button, e.stateMask, e.count);
 			
 		} catch (final Throwable t) {
-			System.err.println(t);
+			logger.error("MouseUp Failed.", t);
 		}
 	}
 	

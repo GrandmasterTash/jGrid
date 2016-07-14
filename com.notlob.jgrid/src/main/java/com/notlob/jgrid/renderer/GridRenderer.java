@@ -10,6 +10,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.Grid.GroupRenderStyle;
@@ -65,6 +67,8 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	
 	// Used to render the grid's borderlines.
 	protected final Rectangle borderBounds;
+	
+	private final Logger logger = LoggerFactory.getLogger(GridRenderer.class);
 
 	public GridRenderer(final Grid<T> grid) {
 		super(grid);
@@ -144,6 +148,10 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	public void paintControl(final PaintEvent e) {
 		if (rc.isPainting()) {
 			throw new IllegalAccessError("Already painting");
+		}
+		
+		if ((grid.getSize().x == 0) || (grid.getSize().y == 0)) {
+			return;
 		}
 		
 		GC gc = null;
@@ -274,8 +282,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 				//
 				// Print the error to the std err and ensure we only do this once to avoid log fillage.
 				//
-				System.err.println(String.format("Failed to paint control: %s", t.getMessage()));
-				t.printStackTrace(System.err);
+				logger.error(String.format("Failed to paint control: %s", t.getMessage()));
 				rc.setErrorLogged(true);
 			}
 
@@ -417,7 +424,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 				textLayout.draw(gc, 20, 20);
 			}
 		} catch (Throwable t) {
-			System.err.println("Failed to diag" + t);
+			logger.error("Failed to diag" + t);
 		}
 	}
 

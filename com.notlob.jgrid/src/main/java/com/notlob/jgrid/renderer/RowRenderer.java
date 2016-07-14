@@ -4,6 +4,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.input.GridMouseHandler;
@@ -30,6 +32,8 @@ public class RowRenderer<T> extends Renderer<T> {
 	protected final Rectangle cellBounds;
 	
 	protected final Rectangle groupSelectorBounds;
+	
+	private final static Logger logger = LoggerFactory.getLogger(RowRenderer.class);
 	
 	public RowRenderer(final Grid<T> grid, final CellRenderer<T> cellRenderer) {
 		super(grid);
@@ -106,8 +110,7 @@ public class RowRenderer<T> extends Renderer<T> {
 				//
 				// Print the error to the std err and ensure we only do this once to avoid log fillage.
 				//
-				System.err.println(String.format("Failed to paint row: %s", t.getMessage()));
-				t.printStackTrace(System.err);
+				logger.error(String.format("Failed to paint row: %s", t.getMessage()));
 				rc.setErrorLogged(true);
 			}
 		}

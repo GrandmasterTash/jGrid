@@ -11,6 +11,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
@@ -48,6 +50,8 @@ public class CellRenderer<T> extends Renderer<T> {
 	protected final TextLayout textLayout;
 	
 	protected final StyleCollector anchorCollector;
+	
+	private final static Logger logger = LoggerFactory.getLogger(CellRenderer.class);
 	
 	public CellRenderer(final Grid<T> grid) {
 		super(grid);
@@ -120,8 +124,7 @@ public class CellRenderer<T> extends Renderer<T> {
 				//
 				// Print the error to the std err and ensure we only do this once to avoid log fillage.
 				//
-				System.err.println(String.format("Failed to paint: %s", t.getMessage()));
-				t.printStackTrace(System.err);
+				logger.error(String.format("Failed to paint: %s", t.getMessage()));
 				rc.setErrorLogged(true);
 			}
 

@@ -12,6 +12,8 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Used to manage SWT UI resources that need disposing when the grid is disposed.
@@ -25,6 +27,8 @@ public class ResourceManager {
 	private final Map<FontData, Font> fonts;
 	private final Map<String, Color> colours;
 	private final Map<String, Image> images;
+	
+	private final static Logger logger = LoggerFactory.getLogger(ResourceManager.class);
 
 	public ResourceManager(final Display display) {
 		this.display = display;
@@ -59,7 +63,7 @@ public class ResourceManager {
 			final InputStream input = getClass().getResourceAsStream(fullPath);
 
 			if (input == null) {
-				System.err.println("Unable to locate resource " + fullPath);
+				logger.error("Unable to locate resource " + fullPath);
 			} 
 
 			try {
