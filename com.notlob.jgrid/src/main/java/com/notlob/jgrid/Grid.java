@@ -1124,16 +1124,22 @@ public class Grid<T> extends Composite {
 	public void reveal(final T element) {
 		checkWidget();
 		final Column column = gridModel.getColumns().get(0);
-		viewport.reveal(gc, column, gridModel.getRow(element));
+		final Row<T> row = gridModel.getRow(element);
 		
-		fireRevealListeners(column, element);
+		if (column != null && row != null) {
+			viewport.reveal(gc, column, row);		
+			fireRevealListeners(column, element);
+		}
 	}
 	
 	public void reveal(final Column column, final T element) {
 		checkWidget();
-		viewport.reveal(gc, column, gridModel.getRow(element));
+		final Row<T> row = gridModel.getRow(element);
 		
-		fireRevealListeners(column, element);
+		if (column != null && row != null) {
+			viewport.reveal(gc, column, row);		
+			fireRevealListeners(column, element);
+		}
 	}
 	
 	protected void fireRevealListeners(Column column, T element) {
