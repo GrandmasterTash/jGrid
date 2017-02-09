@@ -168,7 +168,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				//
 				// If we're not resizing, maybe we're dragging a column?
 				//
-				if (resizing == null) {
+				if (resizing == null && isColumnMovingEnabled()) {
 					repositioningDetect = viewport.getColumnForMouseOperation(gc, e.x, e.y, ColumnMouseOperation.REPOSITION);
 				}
 				
