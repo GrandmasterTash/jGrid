@@ -97,6 +97,7 @@ public class Grid<T> extends Composite {
 	protected boolean highlightAnchorInHeaders = true;
 	protected boolean highlightAnchorCellBorder = true;
 	protected boolean sortingEnabled = true;
+	protected boolean columnMovingEnabled = true;
 	
 	// Paints some diagnostic details.
 	protected boolean debugPainting = false;
@@ -329,6 +330,14 @@ public class Grid<T> extends Composite {
 	public void setSortedEnabled(final boolean sortingEnabled) {
 		checkWidget();
 		this.sortingEnabled = sortingEnabled;
+	}
+	
+	public boolean isColumnMovingEnabled() {
+		return this.columnMovingEnabled;
+	}
+	
+	public void setColumnMovingEnabled(final boolean columnMovingEnabled) {
+		this.columnMovingEnabled = columnMovingEnabled;
 	}
 
 	public GroupRenderStyle getGroupRenderStyle() {

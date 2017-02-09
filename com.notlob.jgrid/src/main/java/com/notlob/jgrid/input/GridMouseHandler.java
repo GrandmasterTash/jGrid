@@ -47,6 +47,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	protected boolean shift; // Tracked in mouseMove and mouseUp.
 	protected boolean ctrl;
 	protected boolean alt;
+	protected boolean canReposition;
 	protected Column resizing;	
 	protected Column repositioning;
 	protected Column repositioningDetect;
@@ -503,7 +504,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	 * Check, if the user was repositioning a column, if they've completed the move. 
 	 */
 	protected boolean handleColumnRepositioned() {
-		if (repositioning != null) {						
+		if (repositioning != null && isColumnMovingEnabled()) {						
 			//
 			// Reposition the column currently being dragged.
 			//
@@ -576,6 +577,10 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		return (grid.getGroupRenderStyle() == GroupRenderStyle.INLINE);
 	}
 
+	protected boolean isColumnMovingEnabled() {
+		return grid.isColumnMovingEnabled();
+	}
+	
 	/**
 	 * Tracks the column and row under the mouse as it moves.
 	 *
@@ -672,7 +677,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		//
 		// See if the user has initiated a drag column move drag.
 		//
-		if (mouseDown && (repositioning == null)) {
+		if (mouseDown && (repositioning == null) && isColumnMovingEnabled()) {
 			repositioning = repositioningDetect;
 		}			
 		
