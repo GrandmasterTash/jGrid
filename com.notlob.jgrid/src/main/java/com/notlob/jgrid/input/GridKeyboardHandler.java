@@ -64,7 +64,6 @@ public class GridKeyboardHandler<T> implements KeyListener {
 
 	@Override
 	public void keyPressed(final KeyEvent e) {
-
 		//
 		// Ignore key presses if there's no data or no columns.
 		//
@@ -87,13 +86,22 @@ public class GridKeyboardHandler<T> implements KeyListener {
 					moveAnchor(e.keyCode);
 					
 					//
-					// Ensure the row is selected.
+					// Ensure the row or column is selected.
 					//
-					final Row<T> row = gridModel.getRow(gridModel.getSelectionModel().getAnchorElement());
-					if (!row.isSelected()) {
-						gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row));	
+					switch (selectionModel.getSelectionStyle()) {
+						case MULTI_COLUMN_BASED:
+							if (!selectionModel.getAnchorColumn().isSelected()) {
+								gridModel.getSelectionModel().toggleColumnSelections(Collections.singletonList(selectionModel.getAnchorColumn()));
+							}
+							break;
+							
+						default:
+							final Row<T> row = gridModel.getRow(gridModel.getSelectionModel().getAnchorElement());
+							if (!row.isSelected()) {
+								gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row));	
+							}
+							break;
 					}
-					
 					
 				} else if (ctrl) {
 					//
@@ -110,7 +118,15 @@ public class GridKeyboardHandler<T> implements KeyListener {
 					//
 					// Set the new selection to the anchor row / column.
 					//
-					selectionModel.setSelectedRows(Collections.singletonList(gridModel.getRow(selectionModel.getAnchorElement())));
+					switch (selectionModel.getSelectionStyle()) {
+						case SINGLE_COLUMN_BASED: 
+						case MULTI_COLUMN_BASED:
+							selectionModel.setSelectedColumns(Collections.singletonList(selectionModel.getAnchorColumn()));
+							break;
+						default: 
+							selectionModel.setSelectedRows(Collections.singletonList(gridModel.getRow(selectionModel.getAnchorElement())));
+							break;
+					}
 				}
 				
 				break;

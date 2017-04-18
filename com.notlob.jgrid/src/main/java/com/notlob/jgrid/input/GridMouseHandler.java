@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.Grid.GroupRenderStyle;
+import com.notlob.jgrid.Grid.SelectionStyle;
 import com.notlob.jgrid.listeners.IGridListener;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.ColumnMouseOperation;
@@ -181,13 +182,24 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				//
 				// Move the anchor to the thing under the mouse.
 				//
-				if ((row != null) && (row != gridModel.getColumnHeaderRow())) {
-					if (!row.isSelected()) {
-						gridModel.getSelectionModel().setSelectedRows(Collections.singletonList(row));
-					}
-					
-					gridModel.getSelectionModel().setAnchorElement(row.getElement());
-				}
+				switch (gridModel.getSelectionModel().getSelectionStyle()) {
+					case MULTI_COLUMN_BASED:
+					case SINGLE_COLUMN_BASED:
+						if (column != null && (!column.isSelected())) {
+							gridModel.getSelectionModel().setSelectedColumns(Collections.singletonList(column));
+						}
+						break;
+						
+					default:
+						if ((row != null) && (row != gridModel.getColumnHeaderRow())) {
+							if (!row.isSelected()) {
+								gridModel.getSelectionModel().setSelectedRows(Collections.singletonList(row));
+							}
+							
+							gridModel.getSelectionModel().setAnchorElement(row.getElement());
+						}
+						break;
+				}				
 				
 				if ((column != null) && (column != gridModel.getGroupSelectorColumn()) && (column != gridModel.getRowNumberColumn())) {
 					gridModel.getSelectionModel().setAnchorColumn(column);
@@ -388,36 +400,57 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 				}
 			}
 			
-			if (!(shift || ctrl)) {
+			//
+			// If we're not selecting columns we're selecting rows (by default).
+			//
+			final boolean selectColumn = (gridModel.getSelectionModel().getSelectionStyle() == SelectionStyle.MULTI_COLUMN_BASED || gridModel.getSelectionModel().getSelectionStyle() == SelectionStyle.SINGLE_COLUMN_BASED); 
+			
+			if (!(shift || ctrl)) {				
 				//
 				// If the right mouse button is used, and the row being right-clicked is already selected, don't un-select it.
 				//
 				if (!((button == RIGHT_MOUSE_BUTTON) && (row.isSelected()))) {
 					//
-					// Single row/group replace.
+					// Single row/group or column replace.
 					//
-					final List<Row<T>> rows = new ArrayList<>();
-					rows.addAll((gridModel.isParentRow(row) || (gridModel.getGroupSelectorColumn() == column)) ? gridModel.getWholeGroup(row) : Collections.singletonList(row));
-					gridModel.getSelectionModel().setSelectedRows(rows);
+					if (selectColumn) {
+						gridModel.getSelectionModel().setSelectedColumns(Collections.singletonList(column));						
+					} else {
+						final List<Row<T>> rows = new ArrayList<>();
+						rows.addAll((gridModel.isParentRow(row) || (gridModel.getGroupSelectorColumn() == column)) ? gridModel.getWholeGroup(row) : Collections.singletonList(row));
+						gridModel.getSelectionModel().setSelectedRows(rows);
+					}
 				}
 
 			} else if (ctrl && !shift) {
 				//
-				// Single row/group toggle.
+				// Single row/group or column toggle.
 				//
-				gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row));
+				if (selectColumn) {
+					gridModel.getSelectionModel().toggleColumnSelections(Collections.singletonList(column));
+				} else {					
+					gridModel.getSelectionModel().toggleRowSelections(Collections.singletonList(row));
+				}
 
 			} else if (!ctrl && shift) {
 				//
 				// Range replace.
 				//
-				gridModel.getSelectionModel().selectRange(row, false);
+				if (selectColumn) {
+					gridModel.getSelectionModel().selectRange(column, false);
+				} else {
+					gridModel.getSelectionModel().selectRange(row, false);
+				}
 
 			} else if (ctrl && shift) {
 				//
 				// Range addition.
 				//
-				gridModel.getSelectionModel().selectRange(row, true);
+				if (selectColumn) {
+					gridModel.getSelectionModel().selectRange(column, true);
+				} else {
+					gridModel.getSelectionModel().selectRange(row, true);
+				}
 			}
 		}
 

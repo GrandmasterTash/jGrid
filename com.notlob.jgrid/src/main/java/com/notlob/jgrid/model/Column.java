@@ -24,6 +24,7 @@ public class Column {
 	private boolean visible;
 	private boolean pinned;
 	private boolean wrap;
+	private boolean selected;
 	private AlignmentStyle textAlignment;
 	private AlignmentStyle imageAlignment;
 
@@ -52,6 +53,7 @@ public class Column {
 		sb.append(String.format(" Width [%s]", width));
 		sb.append(String.format(" [%s]", visible ? "visible" : "hidden"));
 		sb.append(String.format(" [%s]", pinned ? "pinned" : "not pinned"));
+		sb.append(String.format(" [%s]", selected ? "selected" : "not selected"));
 		sb.append(String.format(" Sort [%s, %s]", sortDirection, sortSequence));
 		sb.append(String.format(" Text-Align [%s] Image-Align [%s]", textAlignment, imageAlignment));
 		sb.append(String.format(" Wrap-Text [%s]", wrap));
@@ -130,7 +132,16 @@ public class Column {
 	public void setVisible(final boolean visible) {
 		this.visible = visible;
 	}
-
+	
+	public boolean isSelected() {
+		return selected;
+	}
+	
+	// Intentionally package protected - let the selection model use it.
+	void setSelected(boolean selected) {
+		this.selected = selected;
+	}
+	
 	public boolean isPinned() {
 		return pinned;
 	}

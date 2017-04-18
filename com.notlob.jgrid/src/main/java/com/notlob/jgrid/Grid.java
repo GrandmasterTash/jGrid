@@ -47,9 +47,10 @@ public class Grid<T> extends Composite {
 	// Affects the rending of the selection region rather than how the selection model works.
 	public enum SelectionStyle {
 		ROW_BASED,
-		COLUMN_BASED,
-		SINGL_CELL_BASED,
-		SINGLE_ROW_BASED
+		SINGLE_COLUMN_BASED,
+		SINGLE_CELL_BASED,
+		SINGLE_ROW_BASED,
+		MULTI_COLUMN_BASED
 	};
 	
 	public enum GroupRenderStyle {

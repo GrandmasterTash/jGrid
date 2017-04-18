@@ -123,7 +123,7 @@ public class FilterModel<T> {
 		//
 		// Build a list of rows to hide that are shown.
 		//
-		final Collection<Row<T>> rowsToHide = new ArrayList<>();
+		final Collection<Row<T>> rowsToHide = new ArrayList<>();		
 		for (final Row<T> row : gridModel.getRows()) {
 			if (!match(row)) {
 				rowsToHide.add(row);
@@ -153,7 +153,7 @@ public class FilterModel<T> {
 		}
 		
 		//
-		// Reseed the row indexes.
+		// Re-seed the row indexes.
 		//
 		gridModel.reindex();
 		gridModel.fireRowCountChangedEvent();

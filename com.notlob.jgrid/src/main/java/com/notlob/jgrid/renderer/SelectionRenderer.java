@@ -20,23 +20,26 @@ public class SelectionRenderer<T> extends Renderer<T> {
 	// The references below are recycled objects - to avoid GC churn.
 	//
 	protected final Point rowLocation;
+	protected final Point columnLocation;
 	protected final Rectangle hoverRegion;
 	protected final Rectangle selectionRegion;
 
 	public SelectionRenderer(final Grid<T> grid) {
 		super(grid);
 		rowLocation = new Point(0, 0);
+		columnLocation = new Point(0, 0);
 		hoverRegion = new Rectangle(0, 0, 0, 0);
 		selectionRegion = new Rectangle(0, 0, 0, 0);		
 	}
 	
 	public void paintSelectionRegion(final RenderContext rc) {
 		switch (grid.getSelectionStyle()) {
-			case COLUMN_BASED:
+			case SINGLE_COLUMN_BASED:
+			case MULTI_COLUMN_BASED:
 				paintColumnBasedSelection(rc);
 				break;
 
-			case SINGL_CELL_BASED:
+			case SINGLE_CELL_BASED:
 				paintCellBasedSelection(rc);
 				break;
 				
@@ -49,26 +52,74 @@ public class SelectionRenderer<T> extends Renderer<T> {
 	 * Paint a selection region in the column containing the anchor.
 	 */
 	protected void paintColumnBasedSelection(final RenderContext rc) {
-		final Rectangle viewportArea = viewport.getViewportArea(rc.getGC());
-		final Column column = grid.getAnchorColumn();
-		
-		if (column != null) {						
-			selectionRegion.x = viewport.getColumnViewportX(rc.getGC(), column);
-			
-			if (selectionRegion.x != -1) {
-				selectionRegion.y = viewportArea.y;
-				selectionRegion.width = viewport.getColumnWidth(selectionRegion.x, column);
-				selectionRegion.height = grid.getClientArea().height - viewportArea.y - 1;
+		final GC gc = rc.getGC();
+		final Rectangle viewportArea = viewport.getViewportArea(gc);
+		final Row<T> lastRow = grid.getRows().isEmpty() ? null : grid.getRows().get(grid.getRows().size()-1);
+		boolean paintLeftEdge = false;
+		boolean paintRightEdge = false;
+		final boolean paintTopEdge = (viewport.getFirstRowIndex() == 0);;
+		final boolean paintBottomEdge = lastRow == null ? false : viewport.isRowPartiallyVisible(lastRow);
+		boolean inSelection = false;
+
+		columnLocation.x = viewportArea.x;
+		columnLocation.y = viewportArea.y;
+		selectionRegion.x = -1;
+		selectionRegion.y = viewportArea.y;
+		selectionRegion.width = -1;
+		selectionRegion.height = paintBottomEdge 
+				? (viewport.getRowY(rc.getGC(), lastRow) + grid.getRowHeight(lastRow)) 
+				: grid.getClientArea().height - viewportArea.y - 1;
 				
-				paintSelectionRegion(rc, selectionRegion, (viewport.getFirstRowIndex() == 0), true, true, true, styleRegistry.getSelectionRegionStyle());
+		//
+		// Paint selected column regions - a region is a contiguous block of selected rows.
+		//
+		for (int columnIndex=viewport.getFirstColumnIndex(); columnIndex<viewport.getLastVisibleColumnIndex(); columnIndex++) {
+			final Column column = gridModel.getColumns().get(columnIndex);
+
+			if (column.isSelected()) {
+				//
+				// Ascertain if the left and right edges need painting.
+				//
+				paintLeftEdge = paintLeftEdge || (columnIndex == 0) || (!gridModel.getColumns().get(columnIndex-1).isSelected());
+				paintRightEdge = paintRightEdge || (columnIndex == (gridModel.getColumns().size() - 1)) || !gridModel.getColumns().get(columnIndex + 1).isSelected();
+				
+				if (inSelection) {
+					//
+					// Expand the selection region.
+					//
+					selectionRegion.width += column.getWidth();
+
+				} else {
+					//
+					// Start a new selection region.
+					//
+					selectionRegion.x = columnLocation.x;
+					selectionRegion.width = column.getWidth();
+				}
+
+			} else if (inSelection) {
+				//
+				// This is the next column after a selection region. We now need to paint the region.
+				//
+				paintSelectionRegion(rc, selectionRegion, paintTopEdge, paintRightEdge, paintBottomEdge, paintLeftEdge, getSelectionRegionStyle());
+				paintLeftEdge = false;
+				paintRightEdge = false;
 			}
-			
-		} else {
-			selectionRegion.x = -1;
-			selectionRegion.y = -1;
-			selectionRegion.width = -1;
-			selectionRegion.height= -1;
-		}		
+
+			inSelection = column.isSelected();
+			columnLocation.x += (column.getWidth() + styleRegistry.getCellSpacingHorizontal());
+		}
+		
+		//
+		// We'll need to paint the last selection region.
+		//
+		if (inSelection) {
+			//
+			// If the next row beyond the viewport exists and is selected, don't draw the bottom
+			//
+//			paintRightEdge = viewport.isColumnVisible(column);
+			paintSelectionRegion(rc, selectionRegion, paintTopEdge, paintRightEdge, paintBottomEdge, paintLeftEdge, getSelectionRegionStyle());
+		}
 	}
 
 	/**

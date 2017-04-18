@@ -547,14 +547,23 @@ public class GridModel<T> {
 		// If there WAS a selection and now there is NONE then select the row or group AFTER the last 
 		// previously selected row or group.
 		//
-		if (selectionModel.isSelectNextOnRemove() && (lastSelectedIndex != -1) && (selectionModel.getSelectedElements().isEmpty())) {
-			final int nextIndex = lastSelectedIndex - elements.size() + 1;
+		switch (selectionModel.getSelectionStyle()) {
+			case MULTI_COLUMN_BASED:
+			case SINGLE_COLUMN_BASED:
+					// Do nothing.
+				break;
 			
-			if ((nextIndex >= 0) && (nextIndex <= (rows.size()) && !rows.isEmpty())) {
-				final Row<T> row = rows.get(Math.min(nextIndex, rows.size() - 1));
-				final List<Row<T>> rowsToSelect = isGroupRow(row) ? getWholeGroup(row) : Collections.singletonList(row); 
-				selectionModel.setSelectedRows(rowsToSelect);
-			}
+			default:
+				if (selectionModel.isSelectNextOnRemove() && (lastSelectedIndex != -1) && (selectionModel.getSelectedElements().isEmpty())) {
+					final int nextIndex = lastSelectedIndex - elements.size() + 1;
+					
+					if ((nextIndex >= 0) && (nextIndex <= (rows.size()) && !rows.isEmpty())) {
+						final Row<T> row = rows.get(Math.min(nextIndex, rows.size() - 1));
+						final List<Row<T>> rowsToSelect = isGroupRow(row) ? getWholeGroup(row) : Collections.singletonList(row); 
+						selectionModel.setSelectedRows(rowsToSelect);
+					}
+				}
+				break;
 		}
 		
 		//
@@ -758,7 +767,7 @@ public class GridModel<T> {
 	public void showRow(final Row<T> row) {
 		final int insertIndex = sortModel.getSortedRowIndex(row);
 
-		if (insertIndex >= 0) {
+		if (insertIndex >= 0) {			
 			rows.add(insertIndex, row);
 			row.setRowIndex(insertIndex);
 			

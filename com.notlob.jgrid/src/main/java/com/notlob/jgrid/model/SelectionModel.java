@@ -15,6 +15,7 @@ public class SelectionModel<T> {
 
 	private final GridModel<T> gridModel;
 	private final Set<T> selectedElements;
+	private final List<Column> selectedColumns;
 	private T anchorElement;		// The anchor is the current cell cursor.
 	private Column anchorColumn;	//
 	private Column lastChildAnchorColumn;  // Used when moving the anchor up/down with the keyboard.
@@ -28,6 +29,7 @@ public class SelectionModel<T> {
 	public SelectionModel(final GridModel<T> gridModel) {
 		this.gridModel = gridModel;
 		selectedElements = new HashSet<>();
+		selectedColumns = new ArrayList<>();
 	}
 	
 	public boolean isSelectGroupIfAllChildrenSelected() {
@@ -124,10 +126,42 @@ public class SelectionModel<T> {
 			anchorColumn = null;
 		}
 	}
+	
+	private void selectColumn(final Column column) {
+		if (selectionStyle == SelectionStyle.SINGLE_COLUMN_BASED) {
+			clear(false);
+		}
+		
+		if (column.isVisible()) {
+			column.setSelected(true);
+			selectedColumns.add(column);
+		}
+	}
+	
+	private void unselectColumn(final Column column) {
+		column.setSelected(false);
+		selectedColumns.remove(column);
+		
+		if (column == anchorColumn) {
+			anchorColumn = null;
+		}
+	}
 
 	public void selectAll() {
-		if (selectionStyle == SelectionStyle.ROW_BASED) {
-			setSelectedRows(gridModel.getRows());
+		switch (selectionStyle) {
+			case MULTI_COLUMN_BASED:
+				setSelectedColumns(gridModel.getColumns());
+				break;
+			
+			case ROW_BASED:
+				setSelectedRows(gridModel.getRows());
+				break;
+				
+			case SINGLE_CELL_BASED:
+			case SINGLE_COLUMN_BASED:
+			case SINGLE_ROW_BASED:
+				// Do nothing.
+				break;
 		}
 	}
 
@@ -135,8 +169,13 @@ public class SelectionModel<T> {
 		for (final Object element : selectedElements) {
 			gridModel.getRowsByElement().get(element).setSelected(false);
 		}
+		
+		for (final Column column : selectedColumns) {
+			column.setSelected(false);
+		}
 
 		selectedElements.clear();
+		selectedColumns.clear();
 
 		if (notify) {
 			gridModel.fireSelectionChangedEvent();
@@ -205,6 +244,9 @@ public class SelectionModel<T> {
 	 * Flips the selected state of the rows specified.
 	 */
 	public void toggleRowSelections(final List<Row<T>> rowsToToggle) {
+		//
+		// The first row being selected will become the new anchor.
+		//
 		boolean firstSelection = true;
 		
 		final List<Row<T>> fullListToToggle = new ArrayList<Row<T>>(rowsToToggle);		
@@ -242,6 +284,34 @@ public class SelectionModel<T> {
 		// If all child rows of a group are selected, select the group.
 		//
 		checkGroupSelection(fullListToToggle);
+
+		gridModel.fireSelectionChangedEvent();
+	}
+	
+	/**
+	 * Flips the selected state of the columns specified.
+	 */
+	public void toggleColumnSelections(final List<Column> columnsToToggle) {
+		//
+		// The first column being selected will become the new anchor.
+		//
+		boolean firstSelection = true;
+		
+		//
+		// Toggle selection state.
+		//
+		for (final Column column: columnsToToggle) {
+			if (column.isSelected()) {
+				unselectColumn(column);
+			} else {
+				selectColumn(column);
+
+				if (firstSelection) {
+					firstSelection = false;
+					anchorColumn = column;
+				}
+			}
+		}
 
 		gridModel.fireSelectionChangedEvent();
 	}
@@ -287,6 +357,58 @@ public class SelectionModel<T> {
 		// If all child rows of a group are selected, select the group.
 		//
 		checkGroupSelection(rowsToSelect);
+
+		gridModel.fireSelectionChangedEvent();
+	}
+	
+	public void selectRange(final Column column, final boolean keepExisting) {
+		final int anchorColumnIndex = anchorColumn == null ? 0 : gridModel.getColumns().indexOf(anchorColumn);
+		final int selectionColumnIndex = gridModel.getColumns().indexOf(column);
+		final int lowerIndex = anchorColumnIndex <= selectionColumnIndex ? anchorColumnIndex : selectionColumnIndex;
+		final int upperIndex = anchorColumnIndex > selectionColumnIndex ? anchorColumnIndex : selectionColumnIndex;
+		final List<Column> columnsToSelect = new ArrayList<>();
+
+		for (int columnIndex=lowerIndex; columnIndex<=upperIndex; columnIndex++) {
+			columnsToSelect.add(gridModel.getColumns().get(columnIndex));
+		}
+
+		if (!keepExisting) {
+			clear(false);
+		}
+
+		for (final Column toSelect : columnsToSelect) {
+			selectColumn(toSelect);
+		}
+
+		gridModel.fireSelectionChangedEvent();
+	}
+	
+	/**
+	 * Replace the entire selection with the new one.
+	 */
+	public void setSelectedColumns(final List<Column> columnsToSelect) {
+		//
+		// Clear any existing selection.
+		//
+		clear(false);
+
+		//
+		// Select the new columns.
+		//
+		for (Column column : columnsToSelect) {
+			selectColumn(column);
+		}
+
+		//
+		// Update the selection anchor.
+		//
+		if (columnsToSelect.isEmpty()) {
+			anchorElement = null;
+			anchorColumn = null;
+
+		} else {
+			anchorColumn = columnsToSelect.get(0);
+		}
 
 		gridModel.fireSelectionChangedEvent();
 	}
