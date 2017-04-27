@@ -17,7 +17,8 @@ public class Row<T> {
 	private boolean pinned;
 	private boolean alternateBackground;
 	private int height;
-	private int rowIndex = -1; // Allows updateElements to be implemented without an indexOf.
+	private int rowIndex = -1; // Allows updateElements to be implemented without an indexOf and remove to be called without using objects (and therefore list scans).
+	private int hiddenRowIndex = -1; // Allows remove to be called without using objects (and therefore list scans).
 	private final T element;
 	
 	// An animation frame counter.
@@ -68,6 +69,14 @@ public class Row<T> {
 	
 	public void setRowIndex(int rowIndex) {
 		this.rowIndex = rowIndex;
+	}
+	
+	public int getHiddenRowIndex() {
+		return hiddenRowIndex;
+	}
+	
+	public void setHiddenRowIndex(int hiddenRowIndex) {
+		this.hiddenRowIndex = hiddenRowIndex;
 	}
 
 	public T getElement() {
@@ -141,6 +150,7 @@ public class Row<T> {
 
 	@Override
 	public String toString() {
-		return String.format("Row : Selected [%s] Height [%s] Pinned [%s] Alternate [%s] : %s", selected, height, pinned, alternateBackground, element);
+		return String.format("Row : Index [%s] HiddenIndex [%s] Selected [%s] Height [%s] Pinned [%s] Alternate [%s] : %s", 
+				rowIndex, hiddenRowIndex, selected, height, pinned, alternateBackground, element);
 	}
 }

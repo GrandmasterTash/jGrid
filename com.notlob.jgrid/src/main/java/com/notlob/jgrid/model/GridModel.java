@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.swt.graphics.GC;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.Grid.GroupRenderStyle;
@@ -100,6 +102,8 @@ public class GridModel<T> {
 	// A reference count which, if greater than zero means the grid will stop redrawing, recalculating scrollbars/viewport,
 	// and stop firing rowCount-change notifications to any listeners.
 	private int suppressedEvents = 0;
+	
+	private final static Logger logger = LoggerFactory.getLogger(GridModel.class);
 
 	// An internal listener so the grid can broker events to public listeners or react to internal changes.
 	public interface IModelListener<T> {
@@ -276,7 +280,7 @@ public class GridModel<T> {
 		return rows;
 	}
 
-	public Collection<Row<T>> getHiddenRows() {
+	public List<Row<T>> getHiddenRows() {
 		return hiddenRows;
 	}
 
@@ -527,7 +531,7 @@ public class GridModel<T> {
 		for (final T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
 			if (row != null) {
-				heightDelta -= getRowHeight(row);			
+				heightDelta -= getRowHeight(row);
 				rows.remove(row);
 				hiddenRows.remove(row);
 				rowsByElement.remove(element);
@@ -614,7 +618,7 @@ public class GridModel<T> {
 						//
 						// Move the row to the correct position.
 						//
-						rows.remove(row);
+						rows.remove(row);						
 						final int newExpectedIndex = sortModel.getSortedRowIndex(row);
 						rows.add(newExpectedIndex, row);
 						row.setRowIndex(newExpectedIndex);
@@ -745,6 +749,23 @@ public class GridModel<T> {
 					row.setAlternateBackground(labelProvider.shouldAlternateBackground(rows.get(rowIndex-2), row));
 				}
 			}
+			
+			rowIndex = 0;
+			for (Row<T> row : hiddenRows) {
+				row.setHiddenRowIndex(rowIndex++);
+			}
+		}
+		
+		if (logger.isTraceEnabled()) {
+			final StringBuilder sb = new StringBuilder();
+			sb.append("Reindexed - Visible Rows\n");
+			for (Row<T> row : rows) {
+				sb.append(String.format("%s->%s\n", contentProvider.getElementId(row.getElement()), row));
+			}
+			System.out.println("Hidden Rows");
+			for (Row<T> row : hiddenRows) {
+				sb.append(String.format("%s->%s\n", contentProvider.getElementId(row.getElement()), row));
+			}
 		}
 	}
 
@@ -763,8 +784,12 @@ public class GridModel<T> {
 
 		fireChangeEvent();
 	}
-
+	
 	public void showRow(final Row<T> row) {
+		showRow(row, true);
+	}
+	
+	public void showRow(final Row<T> row, final boolean removeFromOppsosite) {
 		final int insertIndex = sortModel.getSortedRowIndex(row);
 
 		if (insertIndex >= 0) {			
@@ -775,17 +800,32 @@ public class GridModel<T> {
 			rows.add(row);
 			row.setRowIndex(rows.size()-1);
 		}
+
+		if (removeFromOppsosite) {
+			hiddenRows.remove(row);
+			row.setHiddenRowIndex(-1);
+		}
 		
 		row.setVisible(true);
-		hiddenRows.remove(row);
 	}
 
 	public void hideRow(final Row<T> row) {
-		rows.remove(row);
-		selectionModel.removeRow(row);
+		hideRow(row, true);
+	}
+	
+	public void hideRow(final Row<T> row, final boolean removeFromOppsosite) {
+		if (removeFromOppsosite) {
+			rows.remove(row);
+			row.setRowIndex(-1);
+		}
+		
+		if (row.isSelected()) {
+			selectionModel.removeRow(row);
+		}
+				
 		hiddenRows.add(row);
+		row.setHiddenRowIndex(hiddenRows.size()-1);
 		row.setVisible(false);
-		row.setRowIndex(-1);
 	}
 
 	public void groupBy(final List<Column> columns) {

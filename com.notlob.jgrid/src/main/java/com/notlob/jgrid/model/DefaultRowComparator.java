@@ -150,8 +150,8 @@ public class DefaultRowComparator<T> implements Comparator<Row<T>> {
 	 * Fall-back on the index of the element.
 	 */
 	protected int compareAtRowLevel(final T element1, final T element2) {
-		final Integer value1 = getContentProvider().getNaturalIndex(element1);
-		final Integer value2 = getContentProvider().getNaturalIndex(element2);
-		return value1.compareTo(value2);
+		final int value1 = getContentProvider().getNaturalIndex(element1);
+		final int value2 = getContentProvider().getNaturalIndex(element2);
+		return value1 > value2 ? +1 : value1 < value2 ? -1 : 0;
 	}
 }

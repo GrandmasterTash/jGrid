@@ -3,6 +3,10 @@ package com.notlob.jgrid.model.filtering;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
@@ -18,6 +22,8 @@ public class FilterModel<T> {
 	// For example, if true, rows that match a filter are shown and those that match none are not. If false, a row is shown regardless of whether it matches
 	// a highlighting filter or not, although, if a filter exists which isn't a highlighting filter and the row doesn't match it, it will be hidden.
 	private boolean hideNoneHighlightedRows = true;
+	
+	private final static Logger logger = LoggerFactory.getLogger(FilterModel.class);
 
 	public FilterModel(final GridModel<T> gridModel) {
 		this.gridModel = gridModel;
@@ -34,6 +40,14 @@ public class FilterModel<T> {
 	public void removeFilters(final Collection<Filter<T>> filters) {
 		gridModel.fireFiltersChangingEvent();
 		this.filters.removeAll(filters);
+		applyFilters();
+		gridModel.fireFiltersChangedEvent();
+	}
+	
+	public void setFilters(final Collection<Filter<T>> filtersToRemove, final Collection<Filter<T>> filtersToAdd) {
+		gridModel.fireFiltersChangingEvent();
+		this.filters.removeAll(filtersToRemove);
+		this.filters.addAll(filtersToAdd);
 		applyFilters();
 		gridModel.fireFiltersChangedEvent();
 	}
@@ -123,7 +137,7 @@ public class FilterModel<T> {
 		//
 		// Build a list of rows to hide that are shown.
 		//
-		final Collection<Row<T>> rowsToHide = new ArrayList<>();		
+		final List<Row<T>> rowsToHide = new ArrayList<>();		
 		for (final Row<T> row : gridModel.getRows()) {
 			if (!match(row)) {
 				rowsToHide.add(row);
@@ -133,27 +147,57 @@ public class FilterModel<T> {
 		//
 		// Build a list of rows to show that are hidden.
 		//
-		final Collection<Row<T>> rowsToShow = new ArrayList<>();
+		final List<Row<T>> rowsToShow = new ArrayList<>();
 		for (final Row<T> row : gridModel.getHiddenRows()) {
 			if (match(row)) {
 				rowsToShow.add(row);
 			}
 		}
-
+		
 		//
 		// Show/hide now (if we did it in the above loops we'd get concurrent modifications).
 		//
 		for (final Row<T> row : rowsToShow) {
-			gridModel.showRow(row);
+			if (logger.isTraceEnabled()) {
+				System.out.println(String.format("Showing %s->%s", gridModel.getContentProvider().getElementId(row.getElement()), row));
+			}
+			
+			gridModel.showRow(row, false);
 		}
-
+		
 		for (final Row<T> row : rowsToHide) {
+			if (logger.isTraceEnabled()) {
+				System.out.println(String.format("Hiding %s->%s", gridModel.getContentProvider().getElementId(row.getElement()), row));
+			}
+			
 			selectionChanged |= row.isSelected();
-			gridModel.hideRow(row);
+			gridModel.hideRow(row, false);
 		}
 		
 		//
-		// Re-seed the row indexes.
+		// Index the rows now so we can remove things by index for performance - as removing large number of rows
+		// by object references results in much scanning of the list(s).
+		//
+		gridModel.reindex();
+		
+		if (!rowsToShow.isEmpty()) {
+			for (int rowIndex=rowsToShow.size()-1; rowIndex>=0; rowIndex--) {
+				final Row<T> row = rowsToShow.get(rowIndex);
+				gridModel.getHiddenRows().remove(row.getHiddenRowIndex());
+				row.setHiddenRowIndex(-1);
+			}
+		}
+		
+		if (!rowsToHide.isEmpty()) {
+			for (int rowIndex=rowsToHide.size()-1; rowIndex>=0; rowIndex--) {
+				final Row<T> row = rowsToHide.get(rowIndex);
+				gridModel.getRows().remove(row.getRowIndex());
+				row.setRowIndex(-1);
+			}
+		}
+		
+		//
+		// Re-seed the row indexes again after list modifications.
 		//
 		gridModel.reindex();
 		gridModel.fireRowCountChangedEvent();

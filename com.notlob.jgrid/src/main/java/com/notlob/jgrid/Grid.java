@@ -613,6 +613,11 @@ public class Grid<T> extends Composite {
 		checkWidget();
 		gridModel.getFilterModel().removeFilters(filters);
 	}
+	
+	public void setFilters(final Collection<Filter<T>> filtersToRemove, final Collection<Filter<T>> filtersToAdd) {
+		checkWidget();
+		gridModel.getFilterModel().setFilters(filtersToRemove, filtersToAdd);
+	}
 
 	public GridMouseHandler<T> getMouseHandler() {
 		checkWidget();
