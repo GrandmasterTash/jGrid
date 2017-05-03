@@ -690,10 +690,21 @@ public class GridModel<T> {
 	 */
 	private void moveVisibleChildren(final Row<T> row) {
 		final List<Row<T>> children = getChildren(row);
+		
+		//
+		// Remove rows by index first, for performance.
+		//
+		for (int rowIndex=children.size()-1; rowIndex>=0; rowIndex--) {
+			final Row<T> rowChild = children.get(rowIndex);
+			if (rowChild.isVisible()) {
+				rows.remove(rowChild.getRowIndex());
+				rowChild.setRowIndex(-1);
+			}
+		}
+		
 		for (Row<T> child : children) {
 			if (child.isVisible()) {
-				rows.remove(child);
-				
+				// Sort by row..
 				final int newExpectedIndex = sortModel.getSortedRowIndex(child);
 				rows.add(newExpectedIndex, child);
 				child.setRowIndex(newExpectedIndex);
