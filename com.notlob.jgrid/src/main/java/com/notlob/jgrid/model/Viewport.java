@@ -219,7 +219,7 @@ public class Viewport<T> {
 	}
 
 	/**
-	 * Last (wholey visible - uncropped) row index.
+	 * Last (wholly visible - un-cropped) row index.
 	 */
 	public int getLastRowIndex() {
 		return lastRowIndex;
@@ -230,7 +230,7 @@ public class Viewport<T> {
 	}
 
 	/**
-	 * Last (wholey visible - uncropped) column index.
+	 * Last (wholly visible - un-cropped) column index.
 	 */
 	public int getLastColumnIndex() {
 		return lastColumnIndex;
@@ -381,7 +381,7 @@ public class Viewport<T> {
 			//
 			for (int columnIndex=getFirstColumnIndex(); columnIndex<getLastVisibleColumnIndex(); columnIndex++) {
 				final Column column = gridModel.getColumns().get(columnIndex);				
-				currentX += getColumnWidth(currentX, column) + gridModel.getStyleRegistry().getCellSpacingHorizontal();
+				currentX += getColumnWidth(currentX, column/*, false*/) + gridModel.getStyleRegistry().getCellSpacingHorizontal();
 				
 				if (x <= currentX) {
 					return columnIndex;
@@ -464,7 +464,7 @@ public class Viewport<T> {
 	
 			for (int columnIndex=firstColumnIndex; columnIndex<lastColumnIndex; columnIndex++) {						
 				final Column column = gridModel.getColumns().get(columnIndex);
-				final int columnWidth = getColumnWidth(columnHeaderX, column);
+				final int columnWidth = getColumnWidth(columnHeaderX, column/*, false*/);
 				
 				//
 				// Note: We bump the columnHeaderX before the check for a resize and after for a reposition.
@@ -652,12 +652,26 @@ public class Viewport<T> {
 		final int columnIndex = grid.getColumns().indexOf(column);
 		return (columnIndex >= getFirstColumnIndex() && columnIndex < getLastColumnIndex());
 	}
+	
+	private boolean isLastColumn(final Column column) {
+		return (column == gridModel.getColumns().get(gridModel.getColumns().size() - 1));
+	}
 
 	/**
 	 * The last column is 'stretchy' and runs to the end of the grid.
 	 */
 	public int getColumnWidth(final int columnX, final Column column) {
-		return (column == gridModel.getColumns().get(gridModel.getColumns().size() - 1)) ? (grid.getClientArea().width - columnX) : column.getWidth();
+		return isLastColumn(column) ? (grid.getClientArea().width - columnX) : column.getWidth();
+	}
+	
+	public boolean isLastColumnCropped() {
+		final Column lastColumn = gridModel.getColumns().isEmpty() ? null : gridModel.getColumns().get(gridModel.getColumns().size() - 1);
+		
+		if (lastColumn != null) {
+			return (getColumnX(lastColumn) + lastColumn.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal()) > grid.getClientArea().width;
+		}
+		
+		return false;
 	}
 
 	@Override

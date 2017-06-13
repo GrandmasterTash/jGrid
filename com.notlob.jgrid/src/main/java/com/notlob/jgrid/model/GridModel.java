@@ -596,7 +596,7 @@ public class GridModel<T> {
 		
 		for (T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
-			
+						
 			if (row != null) {
 				//
 				// Should the row be shown/hidden?
