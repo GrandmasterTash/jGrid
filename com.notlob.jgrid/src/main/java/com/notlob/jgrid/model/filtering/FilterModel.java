@@ -102,7 +102,11 @@ public class FilterModel<T> {
 		for (final Filter<T> filter : filters) {
 			boolean matches = false;
 			
-			if ((filter.isShowWholeGroup() && gridModel.isGroupRow(row)) || filter.mandatoryInGroup(row)) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Evaluating Filter {} for Row {}", filter, row);	
+			}
+			
+			if ((filter.isShowWholeGroup() && gridModel.isGroupRow(row)) || filter.mandatoryInGroup(row)) {				
 				//
 				// If anything in the group match then this row should be shown OR if it's a parent row, always show it.
 				//
@@ -118,6 +122,10 @@ public class FilterModel<T> {
 				// Just check the individual row.
 				//
 				matches = filter.matches(row);
+			}
+			
+			if (logger.isTraceEnabled()) {
+				logger.trace("Filter {} {} for Row {}", filter, matches ? "matches" : "doesn't match", row);	
 			}
 
 			if (!matches && doesFilterHide(filter)) {

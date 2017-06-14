@@ -615,6 +615,10 @@ public class GridModel<T> {
 					final int actualIndex = row.getRowIndex();
 					
 					if (expectedIndex != actualIndex) {
+						if (logger.isTraceEnabled()) {
+							logger.trace("Update causing move from {} to {} for row {}", actualIndex, expectedIndex, row);
+						}
+						
 						//
 						// Move the row to the correct position.
 						//
@@ -637,32 +641,52 @@ public class GridModel<T> {
 					heightDelta += getUpdatedRowHeightDelta(row);
 					
 				} else if (visible && !row.isVisible()) {
+					if (logger.isTraceEnabled()) {
+						logger.trace("Update showing row {}", row);
+					}
+					
 					//
 					// Reveal the row.
 					//
 					showRow(row);
 					heightDelta += getRowHeight(row);
 					
-					//
-					// If it's a parent, check its kiddies.
-					//
 					if (isParentElement(row.getElement())) {
-						heightDelta += childChildVisibility(row);
-					}					
+						//
+						// If it's a parent, check its kiddies.
+						//
+						heightDelta += checkChildVisibility(row);
+						
+					} else if (isChildElement(row.getElement())) {
+						//
+						// If it's a sprog, check the parent.
+						//
+						heightDelta += checkParentVisibility(row);
+					}
 					
 				} else if (!visible && row.isVisible()) {
+					if (logger.isTraceEnabled()) {
+						logger.trace("Update hiding row {}", row);
+					}
+					
 					//
 					// Hide the row.
 					//
 					hideRow(row);				
 					heightDelta -= getRowHeight(row);
 					
-					//
-					// If it's a parent, check the sprogs.
-					//
 					if (isParentElement(row.getElement())) {
-						heightDelta += childChildVisibility(row);
-					}					
+						//
+						// If it's a parent, check the sprogs.
+						//
+						heightDelta += checkChildVisibility(row);
+						
+					} else if (isChildElement(row.getElement())) {
+						//
+						// If it's a sprog, check the parent.
+						//
+						heightDelta += checkParentVisibility(row);
+					}
 				}
 			}
 		}
@@ -720,20 +744,51 @@ public class GridModel<T> {
 	 * 
 	 * The change in total row heights is returned.
 	 */
-	private int childChildVisibility(final Row<T> parentRow) {
+	private int checkChildVisibility(final Row<T> parentRow) {
 		int heightDelta = 0;
 		
 		final List<Row<T>> children = getChildren(parentRow);
 		for (Row<T> childRow : children) {
-			final boolean childShouldBeVisible = filterModel.match(childRow);
-			if (!childRow.isVisible() && childShouldBeVisible) {
-				showRow(childRow);
-				heightDelta += getRowHeight(childRow);
-				
-			} else if (childRow.isVisible() && !childShouldBeVisible) {
-				hideRow(childRow);				
-				heightDelta -= getRowHeight(childRow);
+			heightDelta += checkRowVisibility(childRow);
+		}
+		
+		return heightDelta;
+	}
+	
+	/**
+	 * Check the visibility of any parent row - and show/hide as appropriate.
+	 * 
+	 * The change in total row heights is returned.
+	 */
+	private int checkParentVisibility(final Row<T> childRow) {
+		final T parent = getParentElement(childRow.getElement());
+		
+		if (parent != null) {
+			final Row<T> parentRow = getRow(parent);
+			
+			if (parentRow != null) {
+				return checkRowVisibility(parentRow);
 			}
+		}
+		return 0;
+	}
+	
+	/**
+	 * Check the visibility of the row - and show/hide as appropriate.
+	 * 
+	 * The change in total row heights is returned.
+	 */
+	private int checkRowVisibility(final Row<T> row) {
+		int heightDelta = 0;
+		final boolean shouldBeVisible = filterModel.match(row);
+		
+		if (!row.isVisible() && shouldBeVisible) {
+			showRow(row);
+			heightDelta += getRowHeight(row);
+			
+		} else if (row.isVisible() && !shouldBeVisible) {
+			hideRow(row);				
+			heightDelta -= getRowHeight(row);
 		}
 		
 		return heightDelta;
@@ -764,7 +819,7 @@ public class GridModel<T> {
 			for (Row<T> row : rows) {
 				sb.append(String.format("%s->%s\n", contentProvider.getElementId(row.getElement()), row));
 			}
-			System.out.println("Hidden Rows");
+			sb.append("Hidden Rows");
 			for (Row<T> row : hiddenRows) {
 				sb.append(String.format("%s->%s\n", contentProvider.getElementId(row.getElement()), row));
 			}
