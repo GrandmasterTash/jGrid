@@ -167,7 +167,7 @@ public class FilterModel<T> {
 		//
 		for (final Row<T> row : rowsToShow) {
 			if (logger.isTraceEnabled()) {
-				System.out.println(String.format("Showing %s->%s", gridModel.getContentProvider().getElementId(row.getElement()), row));
+				logger.trace(String.format("Showing %s->%s", gridModel.getContentProvider().getElementId(row.getElement()), row));
 			}
 			
 			gridModel.showRow(row, false);
@@ -175,7 +175,7 @@ public class FilterModel<T> {
 		
 		for (final Row<T> row : rowsToHide) {
 			if (logger.isTraceEnabled()) {
-				System.out.println(String.format("Hiding %s->%s", gridModel.getContentProvider().getElementId(row.getElement()), row));
+				logger.trace(String.format("Hiding %s->%s", gridModel.getContentProvider().getElementId(row.getElement()), row));
 			}
 			
 			selectionChanged |= row.isSelected();
