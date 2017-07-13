@@ -586,6 +586,25 @@ public class GridModel<T> {
 			fireSelectionChangedEvent();
 		}
 	}
+	
+	/**
+	 * Get the element's id. If it's a group, include the children. 
+	 */
+	private String getElementId(final Row<T> row) {
+		if (isParentElement(row.getElement())) {
+			final StringBuilder sb = new StringBuilder();
+			for (Row<T> child : getChildren(row)) {
+				sb.append(String.format("%s ", contentProvider.getElementId(child.getElement())));
+			}
+			
+			return String.format("[%s] -> [%s]", contentProvider.getElementId(row.getElement()), sb.toString());
+			
+		} else if (isChildElement(row.getElement())) {
+			return String.format("[%s] sonOf [%s]", contentProvider.getElementId(row.getElement()), contentProvider.getElementId(getParentElement(row.getElement()))); 
+		}
+		
+		return contentProvider.getElementId(row.getElement());
+	}
 
 	/**
 	 * Returns the rows which are visible after the operation.
@@ -593,7 +612,8 @@ public class GridModel<T> {
 	public Collection<Row<T>> updateElements(final Collection<T> elements) {
 		int heightDelta = 0;
 		final Collection<Row<T>> rowsShown = new ArrayList<Row<T>>();
-		
+		final String gridId = (String) grid.getData("org.eclipse.swtbot.widget.key");
+			
 		for (T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
 						
@@ -613,10 +633,11 @@ public class GridModel<T> {
 					//
 					final int expectedIndex = sortModel.getSortedRowIndex(row);
 					final int actualIndex = row.getRowIndex();
+//					final int actualIndex = rows.indexOf(row);
 					
 					if (expectedIndex != actualIndex) {
 						if (logger.isTraceEnabled()) {
-							logger.trace("Update causing move from {} to {} for row {}", actualIndex, expectedIndex, row);
+							logger.trace("{} Update causing move from {} to {} for element {}", gridId, actualIndex, expectedIndex, getElementId(row));
 						}
 						
 						//
@@ -632,6 +653,19 @@ public class GridModel<T> {
 						//
 						if (isParentRow(row)) {
 							moveVisibleChildren(row);
+							
+						} else if (isChildElement(row.getElement())) {
+							// Observations :
+							// 1 - had a child move without parent.
+							// 2 - had a group move but updates to children didn't move it - however, NOTHING was moved? Group had an extra row from the NEXT group in it though.
+							// move the parent if the child moves?
+							// Something wrong in the comparator?
+							// Is a row.getRowIndex out of sync issue causing it?
+						}
+						
+					} else {
+						if (logger.isTraceEnabled()) {
+							logger.trace("{} Updated for element {} had no effect.", gridId, getElementId(row));
 						}
 					}
 					
@@ -642,7 +676,7 @@ public class GridModel<T> {
 					
 				} else if (visible && !row.isVisible()) {
 					if (logger.isTraceEnabled()) {
-						logger.trace("Update showing row {}", row);
+						logger.trace("{} Update showing element {}", gridId, getElementId(row));
 					}
 					
 					//
@@ -666,7 +700,7 @@ public class GridModel<T> {
 					
 				} else if (!visible && row.isVisible()) {
 					if (logger.isTraceEnabled()) {
-						logger.trace("Update hiding row {}", row);
+						logger.trace("{} Update hiding element {}", gridId, getElementId(row));
 					}
 					
 					//
@@ -688,6 +722,9 @@ public class GridModel<T> {
 						heightDelta += checkParentVisibility(row);
 					}
 				}
+				
+			} else {				
+				logger.debug("{} Row for updated element {} missing.", gridId, getElementId(row));
 			}
 		}
 		
@@ -795,7 +832,7 @@ public class GridModel<T> {
 	}
 	
 	public void reindex() {
-		if (!isEventsSuppressed()) {
+//		if (!isEventsSuppressed()) {
 			int rowIndex = 0;
 			for (Row<T> row : rows) {
 				row.setRowIndex(rowIndex++);
@@ -811,7 +848,9 @@ public class GridModel<T> {
 			for (Row<T> row : hiddenRows) {
 				row.setHiddenRowIndex(rowIndex++);
 			}
-		}
+//		} else {
+//			logger.info("Depressed not indexing - too gloomy");
+//		}
 		
 		if (logger.isTraceEnabled()) {
 			final StringBuilder sb = new StringBuilder();
@@ -864,6 +903,10 @@ public class GridModel<T> {
 		}
 		
 		row.setVisible(true);
+		
+		if (logger.isTraceEnabled()) {
+			logger.trace("Element {} shown at {}", getElementId(row), row.getRowIndex());
+		}
 	}
 
 	public void hideRow(final Row<T> row) {
@@ -883,6 +926,10 @@ public class GridModel<T> {
 		hiddenRows.add(row);
 		row.setHiddenRowIndex(hiddenRows.size()-1);
 		row.setVisible(false);
+		
+		if (logger.isTraceEnabled()) {
+			logger.trace("Element {} hidden", getElementId(row));
+		}
 	}
 
 	public void groupBy(final List<Column> columns) {
