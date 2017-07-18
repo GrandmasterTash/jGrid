@@ -590,7 +590,11 @@ public class GridModel<T> {
 	/**
 	 * Get the element's id. If it's a group, include the children. 
 	 */
-	private String getElementId(final Row<T> row) {
+	public String getElementId(final Row<T> row) {
+		if (row == null) {
+			return "(null row)";
+		}
+		
 		if (isParentElement(row.getElement())) {
 			final StringBuilder sb = new StringBuilder();
 			for (Row<T> child : getChildren(row)) {
@@ -656,8 +660,8 @@ public class GridModel<T> {
 							
 						} else if (isChildElement(row.getElement())) {
 							// Observations :
-							// 1 - had a child move without parent.
-							// 2 - had a group move but updates to children didn't move it - however, NOTHING was moved? Group had an extra row from the NEXT group in it though.
+							// 1 - had a child move without parent. THIS SHOULD ONLY BE ALLOWED TO MOVE WITHIN IT'S GROUP.
+							// 2 - had a group move but updates to children didn't move it - THIS IS BECAUSE MOVE CHILDREN ISN'T LOGGED - however, NOTHING was moved? Group had an extra row from the NEXT group in it though.
 							// move the parent if the child moves?
 							// Something wrong in the comparator?
 							// Is a row.getRowIndex out of sync issue causing it?
@@ -723,8 +727,10 @@ public class GridModel<T> {
 					}
 				}
 				
-			} else {				
-				logger.debug("{} Row for updated element {} missing.", gridId, getElementId(row));
+			} else {
+				if (logger.isDebugEnabled()) {
+					logger.debug("{} Row for updated element {} missing.", gridId, getElementId(row));
+				}
 			}
 		}
 		
@@ -760,6 +766,7 @@ public class GridModel<T> {
 				final int newExpectedIndex = sortModel.getSortedRowIndex(child);
 				rows.add(newExpectedIndex, child);
 				child.setRowIndex(newExpectedIndex);
+				//System.out.println("Put this and above in method and log");
 			}
 		}	
 	}
