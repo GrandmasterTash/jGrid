@@ -616,8 +616,7 @@ public class GridModel<T> {
 	public Collection<Row<T>> updateElements(final Collection<T> elements) {
 		int heightDelta = 0;
 		final Collection<Row<T>> rowsShown = new ArrayList<Row<T>>();
-		final String gridId = (String) grid.getData("org.eclipse.swtbot.widget.key");
-			
+		
 		for (T element : elements) {
 			final Row<T> row = rowsByElement.get(element);
 						
@@ -636,40 +635,32 @@ public class GridModel<T> {
 					// Should the row move?
 					//
 					final int expectedIndex = sortModel.getSortedRowIndex(row);
-					final int actualIndex = row.getRowIndex();
-//					final int actualIndex = rows.indexOf(row);
+					final Row<T> rowAtIndex = expectedIndex < rows.size() ? rows.get(expectedIndex) : null /* We need to add to the list here */;
 					
-					if (expectedIndex != actualIndex) {
-						if (logger.isTraceEnabled()) {
-							logger.trace("{} Update causing move from {} to {} for element {}", gridId, actualIndex, expectedIndex, getElementId(row));
-						}
-						
-						//
-						// Move the row to the correct position.
-						//
-						rows.remove(row);						
-						final int newExpectedIndex = sortModel.getSortedRowIndex(row);
-						rows.add(newExpectedIndex, row);
-						row.setRowIndex(newExpectedIndex);
-						
-						//
-						// If this was a group row that has moved, bring all the children with it.
-						//
+					if (row != rowAtIndex) {
 						if (isParentRow(row)) {
+							//
+							// Move the row to the correct position.
+							//
+							moveRow(row);
+
+							//
+							// If this was a group row that has moved, bring all the children with it.
+							//
 							moveVisibleChildren(row);
 							
 						} else if (isChildElement(row.getElement())) {
-							// Observations :
-							// 1 - had a child move without parent. THIS SHOULD ONLY BE ALLOWED TO MOVE WITHIN IT'S GROUP.
-							// 2 - had a group move but updates to children didn't move it - THIS IS BECAUSE MOVE CHILDREN ISN'T LOGGED - however, NOTHING was moved? Group had an extra row from the NEXT group in it though.
-							// move the parent if the child moves?
-							// Something wrong in the comparator?
-							// Is a row.getRowIndex out of sync issue causing it?
-						}
-						
-					} else {
-						if (logger.isTraceEnabled()) {
-							logger.trace("{} Updated for element {} had no effect.", gridId, getElementId(row));
+							//
+							// Move the child row within it's group.
+							//
+							final Row<T> parentRow = getRow(getParentOrOwnElement(row));
+							moveVisibleChildren(parentRow);
+							
+						} else {
+							//
+							// Move non-group rows.
+							//
+							moveRow(row);
 						}
 					}
 					
@@ -679,10 +670,6 @@ public class GridModel<T> {
 					heightDelta += getUpdatedRowHeightDelta(row);
 					
 				} else if (visible && !row.isVisible()) {
-					if (logger.isTraceEnabled()) {
-						logger.trace("{} Update showing element {}", gridId, getElementId(row));
-					}
-					
 					//
 					// Reveal the row.
 					//
@@ -703,10 +690,6 @@ public class GridModel<T> {
 					}
 					
 				} else if (!visible && row.isVisible()) {
-					if (logger.isTraceEnabled()) {
-						logger.trace("{} Update hiding element {}", gridId, getElementId(row));
-					}
-					
 					//
 					// Hide the row.
 					//
@@ -727,10 +710,6 @@ public class GridModel<T> {
 					}
 				}
 				
-			} else {
-				if (logger.isDebugEnabled()) {
-					logger.debug("{} Row for updated element {} missing.", gridId, getElementId(row));
-				}
 			}
 		}
 		
@@ -755,20 +734,26 @@ public class GridModel<T> {
 	/**
 	 * Remove child rows and re-insert them into the correct location.
 	 */
-	private void moveVisibleChildren(final Row<T> row) {
-		final List<Row<T>> children = getChildren(row);
+	private void moveVisibleChildren(final Row<T> parentRow) {
+		final List<Row<T>> children = getVisibleChildren(parentRow);
+		children.sort(sortModel.getRowComparator());
+		rows.removeAll(children);
+
+		//
+		// We can't use the cached index as we're potentially in a loop of row's being shuffled around.
+		//
+		rows.addAll(rows.indexOf(parentRow), children);
+	}
+	
+	/**
+	 * Remove the row and insert back where it belongs.
+	 */
+	private void moveRow(final Row<T> row) {
+		rows.remove(row);
 		
-		for (Row<T> child : children) {
-			if (child.isVisible()) {
-				rows.remove(child);
-				
-				// Sort by row..
-				final int newExpectedIndex = sortModel.getSortedRowIndex(child);
-				rows.add(newExpectedIndex, child);
-				child.setRowIndex(newExpectedIndex);
-				//System.out.println("Put this and above in method and log");
-			}
-		}	
+		final int newConcreatedIndex = sortModel.getSortedRowIndex(row);
+		rows.add(newConcreatedIndex, row);
+		row.setRowIndex(newConcreatedIndex);
 	}
 
 	/**
@@ -839,25 +824,21 @@ public class GridModel<T> {
 	}
 	
 	public void reindex() {
-//		if (!isEventsSuppressed()) {
-			int rowIndex = 0;
-			for (Row<T> row : rows) {
-				row.setRowIndex(rowIndex++);
-				
-				if (rowIndex == 1) {
-					row.setAlternateBackground(false);
-				} else {
-					row.setAlternateBackground(labelProvider.shouldAlternateBackground(rows.get(rowIndex-2), row));
-				}
-			}
+		int rowIndex = 0;
+		for (Row<T> row : rows) {
+			row.setRowIndex(rowIndex++);
 			
-			rowIndex = 0;
-			for (Row<T> row : hiddenRows) {
-				row.setHiddenRowIndex(rowIndex++);
+			if (rowIndex == 1) {
+				row.setAlternateBackground(false);
+			} else {
+				row.setAlternateBackground(labelProvider.shouldAlternateBackground(rows.get(rowIndex-2), row));
 			}
-//		} else {
-//			logger.info("Depressed not indexing - too gloomy");
-//		}
+		}
+		
+		rowIndex = 0;
+		for (Row<T> row : hiddenRows) {
+			row.setHiddenRowIndex(rowIndex++);
+		}
 		
 		if (logger.isTraceEnabled()) {
 			final StringBuilder sb = new StringBuilder();
@@ -1279,6 +1260,22 @@ public class GridModel<T> {
 
 		return children;
 	}
+	
+	public List<Row<T>> getVisibleChildren(final Row<T> row) {
+		final List<Row<T>> children = new ArrayList<>();
+		final List<T> childElements = contentProvider.getChildren(row.getElement());
+
+		if (childElements != null) {
+			for (final T childElement : childElements) {
+				final Row<T> childRow = rowsByElement.get(childElement);
+				if (childRow != null && childRow.isVisible()) {
+					children.add(childRow);
+				}
+			}
+		}
+
+		return children;
+	}	
 
 	@Override
 	public String toString() {

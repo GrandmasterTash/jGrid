@@ -32,6 +32,10 @@ public class SortModel<T> {
 	public void setRowComparator(final Comparator<Row<T>> rowComparator) {
 		this.rowComparator = rowComparator;
 	}
+	
+	public Comparator<Row<T>> getRowComparator() {
+		return rowComparator;
+	}
 
 	/**
 	 * Toggle the column's sort and apply to the current sort model (or replace the current model).

@@ -46,6 +46,10 @@ public class DefaultRowComparator<T> implements Comparator<Row<T>> {
 		return gridModel.getContentProvider();
 	}
 	
+	public boolean isParentRowsAboveChildren() {
+		return parentRowsAboveChildren;
+	}
+	
 	public List<Column> getSortedColumns() {
 		return gridModel.getSortModel().getSortedColumns();
 	}
@@ -174,7 +178,8 @@ public class DefaultRowComparator<T> implements Comparator<Row<T>> {
 	protected int compareAtRowLevel(final T element1, final T element2, final String reason, final Row<T> row1, final Row<T> row2) {
 		final int value1 = getContentProvider().getNaturalIndex(element1);
 		final int value2 = getContentProvider().getNaturalIndex(element2);
-		return logResult(value1 > value2 ? +1 : value1 < value2 ? -1 : 0, row1, row2, REASON__NATURAL_INDEX);
+		final int result = value1 > value2 ? +1 : value1 < value2 ? -1 : 0;
+		return logResult(result, row1, row2, REASON__NATURAL_INDEX);
 	}
 	
 	/**
@@ -187,5 +192,4 @@ public class DefaultRowComparator<T> implements Comparator<Row<T>> {
 		
 		return result;
 	}
-
 }
