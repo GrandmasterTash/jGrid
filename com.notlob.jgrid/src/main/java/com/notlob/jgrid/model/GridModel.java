@@ -1134,7 +1134,15 @@ public class GridModel<T> {
 	}
 
 	public int getRowHeight(final Row<T> row) {
-		final CellStyle cellStyle = (row == columnHeaderRow) ? styleRegistry.getHeaderStyle() : styleRegistry.getDefaultStyle();
+		CellStyle cellStyle = styleRegistry.getDefaultStyle();
+		
+		if (row == columnHeaderRow) {
+			cellStyle = styleRegistry.getHeaderStyle();
+
+		} else if (isParentRow(row)) {
+			cellStyle = styleRegistry.getGroupValueStyle();
+		}
+		
 		return row.getHeight(resourceManager, gc, cellStyle);
 	}
 

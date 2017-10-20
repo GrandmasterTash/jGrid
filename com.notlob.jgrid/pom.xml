@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.notlob</groupId>
 	<artifactId>com.notlob.jgrid</artifactId>
-	<version>0.0.27-RELEASE</version>
+	<version>0.0.28-RELEASE</version>
 
 	<properties>
 		<source.java.version>1.8</source.java.version>
