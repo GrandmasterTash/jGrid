@@ -104,4 +104,9 @@ public class GridListener implements IGridListener<Person> {
 	public void cellRevealed(Column column, Person element) {
 		System.out.println("cellRevealed");
 	}
+
+	@Override
+	public void filtersChanging() {
+		System.out.println("filtersChanging");
+	}
 }
