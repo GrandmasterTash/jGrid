@@ -1,7 +1,7 @@
 package com.notlob.jgrid.styles;
 
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.RGB;
+import com.notlob.jgrid.resources.FontData;
+import com.notlob.jgrid.resources.RGB;
 
 public class CellStyle {
 

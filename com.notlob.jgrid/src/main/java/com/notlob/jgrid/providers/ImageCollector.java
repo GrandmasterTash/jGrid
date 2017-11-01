@@ -3,7 +3,7 @@ package com.notlob.jgrid.providers;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Image;
+import com.notlob.jgrid.resources.Image;
 
 /**
  * Passed to label providers to collect images for a given cell.

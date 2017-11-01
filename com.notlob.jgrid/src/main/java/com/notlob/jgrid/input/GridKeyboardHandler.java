@@ -7,7 +7,6 @@ import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.ScrollBar;
 
 import com.notlob.jgrid.Grid;
@@ -16,8 +15,9 @@ import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.SelectionModel;
+import com.notlob.jgrid.resources.GC;
 
-// TODO: Both this and mouse need try...catches...
+// TODO: This needs to be agnostic of SWT or JFX.
 public class GridKeyboardHandler<T> implements KeyListener {
 
 	private final GC gc;
@@ -316,6 +316,7 @@ public class GridKeyboardHandler<T> implements KeyListener {
 		//
 		// Move the scrollbar down one page.
 		//
+		// TODO: Push this logic into the grid itself.
 		final ScrollBar verticalBar = grid.getVerticalBar();
 		verticalBar.setSelection(Math.min(verticalBar.getSelection() + verticalBar.getPageIncrement(), verticalBar.getMaximum()));
 		

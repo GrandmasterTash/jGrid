@@ -3,8 +3,8 @@ package com.notlob.jgrid.styles;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.RGB;
+import com.notlob.jgrid.resources.FontData;
+import com.notlob.jgrid.resources.RGB;
 
 /**
  * Allows a form of cascading style inheritence by combining multiple styles into one.

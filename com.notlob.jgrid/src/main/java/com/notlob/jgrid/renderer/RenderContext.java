@@ -3,12 +3,11 @@ package com.notlob.jgrid.renderer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.renderer.Renderer.RenderPass;
+import com.notlob.jgrid.resources.FontData;
+import com.notlob.jgrid.resources.GC;
+import com.notlob.jgrid.resources.Point;
 
 /**
  * A single instance is created for each grid and passed to the individual renderers during a paint cycle.

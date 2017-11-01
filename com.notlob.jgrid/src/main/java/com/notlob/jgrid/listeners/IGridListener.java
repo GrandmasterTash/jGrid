@@ -2,9 +2,8 @@ package com.notlob.jgrid.listeners;
 
 import java.util.Collection;
 
-import org.eclipse.swt.graphics.Point;
-
 import com.notlob.jgrid.model.Column;
+import com.notlob.jgrid.resources.Point;
 
 public interface IGridListener<T> {
 

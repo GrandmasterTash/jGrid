@@ -1,10 +1,9 @@
 package com.notlob.jgrid.renderer.animation;
 
-import org.eclipse.swt.graphics.Rectangle;
-
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.renderer.CellRenderer;
 import com.notlob.jgrid.renderer.RenderContext;
+import com.notlob.jgrid.resources.Rectangle;
 
 public class BounceRowAnimation<T> extends RowAnimation<T> {
 	

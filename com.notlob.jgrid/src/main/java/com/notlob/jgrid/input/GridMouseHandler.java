@@ -10,9 +10,6 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseTrackListener;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.ToolTip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +23,9 @@ import com.notlob.jgrid.model.ColumnMouseOperation;
 import com.notlob.jgrid.model.GridModel;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.Viewport;
+import com.notlob.jgrid.resources.GC;
+import com.notlob.jgrid.resources.Point;
+import com.notlob.jgrid.resources.Rectangle;
 
 /**
  * The main entry-point for mouse activity in the grid.
@@ -35,7 +35,7 @@ import com.notlob.jgrid.model.Viewport;
  * @param <T>
  */
 public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListener, MouseTrackListener/*, MouseWheelListener*/ {
-
+	// TODO: This needs to be agnostic of SWT or JFX.
 	protected final Grid<T> grid;
 	protected final GridModel<T> gridModel;
 	protected final Viewport<T> viewport;
@@ -890,7 +890,7 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 		grid.getDisplay().timerExec(TOOLTIP_DELAY, new Runnable() {
 			@Override
 			public void run() {
-				final Point location = grid.toDisplay(x, y);
+				final org.eclipse.swt.graphics.Point location = grid.toDisplay(x, y);
 				toolTip.setLocation(location);
 				toolTip.setText(boldText);
 				toolTip.setMessage(message);

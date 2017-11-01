@@ -1,9 +1,6 @@
 package com.notlob.jgrid.renderer;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +8,9 @@ import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.input.GridMouseHandler;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.Row;
+import com.notlob.jgrid.resources.GC;
+import com.notlob.jgrid.resources.Image;
+import com.notlob.jgrid.resources.Rectangle;
 import com.notlob.jgrid.styles.CellStyle;
 
 /**

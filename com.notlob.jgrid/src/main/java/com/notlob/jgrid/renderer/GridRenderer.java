@@ -1,15 +1,9 @@
 package com.notlob.jgrid.renderer;
 
+import java.awt.event.PaintEvent;
+
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.TextLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +11,15 @@ import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.Grid.GroupRenderStyle;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.Row;
+import com.notlob.jgrid.resources.FontData;
+import com.notlob.jgrid.resources.GC;
+import com.notlob.jgrid.resources.Image;
+import com.notlob.jgrid.resources.Point;
+import com.notlob.jgrid.resources.RGB;
+import com.notlob.jgrid.resources.Rectangle;
+import com.notlob.jgrid.resources.ResourceManager;
+import com.notlob.jgrid.resources.TextLayout;
+import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.ContentStyle;
 
@@ -47,7 +50,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 	
 	// Used for the diagnostic panel and no-filter message.
 	private TextLayout textLayout;
-	private FontData debugFontData = new FontData("Consolas", 10, SWT.NORMAL);
+	private FontData debugFontData = new FontData("Consolas", 10, FontData.NORMAL);
 	
 	// Double-buffering image. Used as a key for the setData method.
 	private final static String DATA__DOUBLE_BUFFER_IMAGE = "double-buffer-image"; //$NON-NLS-1$
@@ -180,8 +183,8 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		    gc = new GC(image);
 			gc.setBackground(getColour(styleRegistry.getBackgroundColour()));
 			gc.fillRectangle(grid.getClientArea());
-			gc.setAntialias(SWT.ON);
-			gc.setTextAntialias(SWT.ON);
+			gc.setAntialias(true);
+			gc.setTextAntialias(true);
 			
 			//
 			// Ensure our RC has this GC. Nicey.
@@ -334,7 +337,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 		}
 		
 		textLayout.setFont(getFont(cellStyle.getFontData()));
-		textLayout.setAlignment(SWT.CENTER);
+		textLayout.setAlignment(AlignmentStyle.CENTER);
 		textLayout.setWidth(bounds.width);		
 		textLayout.setText(text);
 		
@@ -411,7 +414,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 					textLayout = new TextLayout(gc.getDevice());
 				}
 				textLayout.setFont(getFont(debugFontData));
-				textLayout.setAlignment(SWT.LEFT);
+				textLayout.setAlignment(AlignmentStyle.LEFT_CENTER);
 				textLayout.setTabs(new int[] {100});
 				textLayout.setWidth(300);
 				
@@ -436,7 +439,7 @@ public class GridRenderer<T> extends Renderer<T> implements PaintListener {
 			GC gc = null;
 			
 			try {
-				gc = new GC(getDoubleBufferImage(DATA__ROW_CALC_IMAGE));
+				gc = grid.getResourceManager().createGC(getDoubleBufferImage(DATA__ROW_CALC_IMAGE));
 				rc.setPainting(true);
 				rc.setGC(gc);
 				rc.setRenderPass(RenderPass.COMPUTE_SIZE);

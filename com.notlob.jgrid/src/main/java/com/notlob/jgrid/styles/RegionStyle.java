@@ -1,6 +1,6 @@
 package com.notlob.jgrid.styles;
 
-import org.eclipse.swt.graphics.RGB;
+import com.notlob.jgrid.resources.RGB;
 
 public class RegionStyle {
 

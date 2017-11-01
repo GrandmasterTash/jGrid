@@ -5,12 +5,6 @@ import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.TextLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +12,12 @@ import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.SortDirection;
+import com.notlob.jgrid.resources.GC;
+import com.notlob.jgrid.resources.Image;
+import com.notlob.jgrid.resources.Point;
+import com.notlob.jgrid.resources.RGB;
+import com.notlob.jgrid.resources.Rectangle;
+import com.notlob.jgrid.resources.TextLayout;
 import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.ContentStyle;
@@ -59,14 +59,8 @@ public class CellRenderer<T> extends Renderer<T> {
 		contentLocation = new Point(0, 0);
 		imageExtent = new Point(0, 0);
 		innerBounds = new Rectangle(0, 0, 0, 0);
-		textLayout = new TextLayout(grid.getDisplay());
+		textLayout = grid.getResourceManager().getTextLayout();
 		anchorCollector = new StyleCollector();
-		grid.addDisposeListener(new DisposeListener() {
-			@Override
-			public void widgetDisposed(DisposeEvent e) {
-				textLayout.dispose();
-			}
-		});
 	}
 	
 	/**
@@ -374,7 +368,7 @@ public class CellRenderer<T> extends Renderer<T> {
 			// Use a wrapping method of rendering the text.
 			//
 			textLayout.setText(text);				
-			textLayout.setAlignment(convertAlignmentToSwt(textAlignment));
+			textLayout.setAlignment(textAlignment);
 			textLayout.setFont(getFont(cellStyle.getFontData()));
 			
 			//
@@ -460,6 +454,7 @@ public class CellRenderer<T> extends Renderer<T> {
 					// Use normal colours if we're not highlighting a filter result.
 					//
 					gc.setForeground(getColour(cellStyle.getForeground()));
+					// TODO: Turn these into generic flags.
 					gc.drawText(text, contentLocation.x, contentLocation.y, SWT.DRAW_DELIMITER | SWT.DRAW_TAB | SWT.DRAW_TRANSPARENT);
 				}
 			}

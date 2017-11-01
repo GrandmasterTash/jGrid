@@ -4,14 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
 
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
@@ -20,6 +12,14 @@ import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.model.Viewport;
 import com.notlob.jgrid.model.filtering.IHighlightingFilter;
 import com.notlob.jgrid.providers.ImageCollector;
+import com.notlob.jgrid.resources.Color;
+import com.notlob.jgrid.resources.Font;
+import com.notlob.jgrid.resources.FontData;
+import com.notlob.jgrid.resources.GC;
+import com.notlob.jgrid.resources.Image;
+import com.notlob.jgrid.resources.Point;
+import com.notlob.jgrid.resources.RGB;
+import com.notlob.jgrid.resources.Rectangle;
 import com.notlob.jgrid.styles.AlignmentStyle;
 import com.notlob.jgrid.styles.BorderStyle;
 import com.notlob.jgrid.styles.StyleRegistry;
@@ -166,6 +166,7 @@ public abstract class Renderer<T> {
 	/**
 	 * Get the SWT alignment direction from a jgrid one.
 	 */
+	// TODO: This should be done in the GC not here.
 	protected int convertAlignmentToSwt(final AlignmentStyle alignment) {
 		switch (alignment) {
 			case BOTTOM_LEFT:
@@ -244,6 +245,7 @@ public abstract class Renderer<T> {
 			gc.setForeground(getColour(borderStyle.getColour()));
 			gc.setLineWidth(borderStyle.getWidth());
 			gc.setLineStyle(SWT.LINE_DASH);
+			// TODO: Generic constants.
 			gc.drawLine(point1.x, point1.y, point2.x, point2.y);
 			break;
 

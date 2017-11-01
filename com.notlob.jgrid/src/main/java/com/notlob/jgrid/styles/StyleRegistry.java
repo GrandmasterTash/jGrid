@@ -1,12 +1,10 @@
 package com.notlob.jgrid.styles;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.RGB;
-
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Column;
 import com.notlob.jgrid.model.Row;
+import com.notlob.jgrid.resources.FontData;
+import com.notlob.jgrid.resources.RGB;
 
 public class StyleRegistry<T> {
 	
@@ -105,11 +103,11 @@ public class StyleRegistry<T> {
 		groupValueStyle.setBackgroundAlternate(defaultStyle.getBackgroundAlternate());
 		groupValueStyle.setBackground(defaultStyle.getBackground());
 		groupValueStyle.setForeground(new RGB(0, 0, 0));
-		groupValueStyle.setFontData(new FontData("Segoe UI", 8, SWT.BOLD));
+		groupValueStyle.setFontData(new FontData("Segoe UI", 8, FontData.BOLD));
 
 		groupNameStyle = groupValueStyle.copy();
 		groupNameStyle.setForeground(new RGB(39, 65, 62));
-		groupNameStyle.setFontData(new FontData("Segoe UI", 8, SWT.NORMAL));
+		groupNameStyle.setFontData(new FontData("Segoe UI", 8, FontData.NORMAL));
 		
 		groupFooterBorderTop = null;//new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206));
 		groupFooterBorderBottom = new BorderStyle(1, LineStyle.SOLID, new RGB(158, 182, 206));
@@ -217,13 +215,13 @@ public class StyleRegistry<T> {
 		final String OS = System.getProperty("os.name");
 		
 		if (OS.toLowerCase().contains("win")) {
-			return new FontData("Segoe UI", 9, SWT.NORMAL);
+			return new FontData("Segoe UI", 9, FontData.NORMAL);
 			
 		} else if (OS.toLowerCase().contains("mac")) {
-			return new FontData("Arial", 9, SWT.NORMAL);
+			return new FontData("Arial", 9, FontData.NORMAL);
 		}
 		
-		return new FontData("Monospaced", 8, SWT.NORMAL);
+		return new FontData("Monospaced", 8, FontData.NORMAL);
 	}
 	
 	public CellStyle getCellStyle(final Column column, final Row<T> row) {

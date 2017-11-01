@@ -13,10 +13,6 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
@@ -39,9 +35,17 @@ import com.notlob.jgrid.providers.IGridToolTipProvider;
 import com.notlob.jgrid.providers.IRowProvider;
 import com.notlob.jgrid.renderer.GridRenderer;
 import com.notlob.jgrid.renderer.animation.RowAnimation;
+import com.notlob.jgrid.resources.FontData;
+import com.notlob.jgrid.resources.GC;
+import com.notlob.jgrid.resources.Point;
+import com.notlob.jgrid.resources.Rectangle;
+import com.notlob.jgrid.resources.ResourceManager;
+import com.notlob.jgrid.resources.swt.SWTGC;
+import com.notlob.jgrid.resources.swt.SWTResourceManager;
 import com.notlob.jgrid.styles.StyleRegistry;
-import com.notlob.jgrid.util.ResourceManager;
 
+// TODO: This only needs Composite for basically some lifecycle hooks.
+// Create an SWTJGrid and an JFXJGrid that expose a platform specific GridComponent. Push 99% of this onto the AbstractJGrid.
 public class Grid<T> extends Composite {
 		
 	// Affects the rending of the selection region rather than how the selection model works.
@@ -109,10 +113,11 @@ public class Grid<T> extends Composite {
 	
 	public Grid(final Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED /*| SWT.NO_BACKGROUND | SWT.NO_REDRAW_RESIZE*/);
-		resourceManager = new ResourceManager(parent.getDisplay());
-		gc = new GC(this);
+		gc = new SWTGC(this);
+		// TODO: Move the above and below lines into a provider/factory.
+		resourceManager = new SWTResourceManager(parent.getDisplay(), gc);
 		computedArea = new Point(-1, -1);
-		gridModel = new GridModel<T>(this, resourceManager, gc);
+		gridModel = new GridModel<T>(this, resourceManager);
 		modelListener = new GridModelListener();
 		gridModel.addListener(modelListener);
 		viewport = new Viewport<T>(this);

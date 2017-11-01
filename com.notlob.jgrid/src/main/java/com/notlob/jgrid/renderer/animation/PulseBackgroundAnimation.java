@@ -2,12 +2,11 @@ package com.notlob.jgrid.renderer.animation;
 
 import java.util.List;
 
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
-
 import com.notlob.jgrid.Grid;
 import com.notlob.jgrid.model.Row;
 import com.notlob.jgrid.renderer.RenderContext;
+import com.notlob.jgrid.resources.Color;
+import com.notlob.jgrid.resources.RGB;
 
 public class PulseBackgroundAnimation<T> extends RowAnimation<T> {
 

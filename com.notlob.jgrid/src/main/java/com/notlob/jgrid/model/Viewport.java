@@ -1,10 +1,9 @@
 package com.notlob.jgrid.model;
 
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-
 import com.notlob.jgrid.Grid;
+import com.notlob.jgrid.resources.GC;
+import com.notlob.jgrid.resources.Point;
+import com.notlob.jgrid.resources.Rectangle;
 import com.notlob.jgrid.styles.CellStyle;
 
 /**
@@ -58,6 +57,7 @@ public class Viewport<T> {
 
 		final Rectangle viewportArea = getViewportArea(gc);
 		
+		// TODO: Push these onto properties of the grid exposing an int.
 		final int originX = grid.getHorizontalBar().getSelection();
 		final int originY = grid.getVerticalBar().getSelection();
 		
@@ -138,6 +138,7 @@ public class Viewport<T> {
 			return viewportArea;
 		}
 
+		// TODO: Push these into grid prpoerties.
 		viewportArea.x = grid.getClientArea().x;
 		viewportArea.y = grid.getClientArea().y;
 		viewportArea.width = grid.getClientArea().width;
@@ -632,6 +633,7 @@ public class Viewport<T> {
 			invalidate();
 			grid.redraw();
 			grid.update();
+			// TODO: Implement our own redraw method to force a repaint.
 		}
 	}
 	

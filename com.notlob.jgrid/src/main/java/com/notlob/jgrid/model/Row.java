@@ -3,12 +3,11 @@ package com.notlob.jgrid.model;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
-import org.eclipse.swt.graphics.GC;
-
 import com.notlob.jgrid.model.filtering.IHighlightingFilter;
 import com.notlob.jgrid.renderer.animation.RowAnimation;
+import com.notlob.jgrid.resources.GC;
+import com.notlob.jgrid.resources.ResourceManager;
 import com.notlob.jgrid.styles.CellStyle;
-import com.notlob.jgrid.util.ResourceManager;
 
 public class Row<T> {
 
@@ -37,9 +36,9 @@ public class Row<T> {
 	/**
 	 * You should use grid.getRowHeight not this.
 	 */
-	int getHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
+	int getHeight(final ResourceManager resourceManager, final CellStyle cellStyle) {
 		if (height == -1) {
-			height = getDefaultHeight(resourceManager, gc, cellStyle);
+			height = getDefaultHeight(resourceManager, cellStyle);
 		}
 
 		return height;
@@ -48,11 +47,12 @@ public class Row<T> {
 	/**
 	 * The initial starting height for the row - NOT the current height.
 	 */
-	public int getDefaultHeight(final ResourceManager resourceManager, final GC gc, final CellStyle cellStyle) {
+	public int getDefaultHeight(final ResourceManager resourceManager, final CellStyle cellStyle) {
+		final GC gc = resourceManager.getGC();
 		if (gc == null) {
 			return 0;
 		}
-
+		
 		gc.setFont(resourceManager.getFont(cellStyle.getFontData()));
 		
 		// Include the padding and outer border.

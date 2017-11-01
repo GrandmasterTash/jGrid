@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.swt.graphics.GC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,9 +16,9 @@ import com.notlob.jgrid.model.filtering.FilterModel;
 import com.notlob.jgrid.providers.IGridContentProvider;
 import com.notlob.jgrid.providers.IGridLabelProvider;
 import com.notlob.jgrid.providers.IRowProvider;
+import com.notlob.jgrid.resources.ResourceManager;
 import com.notlob.jgrid.styles.CellStyle;
 import com.notlob.jgrid.styles.StyleRegistry;
-import com.notlob.jgrid.util.ResourceManager;
 
 /**
  *
@@ -97,7 +96,6 @@ public class GridModel<T> {
 	
 	// Used in row height calculations.
 	private final ResourceManager resourceManager;
-	private final GC gc;
 	
 	// A reference count which, if greater than zero means the grid will stop redrawing, recalculating scrollbars/viewport,
 	// and stop firing rowCount-change notifications to any listeners.
@@ -124,10 +122,9 @@ public class GridModel<T> {
 		void groupSelectorVisibilityChanged(final boolean visible);
 	}
 
-	public GridModel(final Grid<T> grid, final ResourceManager resourceManager, final GC gc) {
+	public GridModel(final Grid<T> grid, final ResourceManager resourceManager) {
 		this.grid = grid;
 		this.resourceManager = resourceManager;
-		this.gc = gc; 
 		rows = new ArrayList<>();
 		rowsByElement = new LinkedHashMap<>();
 		hiddenRows = new ArrayList<>();
@@ -1143,7 +1140,7 @@ public class GridModel<T> {
 			cellStyle = styleRegistry.getGroupValueStyle();
 		}
 		
-		return row.getHeight(resourceManager, gc, cellStyle);
+		return row.getHeight(resourceManager, cellStyle);
 	}
 
 	/**

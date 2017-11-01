@@ -1,6 +1,6 @@
 package com.notlob.jgrid.styles;
 
-import org.eclipse.swt.graphics.RGB;
+import com.notlob.jgrid.resources.RGB;
 
 public class BorderStyle {
 
@@ -16,7 +16,6 @@ public class BorderStyle {
 		this.lineStyle = lineStyle;
 		
 	}
-
 
 	public BorderStyle(final int width, final LineStyle lineStyle, final RGB colour) {
 		this.width = width;
