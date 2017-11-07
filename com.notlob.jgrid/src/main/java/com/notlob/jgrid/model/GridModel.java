@@ -1218,7 +1218,12 @@ public class GridModel<T> {
 			// If this row has a parent. Include all the parent's children/grand-children.
 			//
 			final Row<T> parentRow = rowsByElement.get(parentElement);
-			group.addAll(getAllChildren(parentRow));
+			// TODO: We may have a parent element but not a parent row? Seems to be causing an npe in some cases.
+			if (parentRow == null) {
+				logger.warn(String.format("Parent row missing for parentElement [%s]", contentProvider.getElementId(parentElement)));
+			} else {
+				group.addAll(getAllChildren(parentRow));
+			}
 
 		} else if (childElements != null) {
 			//
@@ -1232,6 +1237,29 @@ public class GridModel<T> {
 			}
 		}
 
+		return group;
+	}
+	
+	/**
+	 * Return the elements forming this group (children and parents).
+	 */
+	public List<T> getWholeGroup(final T element) {
+		final List<T> group = new ArrayList<>();
+		final T parentElement = contentProvider.getParent(element);
+		final List<T> childElements = contentProvider.getChildren(element);
+		
+		if (parentElement != null) {
+			group.add(parentElement);
+			group.addAll(contentProvider.getChildren(parentElement));
+		
+		} else if (childElements != null && !childElements.isEmpty()) {
+			group.add(element);
+			group.addAll(childElements);
+			
+		} else {
+			group.add(element);
+		}
+		
 		return group;
 	}
 
@@ -1253,7 +1281,7 @@ public class GridModel<T> {
 	/**
 	 * Return immediate children from this row.
 	 */
-	public List<Row<T>> getChildren(final Row<T> row) {
+	public List<Row<T>> getChildren(final Row<T> row) {		
 		final List<Row<T>> children = new ArrayList<>();
 		final List<T> childElements = contentProvider.getChildren(row.getElement());
 
