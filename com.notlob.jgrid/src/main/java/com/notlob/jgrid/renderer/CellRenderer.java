@@ -423,8 +423,7 @@ public class CellRenderer<T> extends Renderer<T> {
 			// Use a non-wrapping method of rendering the text.
 			//
 			final Point textExtent = getTextExtent(text, rc, cellStyle.getFontData());
-			
-			width = Math.min(textExtent.x, (innerBounds.width - 0/*widthCap seems to shunt right-aligned text if theres an image - removing didn't cause any harm...*/));
+			width = column.isLastColumn() ? textExtent.x : Math.min(textExtent.x, innerBounds.width); // The last column - without wrap should expand to fit the contents.
 			height = Math.min(textExtent.y, innerBounds.height);	
 			align(width, height, innerBounds, contentLocation, textAlignment);
 			
@@ -442,8 +441,6 @@ public class CellRenderer<T> extends Renderer<T> {
 					//
 					gc.setBackground(getColour(styleRegistry.getFilterMatchBackground()));
 					gc.setForeground(getColour(styleRegistry.getFilterMatchForeground()));
-					
-					
 					
 					if (text == null || text.length() == 0) {
 						//

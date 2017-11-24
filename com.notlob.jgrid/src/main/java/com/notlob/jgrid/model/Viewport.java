@@ -559,7 +559,9 @@ public class Viewport<T> {
 	}
 
 	/**
-	 * Locate the y pixel co-ordinate of the row regardless of whether its on screen or not.
+	 * Locate the y pixel co-ordinate of the row regardless of whether its on screen or not. 
+	 * 
+	 * Note: This is not offset by the column header heights.
 	 */
 	public int getRowY(final GC gc, final Row<T> row) {
 		int currentY = 0;
@@ -660,15 +662,33 @@ public class Viewport<T> {
 	/**
 	 * The last column is 'stretchy' and runs to the end of the grid.
 	 */
-	public int getColumnWidth(final int columnX, final Column column) {
-		return isLastColumn(column) ? (grid.getClientArea().width - columnX) : column.getWidth();
+	public int getColumnWidth(final int columnX, final Column column) {		
+		return isLastColumn(column) ? Math.max((grid.getClientArea().width - columnX), column.getWidth()) : column.getWidth();
 	}
 	
 	public boolean isLastColumnCropped() {
 		final Column lastColumn = gridModel.getColumns().isEmpty() ? null : gridModel.getColumns().get(gridModel.getColumns().size() - 1);
 		
 		if (lastColumn != null) {
-			return (getColumnX(lastColumn) + lastColumn.getWidth() + gridModel.getStyleRegistry().getCellSpacingHorizontal()) > grid.getClientArea().width;
+			final int columnX = getColumnX(lastColumn);
+			return (columnX + getColumnWidth(columnX, lastColumn) + gridModel.getStyleRegistry().getCellSpacingHorizontal()) > grid.getClientArea().width;
+		}
+		
+		return false;
+	}
+	
+	public boolean isLastRowCropped() {
+		final Row<T> lastRow = gridModel.getRows().isEmpty() ? null : gridModel.getRows().get(gridModel.getRows().size() - 1);
+		
+		if (lastRow != null) {
+			final boolean cropped = (getRowViewportY(grid.getGC(), lastRow) + grid.getRowHeight(lastRow) + gridModel.getStyleRegistry().getCellSpacingVertical()) > grid.getClientArea().height;
+//				System.out.println(String.format("isLastRowCropped: row-y [%s], row-height [%s] v-spacing [%s] client-area-height [%s] cropped [%s]", 
+//						getRowViewportY(grid.getGC(), lastRow), 
+//						grid.getRowHeight(lastRow), 
+//						gridModel.getStyleRegistry().getCellSpacingVertical(), 
+//						grid.getClientArea().height,
+//						cropped));
+			return cropped;
 		}
 		
 		return false;

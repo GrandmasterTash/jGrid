@@ -964,7 +964,7 @@ public class Grid<T> extends Composite {
 		viewport.invalidate();
 		viewport.calculateVisibleCellRange(gc);
 		
-		updateScrollbar(getVerticalBar(), viewport.getHeightInRows(), getRows().size(), viewport.getRowCountLastPage(gc), viewport.getFirstRowIndex(), viewport.getLastRowIndex(), false);		
+		updateScrollbar(getVerticalBar(), viewport.getHeightInRows(), getRows().size(), viewport.getRowCountLastPage(gc), viewport.getFirstRowIndex(), viewport.getLastRowIndex(), viewport.isLastRowCropped());		
 		updateScrollbar(getHorizontalBar(), viewport.getWidthInColumns(), getColumns().size(), viewport.getColumnCountLastPage(gc), viewport.getFirstColumnIndex(), viewport.getLastColumnIndex() + 1, viewport.isLastColumnCropped());
 	}
 
@@ -995,8 +995,9 @@ public class Grid<T> extends Composite {
 		//
 		// The scrollbar is only required, if there are items beyond either of the viewport edged.
 		//
-		final boolean visible = ((firstVisibleIndex > 0) 
-				|| (((lastVisibleIndex < maximumSize) || (isLastCropped)) && (maximumSize > 1)));
+		final boolean firstScrolledOff = (firstVisibleIndex > 0);               // The first row or column that's visible, ISN'T the first one, we need a scrollbar to be able to see it again.
+		final boolean lastScrolledOff = ((lastVisibleIndex + 1) < maximumSize); // The last row or column that's visible, ISN'T the last one.
+		final boolean visible = (firstScrolledOff || ((lastScrolledOff || (isLastCropped)) && (maximumSize > 1)));
 		
 		scrollBar.setMaximum(cappedMax);
 		scrollBar.setThumb(1);
@@ -1005,16 +1006,19 @@ public class Grid<T> extends Composite {
 		scrollBar.setVisible(visible);
 		scrollBar.setEnabled(visible);
 		
-//		System.out.println(String.format("[%s] -> Scroll page [%s] visible-rows [%s] maximum [%s/%s] last-page [%s] last-vis-idx [%s] last-cropped [%s] visible [%s]", 
+//		System.out.println(String.format("[%s:%s] -> Scroll page [%s] visible-rows [%s] maximum-model [%s] maximum-bar [%s] last-page [%s] last-vis-idx [%s] last-cropped [%s] firstScrolledOff [%s] lastScrolledOff [%s] visible [%s]", 
 //			getData("org.eclipse.swtbot.widget.key"),
+//			(scrollBar.getStyle() & SWT.VERTICAL) != 0 ? "VERTICAL" : "HORIZONTAL",  
 //			scrollBar.getPageIncrement(),
-//			viewportSize, 
+//			viewportSize,
 //			maximumSize,
 //			scrollBar.getMaximum(),
 //			lastPageSize,
 //			lastVisibleIndex,
 //			isLastCropped,
-//			scrollBar.isVisible()));
+//			firstScrolledOff,
+//			lastScrolledOff,
+//			visible));
 	}
 
 	private void invalidateComputedArea() {

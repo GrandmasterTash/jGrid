@@ -134,7 +134,7 @@ public class RowRenderer<T> extends Renderer<T> {
 			//
 			// Don't paint a column header grip on the last column.
 			//
-			rc.setDontPaintGrip(columnIndex == (gridModel.getColumns().size() - 1));
+			rc.setDontPaintGrip(column.isLastColumn());
 			
 			//
 			// Paint the cell now.
