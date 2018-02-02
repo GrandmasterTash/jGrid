@@ -123,7 +123,7 @@ public class Grid<T> extends Composite {
 		focusListener = new GridFocusListener();
 		listeners = new ArrayList<>();
 		toolTip = new ToolTip(parent.getShell(), SWT.NONE);
-		toolTip.setAutoHide(true);
+		toolTip.setAutoHide(false);
 		keyboardHandler = createKeyboardHandler(gc);
 		mouseHandler = createMouseHandler(gc, listeners, toolTip);		
 
