@@ -362,7 +362,7 @@ public class GridModel<T> {
 
 		rebuildVisibleColumns();
 
-		if (!anyWereVisible && anyNowVisible && showColumnHeaders) {
+		if (!anyWereVisible && anyNowVisible && showColumnHeaders && columnHeaderRows.isEmpty()) {
 			//
 			// The first column should cause a row to be added for the column headers. This header row should be the first row in the header region.
 			//
