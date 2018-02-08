@@ -885,6 +885,13 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 	 */
 	protected void showToolTip(final int x, final int y, final String boldText, final String message) {
 		//
+		// If both bold text and the message are blank show no tool-tip.
+		//
+		if ((boldText == null || boldText.trim().isEmpty()) && (message == null || message.trim().isEmpty())) {
+			return;
+		}
+		
+		//
 		// Build a slight delay otherwise the tool-tip would swallow clicks meant for the grid.
 		//
 		grid.getDisplay().timerExec(TOOLTIP_DELAY, new Runnable() {
@@ -892,8 +899,8 @@ public class GridMouseHandler<T> extends MouseAdapter implements MouseMoveListen
 			public void run() {
 				final Point location = grid.toDisplay(x, y);
 				toolTip.setLocation(location);
-				toolTip.setText(boldText);
-				toolTip.setMessage(message);
+				toolTip.setText(boldText == null ? "" : boldText);
+				toolTip.setMessage(message == null ? "" : message);
 				toolTip.setVisible(true);
 			}
 		});
